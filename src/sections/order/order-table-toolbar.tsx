@@ -2,7 +2,7 @@ import type { IOrderTableFilters } from 'src/types/order';
 import type { IDatePickerControl } from 'src/types/common';
 import type { UseSetStateReturn } from 'src/hooks/use-set-state';
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import Stack from '@mui/material/Stack';
 import MenuList from '@mui/material/MenuList';
@@ -26,6 +26,7 @@ type Props = {
 
 export function OrderTableToolbar({ filters, onResetPage, dateError }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleFilterName = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +103,7 @@ export function OrderTableToolbar({ filters, onResetPage, dateError }: Props) {
             }}
           />
 
-          <IconButton onClick={popover.onOpen}>
+          <IconButton ref={buttonRef} onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </Stack>
@@ -110,7 +111,7 @@ export function OrderTableToolbar({ filters, onResetPage, dateError }: Props) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

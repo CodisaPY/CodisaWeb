@@ -41,9 +41,10 @@ const InvoiceEditPage = lazy(() => import('src/pages/dashboard/invoice/edit'));
 // User
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
-const UserListPage = lazy(() => import('src/pages/dashboard/user/list'));
+const UserListPage = lazy(() => import('src/pages/user-management/user-list'));
 const UserAccountPage = lazy(() => import('src/pages/dashboard/user/account'));
 const UserCreatePage = lazy(() => import('src/pages/dashboard/user/new'));
+const NewUserPage = lazy(() => import('src/pages/dashboard/user/new'));
 
 
 const Notificaciones = lazy(() => import('src/pages/dashboard/notificaciones/edit'));
@@ -107,7 +108,7 @@ export const dashboardRoutes = [
           { path: 'profile', element: <UserProfilePage /> },
           { path: 'cards', element: <UserCardsPage /> },
           { path: 'list', element: <UserListPage /> },
-          { path: 'new', element: <UserCreatePage /> },
+          { path: 'new', element: <NewUserPage /> },
           { path: ':id/edit', element: <UserEditPage /> },
           { path: 'account', element: <UserAccountPage /> },
         ],
@@ -292,6 +293,28 @@ export const dashboardRoutes = [
               },
             ],
           },
+
+          {
+            path: 'usuarios',
+            children: [
+              {
+                path: 'nuevoUsuario',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.GENERACION_NUEVO_USUARIO_VIEW,
+                    ]}
+                  >
+                    <NewUserPage />
+                  </RoleGuard>
+                ), // La página correspondiente al informe de ventas
+              },
+  
+            ],
+          },
+
+
+
         ],
       },
 

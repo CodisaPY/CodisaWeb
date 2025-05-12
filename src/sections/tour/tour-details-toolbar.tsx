@@ -1,4 +1,5 @@
 import type { StackProps } from '@mui/material/Stack';
+import { useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -39,6 +40,7 @@ export function TourDetailsToolbar({
   ...other
 }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -68,6 +70,7 @@ export function TourDetailsToolbar({
         </Tooltip>
 
         <LoadingButton
+          ref={buttonRef}
           color="inherit"
           variant="contained"
           loading={!publish}
@@ -82,7 +85,7 @@ export function TourDetailsToolbar({
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'top-right' } }}
       >

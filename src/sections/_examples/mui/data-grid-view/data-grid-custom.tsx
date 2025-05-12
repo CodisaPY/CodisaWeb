@@ -256,16 +256,7 @@ export function DataGridCustom({ data: rows }: Props) {
       }}
       columnVisibilityModel={columnVisibilityModel}
       onColumnVisibilityModelChange={(newModel) => setColumnVisibilityModel(newModel)}
-      slots={{
-        toolbar: CustomToolbar as GridSlots['toolbar'],
-        noRowsOverlay: () => <EmptyContent />,
-        noResultsOverlay: () => <EmptyContent title="No results found" />,
-      }}
-      slotProps={{
-        panel: { anchorEl: filterButtonEl },
-        toolbar: { setFilterButtonEl, showQuickFilter: true },
-        columnsManagement: { getTogglableColumns },
-      }}
+     
       sx={{ [`& .${gridClasses.cell}`]: { alignItems: 'center', display: 'inline-flex' } }}
     />
   );

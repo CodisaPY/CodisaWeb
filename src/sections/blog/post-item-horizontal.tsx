@@ -1,5 +1,6 @@
 import type { IPostItem } from 'src/types/blog';
 import type { CardProps } from '@mui/material/Card';
+import { useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -33,7 +34,7 @@ type Props = CardProps & {
 
 export function PostItemHorizontal({ post, sx, ...other }: Props) {
   const popover = usePopover();
-
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
 
   return (
@@ -67,7 +68,11 @@ export function PostItemHorizontal({ post, sx, ...other }: Props) {
           </Stack>
 
           <Box display="flex" alignItems="center">
-            <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+            <IconButton 
+              ref={buttonRef}
+              color={popover.open ? 'inherit' : 'default'} 
+              onClick={popover.onOpen}
+            >
               <Iconify icon="eva:more-horizontal-fill" />
             </IconButton>
 
@@ -118,7 +123,7 @@ export function PostItemHorizontal({ post, sx, ...other }: Props) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'bottom-center' } }}
       >

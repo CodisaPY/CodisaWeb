@@ -18,6 +18,7 @@ import { fDateTime, fDateRangeShortLabel } from 'src/utils/format-time';
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -30,6 +31,7 @@ type Props = {
 
 export function TourItem({ tour, onView, onEdit, onDelete }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const renderRating = (
     <Stack
@@ -129,7 +131,11 @@ export function TourItem({ tour, onView, onEdit, onDelete }: Props) {
       spacing={1.5}
       sx={{ position: 'relative', p: (theme) => theme.spacing(0, 2.5, 2.5, 2.5) }}
     >
-      <IconButton onClick={popover.onOpen} sx={{ position: 'absolute', bottom: 20, right: 8 }}>
+      <IconButton
+        ref={buttonRef}
+        onClick={popover.onOpen}
+        sx={{ position: 'absolute', bottom: 20, right: 8 }}
+      >
         <Iconify icon="eva:more-vertical-fill" />
       </IconButton>
 
@@ -173,7 +179,7 @@ export function TourItem({ tour, onView, onEdit, onDelete }: Props) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

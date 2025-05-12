@@ -13,117 +13,47 @@ export type CalculateAnchorOriginProps = {
   transformOrigin: PopoverOrigin;
 };
 
-export function calculateAnchorOrigin(
-  arrow: PopoverArrow['placement']
-): CalculateAnchorOriginProps {
-  let props: CalculateAnchorOriginProps;
+export function calculateAnchorOrigin(placement: PopoverArrow['placement']): CalculateAnchorOriginProps {
+  const isTop = placement?.includes('top');
+  const isBottom = placement?.includes('bottom');
+  const isLeft = placement?.includes('left');
+  const isRight = placement?.includes('right');
+  const isCenter = placement?.includes('center');
 
-  switch (arrow) {
-    /**
-     * top-*
-     */
-    case 'top-left':
-      props = {
-        paperStyles: { ml: -POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-        transformOrigin: { vertical: 'top', horizontal: 'left' },
-      };
-      break;
-    case 'top-center':
-      props = {
-        paperStyles: undefined,
-        anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-        transformOrigin: { vertical: 'top', horizontal: 'center' },
-      };
-      break;
-    case 'top-right':
-      props = {
-        paperStyles: { ml: POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-        transformOrigin: { vertical: 'top', horizontal: 'right' },
-      };
-      break;
-    /**
-     * bottom-*
-     */
-    case 'bottom-left':
-      props = {
-        paperStyles: { ml: -POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'top', horizontal: 'left' },
-        transformOrigin: { vertical: 'bottom', horizontal: 'left' },
-      };
-      break;
-    case 'bottom-center':
-      props = {
-        paperStyles: undefined,
-        anchorOrigin: { vertical: 'top', horizontal: 'center' },
-        transformOrigin: { vertical: 'bottom', horizontal: 'center' },
-      };
-      break;
-    case 'bottom-right':
-      props = {
-        paperStyles: { ml: POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'top', horizontal: 'right' },
-        transformOrigin: { vertical: 'bottom', horizontal: 'right' },
-      };
-      break;
-    /**
-     * left-*
-     */
-    case 'left-top':
-      props = {
-        paperStyles: { mt: -POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'top', horizontal: 'right' },
-        transformOrigin: { vertical: 'top', horizontal: 'left' },
-      };
-      break;
-    case 'left-center':
-      props = {
-        paperStyles: undefined,
-        anchorOrigin: { vertical: 'center', horizontal: 'right' },
-        transformOrigin: { vertical: 'center', horizontal: 'left' },
-      };
-      break;
-    case 'left-bottom':
-      props = {
-        paperStyles: { mt: POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-        transformOrigin: { vertical: 'bottom', horizontal: 'left' },
-      };
-      break;
-    /**
-     * right-*
-     */
-    case 'right-top':
-      props = {
-        paperStyles: { mt: -POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'top', horizontal: 'left' },
-        transformOrigin: { vertical: 'top', horizontal: 'right' },
-      };
-      break;
-    case 'right-center':
-      props = {
-        paperStyles: undefined,
-        anchorOrigin: { vertical: 'center', horizontal: 'left' },
-        transformOrigin: { vertical: 'center', horizontal: 'right' },
-      };
-      break;
-    case 'right-bottom':
-      props = {
-        paperStyles: { mt: POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-        transformOrigin: { vertical: 'bottom', horizontal: 'right' },
-      };
-      break;
+  const anchorOrigin: PopoverOrigin = {
+    vertical: isTop ? 'top' : 'bottom',
+    horizontal: isLeft ? 'left' : 'right',
+  };
 
-    // top-right
-    default:
-      props = {
-        paperStyles: { ml: POPOVER_DISTANCE },
-        anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-        transformOrigin: { vertical: 'top', horizontal: 'right' },
-      };
-  }
+  const transformOrigin: PopoverOrigin = {
+    vertical: isTop ? 'bottom' : 'top',
+    horizontal: isLeft ? 'right' : 'left',
+  };
 
-  return props;
+  const paperStyles = {
+    ...(isTop && {
+      mt: 1.5,
+    }),
+    ...(isBottom && {
+      mb: 1.5,
+    }),
+    ...(isLeft && {
+      ml: 1.5,
+    }),
+    ...(isRight && {
+      mr: 1.5,
+    }),
+    ...(isCenter && {
+      mt: 0,
+      mb: 0,
+      ml: 0,
+      mr: 0,
+    }),
+  };
+
+  return {
+    anchorOrigin,
+    transformOrigin,
+    paperStyles,
+  };
 }

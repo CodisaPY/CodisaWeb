@@ -1,4 +1,5 @@
 import type { ColorType } from 'src/theme/core/palette';
+import { useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -25,6 +26,7 @@ export function GroupNode({ sx, name, role, depth, group, avatarUrl, totalChildr
   const theme = useTheme();
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const onDelete = () => {
     popover.onClose();
@@ -142,7 +144,7 @@ export function GroupNode({ sx, name, role, depth, group, avatarUrl, totalChildr
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'left-center' } }}
       >

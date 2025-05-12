@@ -16,6 +16,7 @@ import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 
 import { useBoolean } from 'src/hooks/use-boolean';
+import { useRef } from 'react';
 
 import { fCurrency } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
@@ -41,6 +42,7 @@ export function OrderTableRow({ row, selected, onViewRow, onSelectRow, onDeleteR
   const collapse = useBoolean();
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const renderPrimary = (
     <TableRow hover selected={selected}>
@@ -107,7 +109,11 @@ export function OrderTableRow({ row, selected, onViewRow, onSelectRow, onDeleteR
           <Iconify icon="eva:arrow-ios-downward-fill" />
         </IconButton>
 
-        <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+        <IconButton
+          ref={buttonRef}
+          color={popover.open ? 'inherit' : 'default'}
+          onClick={popover.onOpen}
+        >
           <Iconify icon="eva:more-vertical-fill" />
         </IconButton>
       </TableCell>
@@ -168,7 +174,7 @@ export function OrderTableRow({ row, selected, onViewRow, onSelectRow, onDeleteR
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

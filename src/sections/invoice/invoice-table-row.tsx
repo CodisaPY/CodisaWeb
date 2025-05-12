@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import ListItemText from '@mui/material/ListItemText';
 
 import { useBoolean } from 'src/hooks/use-boolean';
+import { useRef } from 'react';
 
 import { fCurrency } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
@@ -33,6 +34,7 @@ type Props = {
   onViewRow: () => void;
   onEditRow: () => void;
   onDeleteRow: () => void;
+  sx?: any;
 };
 
 export function InvoiceTableRow({
@@ -42,14 +44,22 @@ export function InvoiceTableRow({
   onViewRow,
   onEditRow,
   onDeleteRow,
+  sx,
 }: Props) {
   const confirm = useBoolean();
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLTableRowElement>(null);
 
   return (
     <>
-      <TableRow hover selected={selected}>
+      <TableRow
+        ref={buttonRef}
+        hover
+        selected={selected}
+        onClick={popover.onOpen}
+        sx={sx}
+      >
         <TableCell padding="checkbox">
           <Checkbox
             checked={selected}
@@ -128,7 +138,7 @@ export function InvoiceTableRow({
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

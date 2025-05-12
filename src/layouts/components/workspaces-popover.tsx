@@ -1,6 +1,6 @@
 import type { ButtonBaseProps } from '@mui/material/ButtonBase';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
@@ -25,6 +25,7 @@ export type WorkspacesPopoverProps = ButtonBaseProps & {
 
 export function WorkspacesPopover({ data = [], sx, ...other }: WorkspacesPopoverProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const mediaQuery = 'sm';
 
@@ -41,6 +42,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }: WorkspacesPopover
   return (
     <>
       <ButtonBase
+        ref={buttonRef}
         disableRipple
         onClick={popover.onOpen}
         sx={{
@@ -82,7 +84,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }: WorkspacesPopover
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'top-left' } }}
       >

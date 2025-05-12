@@ -16,6 +16,7 @@ export const ROLES = {
   MODULO_NOTIFICACION: 'modulo_notificacion',
   MODULO_SOLICITUD_TIC: 'modulo_solicitudes_tic',
   MODULO_SOLICITUD_COMERCIAL: 'modulo_solicitudes_comercial',
+  MODULO_USUARIOS: 'modulo_usuarios',
 
   /*
   MODULO DE TIC
@@ -41,5 +42,10 @@ export const ROLES = {
 
   PARAMETRIZAR_FIRMA_VIEW: 'pantalla__parametrizaciones_seguridad__autorizacion_firma__view',
   PARAMETRIZAR_FIRMA_CREATE: 'pantalla__parametrizaciones_seguridad__autorizacion_firma__create',
-};
+
+  /*
+  MODULO USUARIOS
+  */
+  GENERACION_NUEVO_USUARIO_VIEW: 'pantalla__usuarios__crear_nuevo_usuario__view',
+ };
   

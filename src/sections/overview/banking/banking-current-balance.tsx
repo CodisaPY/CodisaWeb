@@ -1,6 +1,6 @@
 import type { BoxProps } from '@mui/material/Box';
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import MenuList from '@mui/material/MenuList';
@@ -94,6 +94,7 @@ type ItemProps = {
 
 function Item({ item, showCurrency, onToggleCurrency }: ItemProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleDelete = useCallback(() => {
     popover.onClose();
@@ -109,6 +110,7 @@ function Item({ item, showCurrency, onToggleCurrency }: ItemProps) {
     <>
       <Box sx={{ p: 3, width: 1 }}>
         <IconButton
+          ref={buttonRef}
           color="inherit"
           onClick={popover.onOpen}
           sx={{
@@ -173,7 +175,7 @@ function Item({ item, showCurrency, onToggleCurrency }: ItemProps) {
         </Box>
       </Box>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={popover.onClose}>
         <MenuList>
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />

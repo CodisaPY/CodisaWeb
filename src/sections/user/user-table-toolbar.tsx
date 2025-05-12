@@ -2,7 +2,7 @@ import type { IUserTableFilters } from 'src/types/user';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import type { UseSetStateReturn } from 'src/hooks/use-set-state';
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Select from '@mui/material/Select';
@@ -31,6 +31,7 @@ type Props = {
 
 export function UserTableToolbar({ filters, options, onResetPage }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleFilterName = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +99,10 @@ export function UserTableToolbar({ filters, options, onResetPage }: Props) {
             }}
           />
 
-          <IconButton onClick={popover.onOpen}>
+          <IconButton
+            ref={buttonRef}
+            onClick={popover.onOpen}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </Stack>
@@ -106,7 +110,7 @@ export function UserTableToolbar({ filters, options, onResetPage }: Props) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

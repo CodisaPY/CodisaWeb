@@ -3,7 +3,7 @@ import type { IInvoiceTableFilters } from 'src/types/invoice';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import type { UseSetStateReturn } from 'src/hooks/use-set-state';
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Select from '@mui/material/Select';
@@ -18,6 +18,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
+import Button from '@mui/material/Button';
 
 import { Iconify } from 'src/components/iconify';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
@@ -35,6 +36,7 @@ type Props = {
 
 export function InvoiceTableToolbar({ filters, options, dateError, onResetPage }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleFilterName = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,7 +149,10 @@ export function InvoiceTableToolbar({ filters, options, dateError, onResetPage }
             }}
           />
 
-          <IconButton onClick={popover.onOpen}>
+          <IconButton
+            ref={buttonRef}
+            onClick={popover.onOpen}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </Stack>
@@ -155,7 +160,7 @@ export function InvoiceTableToolbar({ filters, options, dateError, onResetPage }
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

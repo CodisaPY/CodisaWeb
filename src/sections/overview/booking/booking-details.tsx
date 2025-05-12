@@ -17,6 +17,7 @@ import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 import CardHeader from '@mui/material/CardHeader';
 import ListItemText from '@mui/material/ListItemText';
+import { useRef } from 'react';
 
 import { fDate, fTime } from 'src/utils/format-time';
 
@@ -89,9 +90,8 @@ type RowItemProps = {
 
 function RowItem({ row }: RowItemProps) {
   const theme = useTheme();
-
   const popover = usePopover();
-
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const lightMode = theme.palette.mode === 'light';
 
   const handleDownload = () => {
@@ -170,7 +170,11 @@ function RowItem({ row }: RowItemProps) {
         </TableCell>
 
         <TableCell align="right" sx={{ pr: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+          <IconButton
+            ref={buttonRef}
+            color={popover.open ? 'inherit' : 'default'}
+            onClick={popover.onOpen}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>
@@ -178,7 +182,7 @@ function RowItem({ row }: RowItemProps) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

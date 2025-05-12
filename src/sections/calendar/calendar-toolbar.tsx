@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { IDateValue } from 'src/types/common';
 import type { ICalendarView } from 'src/types/calendar';
 
@@ -48,6 +49,7 @@ export function CalendarToolbar({
   onOpenFilters,
 }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const selectedItem = VIEW_OPTIONS.filter((item) => item.value === view)[0];
 
@@ -60,6 +62,7 @@ export function CalendarToolbar({
         sx={{ p: 2.5, pr: 2, position: 'relative' }}
       >
         <Button
+          ref={buttonRef}
           size="small"
           color="inherit"
           onClick={popover.onOpen}
@@ -111,7 +114,7 @@ export function CalendarToolbar({
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'top-left' } }}
       >

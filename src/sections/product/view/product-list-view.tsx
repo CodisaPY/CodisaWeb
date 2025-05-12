@@ -270,11 +270,7 @@ export function ProductListView() {
               noRowsOverlay: () => <EmptyContent />,
               noResultsOverlay: () => <EmptyContent title="No results found" />,
             }}
-            slotProps={{
-              panel: { anchorEl: filterButtonEl },
-              toolbar: { setFilterButtonEl },
-              columnsManagement: { getTogglableColumns },
-            }}
+            
             sx={{ [`& .${gridClasses.cell}`]: { alignItems: 'center', display: 'inline-flex' } }}
           />
         </Card>

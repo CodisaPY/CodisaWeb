@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -20,6 +21,7 @@ type PaymentItemProps = PaperProps & {
 
 export function PaymentCardItem({ card, sx, ...other }: PaymentItemProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -35,12 +37,20 @@ export function PaymentCardItem({ card, sx, ...other }: PaymentItemProps) {
 
         <Typography variant="subtitle2">{card.cardNumber}</Typography>
 
-        <IconButton onClick={popover.onOpen} sx={{ top: 8, right: 8, position: 'absolute' }}>
+        <IconButton
+          ref={buttonRef}
+          onClick={popover.onOpen}
+          sx={{ top: 8, right: 8, position: 'absolute' }}
+        >
           <Iconify icon="eva:more-vertical-fill" />
         </IconButton>
       </Paper>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover
+        open={popover.open}
+        anchorEl={buttonRef.current}
+        onClose={popover.onClose}
+      >
         <MenuList>
           <MenuItem onClick={popover.onClose}>
             <Iconify icon="eva:star-fill" />

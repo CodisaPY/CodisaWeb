@@ -1,6 +1,6 @@
 import type { IChatParticipant } from 'src/types/chat';
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Badge from '@mui/material/Badge';
@@ -33,6 +33,7 @@ type Props = {
 
 export function ChatHeaderDetail({ collapseNav, participants, loading }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const lgUp = useResponsive('up', 'lg');
 
@@ -104,12 +105,12 @@ export function ChatHeaderDetail({ collapseNav, participants, loading }: Props) 
           <Iconify icon={!collapseDesktop ? 'ri:sidebar-unfold-fill' : 'ri:sidebar-fold-fill'} />
         </IconButton>
 
-        <IconButton onClick={popover.onOpen}>
+        <IconButton ref={buttonRef} onClick={popover.onOpen}>
           <Iconify icon="eva:more-vertical-fill" />
         </IconButton>
       </Stack>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={popover.onClose}>
         <MenuList>
           <MenuItem
             onClick={() => {

@@ -124,6 +124,21 @@ export const navData = [
               },
             ],
           },
+          {
+            title: 'Usuarios',
+            path: paths.dashboard.seguridad.moduloUsuarios.root,
+            icon: ICONS.user,
+            roles: [ROLES.MODULO_USUARIOS],
+            children: [
+              {
+                title: 'Nuevo usuario',
+                path: paths.dashboard.seguridad.moduloUsuarios.nuevoUsuario,
+                roles: [
+                  ROLES.GENERACION_NUEVO_USUARIO_VIEW,
+                ],
+              } 
+            ],
+          },
         ],
       },
     ],

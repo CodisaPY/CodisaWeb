@@ -119,7 +119,7 @@ useEffect(() => {
 
 useEffect(() => {
   axios
-    .get(`http://localhost:8080/backend-linker/api/firma-autorizacion?pantallaId=${pantallaId}`, {
+    .get(`http://192.168.0.198:9003/backend-linker/api/firma-autorizacion?pantallaId=${pantallaId}`, {
       params: {  },
     })
     .then((res) => {
@@ -132,7 +132,7 @@ useEffect(() => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8080/backend-linker/api/tipos-autorizacion-firma')
+      .get('http://192.168.0.198:9003/backend-linker/api/tipos-autorizacion-firma')
       .then((res) => setTiposDestino(res.data))
       .catch((err) => console.error('Error al obtener tipos de destino:', err));
   }, []);

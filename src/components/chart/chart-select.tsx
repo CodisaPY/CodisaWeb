@@ -1,4 +1,5 @@
 import type { Theme, SxProps } from '@mui/material/styles';
+import { useRef } from 'react';
 
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
@@ -24,10 +25,12 @@ type Props = {
 
 export function ChartSelect({ options, value, onChange, slotProps, ...other }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
       <ButtonBase
+        ref={buttonRef}
         onClick={popover.onOpen}
         sx={{
           pr: 1,
@@ -49,7 +52,7 @@ export function ChartSelect({ options, value, onChange, slotProps, ...other }: P
         />
       </ButtonBase>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={popover.onClose}>
         <MenuList sx={slotProps?.popover}>
           {options.map((option) => (
             <MenuItem

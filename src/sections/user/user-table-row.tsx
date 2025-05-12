@@ -1,4 +1,5 @@
 import type { IUserItem } from 'src/types/user';
+import { useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -34,10 +35,9 @@ type Props = {
 
 export function UserTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }: Props) {
   const confirm = useBoolean();
-
   const popover = usePopover();
-
   const quickEdit = useBoolean();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -92,7 +92,11 @@ export function UserTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRo
               </IconButton>
             </Tooltip>
 
-            <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+            <IconButton 
+              ref={buttonRef}
+              color={popover.open ? 'inherit' : 'default'} 
+              onClick={popover.onOpen}
+            >
               <Iconify icon="eva:more-vertical-fill" />
             </IconButton>
           </Stack>
@@ -103,7 +107,7 @@ export function UserTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRo
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

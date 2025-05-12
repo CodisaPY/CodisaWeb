@@ -128,7 +128,7 @@ useEffect(() => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/backend-linker/estado-formulario/por-pantalla/${pantallaId}`, {
+      .get(`http://192.168.0.198:9003/backend-linker/estado-formulario/por-pantalla/${pantallaId}`, {
         params: { pantallaId },
       })
       .then((res) => setEstados(res.data))
@@ -137,7 +137,7 @@ useEffect(() => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8080/backend-linker/tipo-destino-notificaciones')
+      .get('http://192.168.0.198:9003/backend-linker/tipo-destino-notificaciones')
       .then((res) => setTiposDestino(res.data))
       .catch((err) => console.error('Error al obtener tipos de destino:', err));
   }, []);

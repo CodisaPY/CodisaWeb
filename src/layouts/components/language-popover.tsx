@@ -2,7 +2,7 @@ import type { LanguageValue } from 'src/locales';
 import type { IconButtonProps } from '@mui/material/IconButton';
 
 import { m } from 'framer-motion';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
@@ -26,6 +26,7 @@ export type LanguagePopoverProps = IconButtonProps & {
 
 export function LanguagePopover({ data = [], sx, ...other }: LanguagePopoverProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const { onChangeLang, currentLang } = useTranslate();
 
@@ -40,6 +41,7 @@ export function LanguagePopover({ data = [], sx, ...other }: LanguagePopoverProp
   return (
     <>
       <IconButton
+        ref={buttonRef}
         component={m.button}
         whileTap="tap"
         whileHover="hover"
@@ -57,7 +59,7 @@ export function LanguagePopover({ data = [], sx, ...other }: LanguagePopoverProp
         <FlagIcon code={currentLang.countryCode} />
       </IconButton>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={popover.onClose}>
         <MenuList sx={{ width: 160, minHeight: 72 }}>
           {data?.map((option) => (
             <MenuItem

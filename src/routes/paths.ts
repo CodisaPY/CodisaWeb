@@ -177,6 +177,11 @@ export const paths = {
         ajusteEnvioNotificaciones: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones/ajusteEnvioNotificaciones`,
         ajusteAutorizacionesFirmas: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones/autorizacionesFirmas`,
       },
+      moduloUsuarios: {
+        root: `${ROOTS.DASHBOARD}/seguridad`,
+        nuevoUsuario: `${ROOTS.DASHBOARD}/seguridad/usuarios/nuevoUsuario`,
+        listaUsuario: `${ROOTS.DASHBOARD}/seguridad/usuarios/listaUsuarios`,
+       },
     },
     post: {
       root: `${ROOTS.DASHBOARD}/post`,

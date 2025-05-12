@@ -37,9 +37,7 @@ export const CONFIG: ConfigValue = {
   appName: 'Linker Codisa',
   appVersion: packageJson.version,
 
-  serverUrl: `${import.meta.env.VITE_SERVER_URL ?? 'http://'}${
-    isProduction ? import.meta.env.VITE_IP_API_PROD : import.meta.env.VITE_IP_API
-  }`,
+  serverUrl: import.meta.env.VITE_SERVER_URL || 'http://localhost:4000', // URL base del servidor backend con fallback
 
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',
 

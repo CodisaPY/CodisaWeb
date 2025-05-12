@@ -15,6 +15,7 @@ import { fToNow } from 'src/utils/format-time';
 import { varHover } from 'src/components/animate';
 import { Scrollbar } from 'src/components/scrollbar';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -34,10 +35,12 @@ export type ContactsPopoverProps = IconButtonProps & {
 
 export function ContactsPopover({ data = [], sx, ...other }: ContactsPopoverProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
       <IconButton
+        ref={buttonRef}
         component={m.button}
         whileTap="tap"
         whileHover="hover"
@@ -60,7 +63,7 @@ export function ContactsPopover({ data = [], sx, ...other }: ContactsPopoverProp
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{
           arrow: { offset: 20 },

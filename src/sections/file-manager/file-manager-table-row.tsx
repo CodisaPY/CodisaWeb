@@ -1,6 +1,6 @@
 import type { IFileManager } from 'src/types/file';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -42,9 +42,10 @@ type Props = {
   selected: boolean;
   onSelectRow: () => void;
   onDeleteRow: () => void;
+  sx?: any;
 };
 
-export function FileManagerTableRow({ row, selected, onSelectRow, onDeleteRow }: Props) {
+export function FileManagerTableRow({ row, selected, onSelectRow, onDeleteRow, sx, ...other }: Props) {
   const theme = useTheme();
 
   const { copy } = useCopyToClipboard();
@@ -60,6 +61,7 @@ export function FileManagerTableRow({ row, selected, onSelectRow, onDeleteRow }:
   const confirm = useBoolean();
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLTableRowElement>(null);
 
   const handleChangeInvite = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setInviteEmail(event.target.value);
@@ -95,6 +97,7 @@ export function FileManagerTableRow({ row, selected, onSelectRow, onDeleteRow }:
   return (
     <>
       <TableRow
+        ref={buttonRef}
         selected={selected}
         sx={{
           borderRadius: 2,
@@ -108,7 +111,9 @@ export function FileManagerTableRow({ row, selected, onSelectRow, onDeleteRow }:
           },
           [`& .${tableCellClasses.root}`]: { ...defaultStyles },
           ...(details.value && { [`& .${tableCellClasses.root}`]: { ...defaultStyles } }),
+          ...sx,
         }}
+        {...other}
       >
         <TableCell padding="checkbox">
           <Checkbox
@@ -195,7 +200,7 @@ export function FileManagerTableRow({ row, selected, onSelectRow, onDeleteRow }:
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >
