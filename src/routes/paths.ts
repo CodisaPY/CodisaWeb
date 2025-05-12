@@ -178,10 +178,11 @@ export const paths = {
         ajusteAutorizacionesFirmas: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones/autorizacionesFirmas`,
       },
       moduloUsuarios: {
-        root: `${ROOTS.DASHBOARD}/seguridad`,
-        nuevoUsuario: `${ROOTS.DASHBOARD}/seguridad/usuarios/nuevoUsuario`,
-        listaUsuario: `${ROOTS.DASHBOARD}/seguridad/usuarios/listaUsuarios`,
-       },
+        root: '/dashboard/seguridad/usuarios',
+        nuevoUsuario: '/dashboard/seguridad/usuarios/nuevo',
+        listaUsuario: '/dashboard/seguridad/usuarios/lista',
+        edit: (id: string) => `/dashboard/seguridad/usuarios/${id}/editar`,
+      },
     },
     post: {
       root: `${ROOTS.DASHBOARD}/post`,

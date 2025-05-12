@@ -46,6 +46,11 @@ export const ROLES = {
   /*
   MODULO USUARIOS
   */
-  GENERACION_NUEVO_USUARIO_VIEW: 'pantalla__usuarios__crear_nuevo_usuario__view',
+  GENERACION_NUEVO_USUARIO_VIEW:    'pantalla__usuarios__crear_nuevo_usuario__view',
+  GENERACION_NUEVO_USUARIO_CREATE:  'pantalla__usuarios__crear_nuevo_usuario__create',
+  GENERACION_NUEVO_USUARIO_ENABLE:  'pantalla__usuarios__crear_nuevo_usuario__enable',
+
+  
+  LISTA_USUARIOS_VIEW: 'pantalla__usuarios__lista_usuario__view',
  };
   

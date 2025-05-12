@@ -136,7 +136,14 @@ export const navData = [
                 roles: [
                   ROLES.GENERACION_NUEVO_USUARIO_VIEW,
                 ],
-              } 
+              },
+              {
+                title: 'Lista de usuarios',
+                path: paths.dashboard.seguridad.moduloUsuarios.listaUsuario,
+                roles: [
+                  ROLES.LISTA_USUARIOS_VIEW,
+                ],
+              }
             ],
           },
         ],

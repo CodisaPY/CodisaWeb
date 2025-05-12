@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -12,12 +14,12 @@ import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 
 import { useBoolean } from 'src/hooks/use-boolean';
-import { useTable } from 'src/components/table/use-table';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/confirm-dialog';
-
 import { TableEmptyRows, TableNoData, TableHeadCustom, TableSelectedAction, UserTableRow, UserTableToolbar } from 'src/sections/user-management';
-import { useGetUsers } from './hooks/use-get-users';
+
+import { useTable } from './hooks/use-table';
+import { useGetUsers, User } from './hooks/use-get-users';
 
 // ----------------------------------------------------------------------
 
@@ -27,44 +29,53 @@ const TABLE_HEAD = [
   { id: 'role', label: 'Rol', width: 120 },
   { id: 'department', label: 'Departamento', width: 120 },
   { id: 'position', label: 'Cargo', width: 120 },
-  { id: 'branch', label: 'Sucursal', width: 120 },
-  { id: 'status', label: 'Estado', width: 100 },
+  { id: 'sucursal', label: 'Sucursal', width: 120 },
+  { id: 'cargo', label: 'Estado', width: 100 },
   { id: 'createdAt', label: 'Creado', width: 140 },
 ];
 
 // ----------------------------------------------------------------------
 
-export function UserListTable() {
+export default function UserListTable() {
   const table = useTable();
-  const { value: confirm, onTrue: onConfirm, onFalse: onCloseConfirm } = useBoolean();
+  const confirm = useBoolean();
   const { users, loading } = useGetUsers();
+  const router = useRouter();
 
-  const [tableData, setTableData] = useState(users);
+  const [tableData, setTableData] = useState<User[]>(users);
 
-  const [filters, setFilters] = useState({
-    name: '',
-    role: [],
-    status: 'all',
+  const dataFiltered = applyFilter({
+    inputData: tableData,
+    comparator: getComparator(table.order, table.orderBy),
+    filters: table.filters,
   });
 
-  const handleFilters = useCallback(
-    (name: string, value: any) => {
-      table.onResetPage();
-      setFilters((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    },
-    [table]
+  const dataInPage = dataFiltered.slice(
+    table.page * table.rowsPerPage,
+    table.page * table.rowsPerPage + table.rowsPerPage
   );
+
+  const denseHeight = table.dense ? 52 : 72;
+
+  const canReset = !!(table.filters.name || table.filters.role || table.filters.status);
+
+  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const handleDeleteRow = useCallback(
     (id: string) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
       setTableData(deleteRow);
-      table.onUpdatePageDeleteRow(tableData.length);
+
+      table.onUpdatePageDeleteRow(dataInPage.length);
     },
-    [table, tableData]
+    [dataInPage.length, table, tableData]
+  );
+
+  const handleEditRow = useCallback(
+    (id: string) => {
+      router.push(paths.dashboard.seguridad.moduloUsuarios.edit(id));
+    },
+    [router]
   );
 
   const handleDeleteRows = useCallback(() => {
@@ -76,52 +87,26 @@ export function UserListTable() {
     });
   }, [table, tableData]);
 
-  const dataFiltered = applyFilter({
-    inputData: tableData,
-    comparator: (a: any, b: any) => {
-      const order = table.order === 'asc' ? 1 : -1;
-      if (table.orderBy === 'name') {
-        return order * a.name.localeCompare(b.name);
-      }
-      if (table.orderBy === 'email') {
-        return order * a.email.localeCompare(b.email);
-      }
-      if (table.orderBy === 'role') {
-        return order * a.role.localeCompare(b.role);
-      }
-      if (table.orderBy === 'status') {
-        return order * a.status.localeCompare(b.status);
-      }
-      if (table.orderBy === 'createdAt') {
-        return order * (a.createdAt.getTime() - b.createdAt.getTime());
-      }
-      return 0;
-    },
-    filters,
-  });
-
-  const dataInPage = dataFiltered.slice(
-    table.page * table.rowsPerPage,
-    table.page * table.rowsPerPage + table.rowsPerPage
-  );
-
-  const denseHeight = table.dense ? 52 : 72;
-
-  const canReset = !!(filters.name || filters.role.length || filters.status !== 'all');
-
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+  const roleOptions = Array.from(new Set(tableData.map((u) => u.role).filter(Boolean))).map((option) => ({ value: option, label: option }));
+  const cargoOptions = Array.from(new Set(tableData.map((u) => u.cargo).filter(Boolean))).map((option) => ({ value: option, label: option }));
+  const sucursalOptions = Array.from(new Set(tableData.map((u) => u.sucursal).filter(Boolean))).map((option) => ({ value: option, label: option }));
 
   return (
     <>
       <Container maxWidth={false}>
         <Card>
           <UserTableToolbar
-            filters={filters}
-            onFilters={handleFilters}
-            roleOptions={[
-              { value: 'Administrador', label: 'Administrador' },
-              { value: 'Usuario', label: 'Usuario' },
-            ]}
+            filters={table.filters}
+            onFilters={(name: string, value: any) => {
+              table.onResetPage();
+              table.onUpdateFilters({
+                ...table.filters,
+                [name]: value,
+              });
+            }}
+            roleOptions={roleOptions}
+            cargoOptions={cargoOptions}
+            sucursalOptions={sucursalOptions}
           />
 
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
@@ -129,7 +114,7 @@ export function UserListTable() {
               dense={table.dense}
               numSelected={table.selected.length}
               rowCount={tableData.length}
-              onSelectAllRows={(checked: boolean) =>
+              onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
                   tableData.map((row) => row.id)
@@ -137,7 +122,7 @@ export function UserListTable() {
               }
               action={
                 <Tooltip title="Eliminar">
-                  <IconButton color="primary" onClick={onConfirm}>
+                  <IconButton color="primary" onClick={confirm.onTrue}>
                     <Iconify icon="solar:trash-bin-trash-bold" />
                   </IconButton>
                 </Tooltip>
@@ -151,7 +136,7 @@ export function UserListTable() {
                 rowCount={tableData.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
-                onSelectAllRows={(checked: boolean) =>
+                onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
                     tableData.map((row) => row.id)
@@ -161,19 +146,14 @@ export function UserListTable() {
               />
 
               <TableBody>
-                {dataInPage.map((row: any) => (
+                {dataInPage.map((row) => (
                   <Box key={row.id} sx={{ mb: 2 }}>
                     <UserTableRow
-                      id={row.id}
-                      name={row.name}
-                      email={row.email}
-                      role={row.role}
-                      status={row.status}
-                      createdAt={row.createdAt}
-                      avatarUrl={row.avatarUrl}
-                      department={row.department}
-                      position={row.position}
-                      branch={row.branch}
+                      row={row}
+                      selected={table.selected.includes(row.id)}
+                      onSelectRow={() => table.onSelectRow(row.id)}
+                      onToggleActive={() => handleDeleteRow(row.id)}
+                      onEditRow={() => handleEditRow(row.id)}
                     />
                   </Box>
                 ))}
@@ -191,8 +171,8 @@ export function UserListTable() {
       </Container>
 
       <ConfirmDialog
-        open={confirm}
-        onClose={onCloseConfirm}
+        open={confirm.value}
+        onClose={confirm.onFalse}
         title="Eliminar"
         content={
           <>
@@ -205,7 +185,7 @@ export function UserListTable() {
             color="error"
             onClick={() => {
               handleDeleteRows();
-              onCloseConfirm();
+              confirm.onFalse();
             }}
           >
             Eliminar
@@ -223,15 +203,17 @@ function applyFilter({
   comparator,
   filters,
 }: {
-  inputData: any[];
+  inputData: User[];
   comparator: (a: any, b: any) => number;
   filters: {
     name: string;
     role: string[];
+    sucursal: string[];
+    cargo: string[];
     status: string;
   };
 }) {
-  const { name, role, status } = filters;
+  const { name, role, cargo, sucursal, status } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -253,11 +235,35 @@ function applyFilter({
     inputData = inputData.filter((user) => role.includes(user.role));
   }
 
-  if (status !== 'all') {
+  if (cargo.length) {
+    inputData = inputData.filter((user) => cargo.includes(user.cargo));
+  }
+
+  if (sucursal.length) {
+    inputData = inputData.filter((user) => sucursal.includes(user.sucursal));
+  }
+
+  if (status) {
     inputData = inputData.filter((user) => user.status === status);
   }
 
   return inputData;
+}
+
+function getComparator(order: 'asc' | 'desc', orderBy: string) {
+  return order === 'desc'
+    ? (a: any, b: any) => descendingComparator(a, b, orderBy)
+    : (a: any, b: any) => -descendingComparator(a, b, orderBy);
+}
+
+function descendingComparator(a: any, b: any, orderBy: string) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
 }
 
 function emptyRows(page: number, rowsPerPage: number, arrayLength: number) {

@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { getRolesFromToken } from '@guard/role-utils';
+
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z as zod } from 'zod';
@@ -16,6 +19,7 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
+import { ROLES } from '@guard/roles.constants';
 
 // ----------------------------------------------------------------------
 
@@ -69,6 +73,17 @@ export function NewUserForm() {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
   const [cargos, setCargos] = useState<Cargo[]>([]);
   const password = useBoolean();
+  const [userRoles, setUserRoles] = useState<string[]>([]); 
+
+const tienePermisoCrear = useMemo(
+  () => userRoles.includes(ROLES.GENERACION_NUEVO_USUARIO_CREATE),
+  [userRoles]
+);
+useEffect(() => {
+  const roles = getRolesFromToken();
+  setUserRoles(roles);
+}, []);
+
 
   useEffect(() => {
     const fetchSucursales = async () => {
@@ -261,7 +276,14 @@ export function NewUserForm() {
           />
         </Box>
 
-        <LoadingButton
+      
+      
+      
+      
+      
+          
+       { tienePermisoCrear && (
+          <LoadingButton
           type="submit"
           variant="contained"
           loading={isSubmitting || loading}
@@ -270,6 +292,8 @@ export function NewUserForm() {
         >
           Crear Usuario
         </LoadingButton>
+          ) 
+        }
       </Card>
     </Form>
   );

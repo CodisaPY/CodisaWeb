@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { alpha, styled } from '@mui/material/styles';
-import { Box, Stack, Button, TextField, InputAdornment, Tooltip } from '@mui/material';
+import { Box, Stack, Button, TextField, InputAdornment, Tooltip, FormControl, InputLabel, Select, MenuItem, Checkbox, OutlinedInput } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
@@ -9,6 +9,8 @@ type Props = {
   filters: {
     name: string;
     role: string[];
+    cargo   : string[];
+    sucursal: string[];
     status: string;
   };
   onFilters: (name: string, value: any) => void;
@@ -16,9 +18,17 @@ type Props = {
     value: string;
     label: string;
   }[];
+  cargoOptions: {
+    value: string;
+    label: string;
+  }[];
+  sucursalOptions: {
+    value: string;
+    label: string;
+  }[];
 };
 
-export function UserTableToolbar({ filters, onFilters, roleOptions }: Props) {
+export function UserTableToolbar({ filters, onFilters, roleOptions, cargoOptions, sucursalOptions }: Props) {
   const [openFilter, setOpenFilter] = useState(false);
 
   const handleOpenFilter = () => {
@@ -59,6 +69,63 @@ export function UserTableToolbar({ filters, onFilters, roleOptions }: Props) {
             ),
           }}
         />
+
+        {/* Select de Rol */}
+        <FormControl sx={{ minWidth: 180 }}>
+          <InputLabel>Rol</InputLabel>
+          <Select
+            multiple
+            value={filters.role}
+            onChange={(e) => onFilters('role', typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
+            input={<OutlinedInput label="Rol" />}
+            renderValue={(selected) => (selected as string[]).join(', ')}
+          >
+            {roleOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                <Checkbox checked={filters.role.includes(option.value)} />
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* Select de Cargo */}
+        <FormControl sx={{ minWidth: 180 }}>
+          <InputLabel>Cargo</InputLabel>
+          <Select
+            multiple
+            value={filters.cargo}
+            onChange={(e) => onFilters('position', typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
+            input={<OutlinedInput label="Cargo" />}
+            renderValue={(selected) => (selected as string[]).join(', ')}
+          >
+            {cargoOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                <Checkbox checked={filters.cargo.includes(option.value)} />
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* Select de Sucursal */}
+        <FormControl sx={{ minWidth: 180 }}>
+          <InputLabel>Sucursal</InputLabel>
+          <Select
+            multiple
+            value={filters.sucursal}
+            onChange={(e) => onFilters('sucursal', typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
+            input={<OutlinedInput label="Sucursal" />}
+            renderValue={(selected) => (selected as string[]).join(', ')}
+          >
+            {sucursalOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                <Checkbox checked={filters.sucursal.includes(option.value)} />
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
         <Tooltip title="Filtros">
           <Button

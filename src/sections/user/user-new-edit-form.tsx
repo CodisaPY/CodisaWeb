@@ -31,7 +31,7 @@ export const NewUserSchema = zod.object({
     .email({ message: 'Email must be a valid email address!' }),
   phoneNumber: schemaHelper.phoneNumber({ isValidPhoneNumber }),
   country: schemaHelper.objectOrNull<string | null>({
-    message: { required_error: 'Country is required!' },
+    message: { required_error: 'Country is required!' }, 
   }),
   address: zod.string().min(1, { message: 'Address is required!' }),
   company: zod.string().min(1, { message: 'Company is required!' }),

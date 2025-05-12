@@ -79,6 +79,7 @@ const PermissionDeniedPage = lazy(() => import('src/pages/dashboard/permission')
 const ParamsPage = lazy(() => import('src/pages/dashboard/params'));
 const BlankPage = lazy(() => import('src/pages/dashboard/blank'));
 
+const UserEditPageNew = lazy(() => import('src/sections/user-management/view/user-edit-view'));
 // ----------------------------------------------------------------------
 
 const layoutContent = (
@@ -298,7 +299,7 @@ export const dashboardRoutes = [
             path: 'usuarios',
             children: [
               {
-                path: 'nuevoUsuario',
+                path: 'nuevo',
                 element: (
                   <RoleGuard
                     requiredRoles={[
@@ -307,9 +308,26 @@ export const dashboardRoutes = [
                   >
                     <NewUserPage />
                   </RoleGuard>
-                ), // La página correspondiente al informe de ventas
+                ),
               },
-  
+              {
+                path: 'lista',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_USUARIOS_VIEW,
+                    ]}
+                  >
+                    <UserListPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: ':id/editar',
+                element: (
+                     <UserEditPageNew />
+                 ),
+              },
             ],
           },
 
