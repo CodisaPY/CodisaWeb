@@ -32,14 +32,13 @@ import { User } from 'src/sections/user-management/hooks/use-get-users';
 
 type Props = {
   row: User;
-  selected: boolean;
-  onSelectRow: VoidFunction;
   onEditRow: VoidFunction;
   onToggleActive: VoidFunction;
+  dense?: boolean;
 };
 
-export function UserTableRow({ row, selected, onSelectRow, onEditRow, onToggleActive }: Props) {
-  const { name, email, role, status, createdAt, avatarUrl, department, cargo, sucursal,lastName,firstName } = row;
+export function UserTableRow({ row, onEditRow, onToggleActive, dense = false }: Props) {
+  const { name, email, role, status, createdAt, avatarUrl, cargo, sucursal, lastName, firstName } = row;
 
   const router = useRouter();
   const navigate = useNavigate();
@@ -52,13 +51,35 @@ export function UserTableRow({ row, selected, onSelectRow, onEditRow, onToggleAc
   const [userRoles, setUserRoles] = useState<string[]>([]); 
 
 
-const tienePermisoHabilitar = useMemo(
-  () => userRoles.includes(ROLES.GENERACION_NUEVO_USUARIO_ENABLE),
-  [userRoles]
-);
+  const tienePermisoHabilitar = useMemo(
+    () => userRoles.includes(ROLES.LISTA_USUARIOS_ENABLE),
+    [userRoles]
+  );
+
+  const tienePermisoDeshabilitar = useMemo(
+    () => userRoles.includes(ROLES.LISTA_USUARIOS_DISABLE),
+    [userRoles]
+  );
+  
+  const tienePermisoEditar = useMemo(
+    () => userRoles.includes(ROLES.LISTA_USUARIOS_UPDATE),
+    [userRoles]
+  );
+  
+  const tienePermisoConfiguracion = useMemo(
+    () =>
+      [
+        ROLES.LISTA_USUARIOS_PERMISSION,
+        ROLES.LISTA_USUARIOS_UPDATE,
+        ROLES.LISTA_USUARIOS_ENABLE,
+        ROLES.LISTA_USUARIOS_DISABLE,
+      ].some((r) => userRoles.includes(r)),
+    [userRoles]
+  );
  
 useEffect(() => {
   const roles = getRolesFromToken();
+  console.log(roles);
   setUserRoles(roles);
 }, []);
 
@@ -76,41 +97,97 @@ useEffect(() => {
 
   return (
     <>
-      <TableRow hover selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox checked={selected} onClick={onSelectRow} />
+      <TableRow 
+        hover 
+        sx={{ 
+          '& td': dense ? { 
+            py: 0.15, 
+            px: 0.5 
+          } : { 
+            py: 0.5 
+          } 
+        }}
+      >
+        <TableCell 
+          sx={{ 
+            width: dense ? 140 : 180,
+            position: 'sticky',
+            left: 0,
+            zIndex: 2,
+            backgroundColor: 'background.paper',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: '1px',
+              backgroundColor: 'divider',
+            },
+          }}
+        >
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              lineHeight: dense ? 1 : 1.5
+            }}
+          >
+            {`${firstName} ${lastName}`}
+          </Typography>
         </TableCell>
 
-        <TableCell>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Stack spacing={0.5}>
-              <Link
-                component="button"
-                variant="subtitle2"
-                onClick={onEditRow}
-                sx={{ cursor: 'pointer' }}
-              >
-                {name}
-              </Link>
-            </Stack>
-          </Stack>
-        </TableCell>
-
-        <TableCell>
-          <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+        <TableCell sx={{ width: dense ? 140 : 180 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: 'text.disabled', 
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              lineHeight: dense ? 1 : 1.5
+            }}
+          >
             {email}
           </Typography>
         </TableCell>
 
-        <TableCell>{role}</TableCell>
+        <TableCell sx={{ width: dense ? 80 : 100 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              lineHeight: dense ? 1 : 1.5
+            }}
+          >
+            {role}
+          </Typography>
+        </TableCell>
+ 
 
-        <TableCell>{department}</TableCell>
+        <TableCell sx={{ width: dense ? 80 : 100 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              lineHeight: dense ? 1 : 1.5
+            }}
+          >
+            {cargo}
+          </Typography>
+        </TableCell>
 
-        <TableCell>{cargo}</TableCell>
+        <TableCell sx={{ width: dense ? 80 : 100 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              lineHeight: dense ? 1 : 1.5
+            }}
+          >
+            {sucursal}
+          </Typography>
+        </TableCell>
 
-        <TableCell>{sucursal}</TableCell>
-
-        <TableCell>
+        <TableCell sx={{ width: dense ? 60 : 80 }}>
           <Label
             variant="soft"
             color={
@@ -118,21 +195,43 @@ useEffect(() => {
               (status === 'inactive' && 'error') ||
               'default'
             }
+            sx={{ 
+              py: dense ? 0.1 : 0.25,
+              px: dense ? 0.4 : 0.75,
+              fontSize: dense ? '0.6rem' : '0.7rem',
+              minWidth: dense ? 0 : 'auto',
+              height: dense ? 'auto' : 'auto',
+              lineHeight: dense ? 1 : 1.5
+            }}
           >
             {status === 'active' ? 'Activo' : 'Inactivo'}
           </Label>
         </TableCell>
 
-        <TableCell>
-          <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+        <TableCell sx={{ width: dense ? 80 : 100 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: 'text.disabled', 
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              lineHeight: dense ? 1 : 1.5
+            }}
+          >
             {new Date(createdAt).toLocaleDateString()}
           </Typography>
         </TableCell>
 
-        <TableCell align="right">
-          <IconButton color={openPopover ? 'primary' : 'default'} onClick={handleOpenPopover}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+        <TableCell align="right" sx={{ width: dense ? 24 : 32 }}>
+          
+        {tienePermisoConfiguracion && (
+          <IconButton 
+            color={openPopover ? 'primary' : 'default'} 
+            onClick={handleOpenPopover} 
+            size="small"
+            sx={{ p: dense ? 0.15 : 0.5 }}
+          >
+            <Iconify icon="eva:more-vertical-fill" width={dense ? 12 : 16} />
+          </IconButton>) }
         </TableCell>
       </TableRow>
 
@@ -140,52 +239,122 @@ useEffect(() => {
         open={openPopover}
         onClose={handleClosePopover}
         arrow="right-top"
-        sx={{ width: 160 }}
+        sx={{ width: dense ? 120 : 140 }}
       >
-  <MenuItem
-  onClick={() => {
-    navigate(`/dashboard/seguridad/usuarios/${row.id}/editar`, { state: { user: row } });
-    handleClosePopover();
-  }}
->
-  <Iconify icon="solar:pen-bold" />
-  Editar
-</MenuItem>
-
-
- 
-        {
-        tienePermisoHabilitar && (
-          <MenuItem
+        
+        {tienePermisoEditar && (	
+        <MenuItem
           onClick={() => {
-            confirm.onTrue();
+            navigate(`/dashboard/seguridad/usuarios/${row.id}/editar`, { state: { user: row } });
             handleClosePopover();
           }}
-          sx={{ color: status === 'active' ? 'warning.main' : 'success.main' }}
+          sx={{ 
+            fontSize: dense ? '0.65rem' : '0.75rem', 
+            py: dense ? 0.35 : 0.75,
+            minHeight: dense ? 'auto' : 'auto'
+          }}
         >
-          <Iconify icon={status === 'active' ? 'solar:user-block-bold' : 'solar:user-check-bold'} />
-          {status === 'active' ? 'Inactivar' : 'Activar'}
+          <Iconify 
+            icon="solar:pen-bold" 
+            width={dense ? 12 : 16} 
+            sx={{ mr: dense ? 0.5 : 0.75 }} 
+          />
+          Editar datos
+          </MenuItem>
+        )}
+
+
+        <MenuItem
+          onClick={() => {
+            navigate('/dashboard/seguridad/usuarios/permisos', { 
+              state: { 
+                user: {
+                  id: row.id,
+                  name: `${firstName} ${lastName}`,
+                  email,
+                  role,
+                  status
+                }
+              } 
+            });
+            handleClosePopover();
+          }}
+          sx={{ 
+            fontSize: dense ? '0.65rem' : '0.75rem', 
+            py: dense ? 0.35 : 0.75,
+            minHeight: dense ? 'auto' : 'auto'
+          }}
+        >
+          <Iconify 
+            icon="solar:shield-keyhole-bold" 
+            width={dense ? 12 : 16} 
+            sx={{ mr: dense ? 0.5 : 0.75 }} 
+          />
+          Permisos
         </MenuItem>
-          )} 
- 
 
-        
+        {status === 'active' && tienePermisoDeshabilitar && (
+          <MenuItem
+            onClick={() => {
+              confirm.onTrue();
+              handleClosePopover();
+            }}
+            sx={{ 
+              color: 'warning.main',
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              py: dense ? 0.35 : 0.75,
+              minHeight: dense ? 'auto' : 'auto'
+            }}
+          >
+            <Iconify 
+              icon="solar:user-block-bold"
+              width={dense ? 12 : 16}
+              sx={{ mr: dense ? 0.5 : 0.75 }}
+            />
+            Inactivar
+          </MenuItem>
+        )}
 
-
-
+        {status === 'inactive' && tienePermisoHabilitar && (
+          <MenuItem
+            onClick={() => {
+              confirm.onTrue();
+              handleClosePopover();
+            }}
+            sx={{ 
+              color: 'success.main',
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              py: dense ? 0.35 : 0.75,
+              minHeight: dense ? 'auto' : 'auto'
+            }}
+          >
+            <Iconify 
+              icon="solar:user-check-bold"
+              width={dense ? 12 : 16}
+              sx={{ mr: dense ? 0.5 : 0.75 }}
+            />
+            Activar
+          </MenuItem>
+        )}
       </MenuPopover>
 
-      <ConfirmDialog
-        open={confirm.value}
-        onClose={confirm.onFalse}
-        title={status === 'active' ? 'Inactivar usuario' : 'Activar usuario'}
-        content={status === 'active' ? '¿Estás seguro que deseas inactivar este usuario?' : '¿Estás seguro que deseas activar este usuario?'}
-        action={
-          <Button variant="contained" color={status === 'active' ? 'warning' : 'success'} onClick={onToggleActive}>
-            {status === 'active' ? 'Inactivar' : 'Activar'}
-          </Button>
-        }
-      />
+      {((status === 'active' && tienePermisoDeshabilitar) || (status === 'inactive' && tienePermisoHabilitar)) && (
+        <ConfirmDialog
+          open={confirm.value}
+          onClose={confirm.onFalse}
+          title={status === 'active' ? 'Inactivar usuario' : 'Activar usuario'}
+          content={status === 'active' ? '¿Estás seguro que deseas inactivar este usuario?' : '¿Estás seguro que deseas activar este usuario?'}
+          action={
+            <Button
+              variant="contained"
+              color={status === 'active' ? 'warning' : 'success'}
+              onClick={onToggleActive}
+            >
+              {status === 'active' ? 'Inactivar' : 'Activar'}
+            </Button>
+          }
+        />
+      )}
     </>
   );
 } 

@@ -32,7 +32,7 @@ export function Section({
   method,
   layoutQuery,
   methods,
-  title = 'Manage the job',
+  title = '',
   imgUrl = `${CONFIG.assetsDir}/assets/images/about/logoBlanco.svg`,
   subtitle = 'Transformando requerimientos en sistemas inteligentes.',
   ...other
@@ -71,29 +71,13 @@ export function Section({
           style={{
             display: 'block',
             margin: '0 auto',
-            width: '120px',
+            width: '300px',
             height: 'auto',
             opacity: 0,
             animation: 'fadeIn 1s ease-in-out forwards',
           }}
         />
-
-        {subtitle && (
-          <Typography
-            sx={{
-              color: '#FFFFFF',
-              textAlign: 'center',
-              mt: 2,
-              display: 'block',
-              margin: '5 auto',
-              width: 'auto',
-              height: 'auto',
-              animation: 'fadeIn 1s ease-in-out forwards',
-            }}
-          >
-            {subtitle}
-          </Typography>
-        )}
+ 
       </div>
 
       <style>
@@ -110,7 +94,7 @@ export function Section({
         component="img"
         alt="Dashboard illustration"
         src={imgUrl}
-        sx={{ width: 1, aspectRatio: '2/2', objectFit: 'cover' }}
+        sx={{ width: 120, maxWidth: '100%', aspectRatio: '5/5', objectFit: 'cover' }}
       />
     </Box>
   );

@@ -52,10 +52,9 @@ const STATUS_OPTIONS = [
 ];
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Nombre', width: 220 },
+  { id: 'name', label: 'Nombre', width: 220, sticky: true },
   { id: 'email', label: 'Email', width: 220 },
   { id: 'role', label: 'Rol', width: 120 },
-  { id: 'department', label: 'Departamento', width: 120 },
   { id: 'position', label: 'Cargo', width: 120 },
   { id: 'branch', label: 'Sucursal', width: 120 },
   { id: 'status', label: 'Estado', width: 100 },
@@ -90,11 +89,12 @@ export function UserListView() {
 
   const [userRoles, setUserRoles] = useState<string[]>([]); 
 
-const tienePermisoCrear = useMemo(
-  () => userRoles.includes(ROLES.GENERACION_NUEVO_USUARIO_CREATE),
-  [userRoles]
-);
+  const tienePermisoCrear = useMemo(
+    () => userRoles.includes(ROLES.LISTA_USUARIOS_CREATE),
+    [userRoles]
+  );
  
+
 useEffect(() => {
   const roles = getRolesFromToken();
   setUserRoles(roles);
@@ -194,7 +194,7 @@ useEffect(() => {
         heading="Listado de Usuarios"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Usuarios', href: paths.dashboard.seguridad.moduloUsuarios.root },
+          { name: 'Usuarios', href: paths.dashboard.seguridad.moduloUsuarios.listaUsuario },
           { name: 'Lista de usuarios' },
         ]}
         action={
@@ -313,14 +313,29 @@ useEffect(() => {
                     orderBy={table.orderBy}
                     headLabel={TABLE_HEAD}
                     rowCount={dataFiltered.length}
-                    numSelected={table.selected.length}
                     onSort={table.onSort}
-                    onSelectAllRows={(checked) =>
-                      table.onSelectAllRows(
-                        checked,
-                        dataFiltered.map((row) => row.id)
-                      )
-                    }
+                    sx={{
+                      '& th': {
+                        backgroundColor: 'background.paper',
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 3,
+                      },
+                      '& th:first-of-type': {
+                        left: 0,
+                        zIndex: 4,
+                        backgroundColor: 'background.paper',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: '1px',
+                          backgroundColor: 'divider',
+                        },
+                      },
+                    }}
                   />
 
                   <TableBody>
@@ -333,10 +348,9 @@ useEffect(() => {
                         <UserTableRow
                           key={row.id}
                           row={row}
-                          selected={table.selected.includes(row.id)}
-                          onSelectRow={() => table.onSelectRow(row.id)}
                           onEditRow={() => handleEditRow(row.id)}
                           onToggleActive={() => handleToggleActive(row.id)}
+                          dense={table.dense}
                         />
                       ))}
 

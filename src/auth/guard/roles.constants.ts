@@ -52,5 +52,10 @@ export const ROLES = {
 
   
   LISTA_USUARIOS_VIEW: 'pantalla__usuarios__lista_usuario__view',
- };
+  LISTA_USUARIOS_PERMISSION: 'pantalla__usuarios__lista_usuario__permission',
+  LISTA_USUARIOS_ENABLE:  'pantalla__usuarios__lista_usuario__enable',
+  LISTA_USUARIOS_DISABLE: 'pantalla__usuarios__lista_usuario__disable',
+  LISTA_USUARIOS_CREATE:  'pantalla__usuarios__lista_usuario__create',
+  LISTA_USUARIOS_UPDATE:  'pantalla__usuarios__lista_usuario__update',
+  };
   

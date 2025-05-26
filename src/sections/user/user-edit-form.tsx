@@ -10,6 +10,8 @@ import Grid from '@mui/material/Unstable_Grid2';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 const EditUserSchema = zod.object({
   email: zod.string().email({ message: 'Email inválido' }),
@@ -33,6 +35,7 @@ type Props = {
 export default function UserEditForm({ initialValues, userId, onSuccess }: Props) {
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
   const [cargos, setCargos] = useState<Cargo[]>([]);
+  const router = useRouter();
 
   const methods = useForm<EditUserSchemaType>({
     mode: 'onSubmit',
@@ -97,11 +100,16 @@ export default function UserEditForm({ initialValues, userId, onSuccess }: Props
     try {
       await axios.put(`http://localhost:4000/api/keycloak/user/${userId}`, {
         ...data,
+        firstName: data.firstName,
+        lastName: data.lastName,
         sucursal: data.sucursal.name,
         cargo: data.cargo.name,
       });
+      router.push(paths.dashboard.seguridad.moduloUsuarios.listaUsuario);
+
       toast.success('Usuario actualizado correctamente');
       if (onSuccess) onSuccess();
+
     } catch (error) {
       toast.error('Error al actualizar el usuario');
     }

@@ -181,6 +181,7 @@ export const paths = {
         root: '/dashboard/seguridad/usuarios',
         nuevoUsuario: '/dashboard/seguridad/usuarios/nuevo',
         listaUsuario: '/dashboard/seguridad/usuarios/lista',
+        permisos: '/dashboard/seguridad/usuarios/permisos',
         edit: (id: string) => `/dashboard/seguridad/usuarios/${id}/editar`,
       },
     },

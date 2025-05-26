@@ -150,10 +150,9 @@ export default function UserListTable() {
                   <Box key={row.id} sx={{ mb: 2 }}>
                     <UserTableRow
                       row={row}
-                      selected={table.selected.includes(row.id)}
-                      onSelectRow={() => table.onSelectRow(row.id)}
                       onToggleActive={() => handleDeleteRow(row.id)}
                       onEditRow={() => handleEditRow(row.id)}
+                      dense={table.dense}
                     />
                   </Box>
                 ))}

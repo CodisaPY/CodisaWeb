@@ -75,10 +75,18 @@ export function NewUserForm() {
   const password = useBoolean();
   const [userRoles, setUserRoles] = useState<string[]>([]); 
 
-const tienePermisoCrear = useMemo(
-  () => userRoles.includes(ROLES.GENERACION_NUEVO_USUARIO_CREATE),
-  [userRoles]
-);
+
+  const tienePermisoCrear = useMemo(
+    () =>
+      [
+        ROLES.GENERACION_NUEVO_USUARIO_CREATE,
+        ROLES.LISTA_USUARIOS_CREATE 
+      ].some((r) => userRoles.includes(r)),
+    [userRoles]
+  );
+
+
+ 
 useEffect(() => {
   const roles = getRolesFromToken();
   setUserRoles(roles);

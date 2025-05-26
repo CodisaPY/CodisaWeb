@@ -55,7 +55,7 @@ export function AuthSplitLayout({ sx, section, children, header }: AuthSplitLayo
             leftArea: (
               <>
                 {/* -- Logo -- */}
-                <Logo />
+               
               </>
             ),
             rightArea: (

@@ -98,11 +98,12 @@ export const navData = [
       },
 
       {
-        title: 'Módulo de seguridad',
+        title: 'Módulo de configuración',
         path: paths.dashboard.seguridad.root,
         icon: ICONS.settings,
         roles: [ROLES.MODULO_SEGURIDAD],
         children: [
+         
           {
             title: 'Parametrizaciones',
             path: paths.dashboard.seguridad.moduloNotificaciones.root,
@@ -141,9 +142,14 @@ export const navData = [
                 title: 'Lista de usuarios',
                 path: paths.dashboard.seguridad.moduloUsuarios.listaUsuario,
                 roles: [
-                  ROLES.LISTA_USUARIOS_VIEW,
+                    ROLES.LISTA_USUARIOS_VIEW,
+                    ROLES.LISTA_USUARIOS_CREATE,
+                    ROLES.LISTA_USUARIOS_UPDATE,
+                    ROLES.LISTA_USUARIOS_ENABLE,
+                    ROLES.LISTA_USUARIOS_DISABLE,
+                    ROLES.LISTA_USUARIOS_PERMISSION,
                 ],
-              }
+              } 
             ],
           },
         ],

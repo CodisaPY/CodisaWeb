@@ -12,6 +12,7 @@ import { RoleGuard } from 'src/auth/guard/role-guard';
 import { ROLES } from '@guard/roles.constants';
 import { AccountChangePassword } from 'src/sections/account/account-change-password';
 import {} from 'src/pages/auth/auth0/update-password';
+import { UserEditView } from 'src/sections/user/view';
 
 // ----------------------------------------------------------------------
 
@@ -80,6 +81,9 @@ const ParamsPage = lazy(() => import('src/pages/dashboard/params'));
 const BlankPage = lazy(() => import('src/pages/dashboard/blank'));
 
 const UserEditPageNew = lazy(() => import('src/sections/user-management/view/user-edit-view'));
+
+const PermisosSistemasPage = lazy(() => import('src/pages/dashboard/permisosSistemas'));
+
 // ----------------------------------------------------------------------
 
 const layoutContent = (
@@ -304,6 +308,7 @@ export const dashboardRoutes = [
                   <RoleGuard
                     requiredRoles={[
                       ROLES.GENERACION_NUEVO_USUARIO_VIEW,
+                      ROLES.LISTA_USUARIOS_CREATE,
                     ]}
                   >
                     <NewUserPage />
@@ -316,6 +321,11 @@ export const dashboardRoutes = [
                   <RoleGuard
                     requiredRoles={[
                       ROLES.LISTA_USUARIOS_VIEW,
+                      ROLES.LISTA_USUARIOS_CREATE,
+                      ROLES.LISTA_USUARIOS_UPDATE,
+                      ROLES.LISTA_USUARIOS_ENABLE,
+                      ROLES.LISTA_USUARIOS_DISABLE,
+                      ROLES.LISTA_USUARIOS_PERMISSION,
                     ]}
                   >
                     <UserListPage />
@@ -325,13 +335,19 @@ export const dashboardRoutes = [
               {
                 path: ':id/editar',
                 element: (
-                     <UserEditPageNew />
+                     <UserEditView />
                  ),
+              },
+              {
+                path: 'permisos',
+                element: (
+                  <RoleGuard requiredRoles={[ROLES.LISTA_USUARIOS_PERMISSION]}>
+                    <PermisosSistemasPage />
+                  </RoleGuard>
+                ),
               },
             ],
           },
-
-
 
         ],
       },
