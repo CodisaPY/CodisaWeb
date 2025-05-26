@@ -184,6 +184,13 @@ export const paths = {
         permisos: '/dashboard/seguridad/usuarios/permisos',
         edit: (id: string) => `/dashboard/seguridad/usuarios/${id}/editar`,
       },
+      moduloRoles: {
+        root: '/dashboard/seguridad/roles',
+        nuevoRol: '/dashboard/seguridad/roles/nuevo',
+        listaRol: '/dashboard/seguridad/roles/lista',
+        permisos: '/dashboard/seguridad/roles/permisos',
+
+      },
     },
     post: {
       root: `${ROOTS.DASHBOARD}/post`,

@@ -151,6 +151,31 @@ export const navData = [
                 ],
               } 
             ],
+          },   
+          {
+            title: 'Roles',
+            path: paths.dashboard.seguridad.moduloRoles.root,
+            icon: ICONS.lock,
+            roles: [ROLES.MODULO_ROLES],
+            children: [
+              {
+                title: 'Nuevo rol',
+                path: paths.dashboard.seguridad.moduloRoles.nuevoRol,
+                roles: [
+                  ROLES.GENERACION_NUEVO_ROL_VIEW,
+                  ROLES.GENERACION_NUEVO_ROL_CREATE,
+                ],
+              },
+              {
+                title: 'Lista de roles',
+                path: paths.dashboard.seguridad.moduloRoles.listaRol,
+                roles: [
+                    ROLES.LISTA_ROLES_VIEW,
+                  
+                ],
+              } 
+ 
+            ],
           },
         ],
       },

@@ -26,7 +26,7 @@ import { useGetUsers, User } from './hooks/use-get-users';
 const TABLE_HEAD = [
   { id: 'name', label: 'Nombre', width: 220 },
   { id: 'email', label: 'Email', width: 220 },
-  { id: 'role', label: 'Rol', width: 120 },
+  { id: 'role', label: 'Rol sistema', width: 120 },
   { id: 'department', label: 'Departamento', width: 120 },
   { id: 'position', label: 'Cargo', width: 120 },
   { id: 'sucursal', label: 'Sucursal', width: 120 },

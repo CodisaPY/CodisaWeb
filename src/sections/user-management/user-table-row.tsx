@@ -273,7 +273,8 @@ useEffect(() => {
                   name: `${firstName} ${lastName}`,
                   email,
                   role,
-                  status
+                  status,
+                  groupRole: row.groupRole 
                 }
               } 
             });

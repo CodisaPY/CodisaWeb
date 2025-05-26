@@ -1,10 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { getRolesFromToken } from '@guard/role-utils';
-import axios from 'axios';
 
 import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
@@ -21,7 +18,6 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 import { useTable } from 'src/hooks/use-table';
 
-import { varAlpha } from 'src/theme/styles';
 import { ROLES } from '@guard/roles.constants';
 
 import { Label } from 'src/components/label';
@@ -38,72 +34,53 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
-import { UserTableFiltersResult } from 'src/sections/user-management/user-table-filters-result';
-import { useGetUsers, User } from '../hooks/use-get-users';
-import { UserTableRow } from '../user-table-row';
-import { UserTableToolbar } from '../user-table-toolbar';
+import { useGetRoles, Role } from '../hooks/use-get-roles';
+import { RoleTableRow } from '../role-table-row';
+import { RoleTableToolbar } from '../role-table-toolbar';
+import { RoleTableFiltersResult } from '../role-table-filters-result';
 
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'Todos' },
-  { value: 'active', label: 'Activo' },
-  { value: 'inactive', label: 'Inactivo' },
-];
-
 const TABLE_HEAD = [
-  { id: 'name', label: 'Nombre', width: 220, sticky: true },
-  { id: 'email', label: 'Email', width: 220 },
-  { id: 'role', label: 'Rol sistema', width: 120 },
-  { id: 'position', label: 'Cargo', width: 120 },
-  { id: 'branch', label: 'Sucursal', width: 120 },
-  { id: 'status', label: 'Estado', width: 100 },
-  { id: 'createdAt', label: 'Creado', width: 140 },
+  { id: 'name', label: 'ID del Rol', width: 220, sticky: true },
+  { id: 'description', label: 'Descripción', width: 220 },
+  { id: 'composite', label: 'Compuesto', width: 120 },
+  { id: 'clientRole', label: 'Rol de Cliente', width: 120 },
   { id: '', width: 88 },
 ];
 
 // ----------------------------------------------------------------------
 
-export function UserListView() {
+export function RoleListView() {
   const table = useTable();
   const router = useRouter();
   const confirm = useBoolean();
-  const { users, loading } = useGetUsers();
+  const { roles, loading } = useGetRoles();
 
-  const [tableData, setTableData] = useState<User[]>([]);
+  const [tableData, setTableData] = useState<Role[]>([]);
 
   useEffect(() => {
-    if (users) {
-      console.log('Actualizando tableData con usuarios:', users);
-      setTableData(users);
+    if (roles) {
+      setTableData(roles);
     }
-  }, [users]);
+  }, [roles]);
 
   const filters = useSetState({
     name: '',
-    role: [],
-    cargo: [],
-    sucursal: [],
-    status: 'all',
+    composite: 'all',
   });
 
-  const [userRoles, setUserRoles] = useState<string[]>([]); 
+  const [userRoles, setUserRoles] = useState<string[]>([]);
 
   const tienePermisoCrear = useMemo(
-    () => userRoles.includes(ROLES.LISTA_USUARIOS_CREATE),
+    () => userRoles.includes(ROLES.GENERACION_NUEVO_ROL_CREATE),
     [userRoles]
   );
- 
 
-useEffect(() => {
-  const roles = getRolesFromToken();
-  setUserRoles(roles);
-}, []);
-
-
-  const roleOptions = Array.from(new Set(tableData.map((u) => u.role).filter(Boolean))).map((option) => ({ value: option, label: option }));
-  const cargoOptions = Array.from(new Set(tableData.map((u) => u.cargo).filter(Boolean))).map((option) => ({ value: option, label: option }));
-  const sucursalOptions = Array.from(new Set(tableData.map((u) => u.sucursal).filter(Boolean))).map((option) => ({ value: option, label: option }));
+  useEffect(() => {
+    const userRolesFromToken = getRolesFromToken();
+    setUserRoles(userRolesFromToken);
+  }, []);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -112,17 +89,8 @@ useEffect(() => {
       if (table.orderBy === 'name') {
         return order * a.name.localeCompare(b.name);
       }
-      if (table.orderBy === 'email') {
-        return order * a.email.localeCompare(b.email);
-      }
-      if (table.orderBy === 'role') {
-        return order * a.role.localeCompare(b.role);
-      }
-      if (table.orderBy === 'status') {
-        return order * a.status.localeCompare(b.status);
-      }
-      if (table.orderBy === 'createdAt') {
-        return order * (a.createdAt.getTime() - b.createdAt.getTime());
+      if (table.orderBy === 'description') {
+        return order * a.description.localeCompare(b.description);
       }
       return 0;
     },
@@ -133,10 +101,7 @@ useEffect(() => {
 
   const canReset = !!(
     filters.state.name ||
-    filters.state.role.length ||
-    filters.state.cargo.length ||
-    filters.state.sucursal.length ||
-    filters.state.status !== 'all'
+    filters.state.composite !== 'all'
   );
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
@@ -144,7 +109,7 @@ useEffect(() => {
   const handleDeleteRow = useCallback(
     (id: string) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
-      toast.success('¡Usuario eliminado con éxito!');
+      toast.success('¡Rol eliminado con éxito!');
       setTableData(deleteRow);
     },
     [tableData]
@@ -152,64 +117,39 @@ useEffect(() => {
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-    toast.success('¡Usuarios eliminados con éxito!');
+    toast.success('¡Roles eliminados con éxito!');
     setTableData(deleteRows);
     confirm.onFalse();
   }, [table.selected, tableData, confirm]);
 
   const handleEditRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.seguridad.moduloUsuarios.edit(id));
+      router.push(paths.dashboard.seguridad.moduloRoles.listaRol);
     },
     [router]
   );
 
-  const handleFilterStatus = useCallback(
-    (event: React.SyntheticEvent, newValue: string) => {
-      table.onResetPage();
-      filters.setState({ status: newValue });
-    },
-    [filters, table]
-  );
-
-  const handleToggleActive = async (id: string) => {
-    try {
-      await axios.patch(`http://localhost:4000/api/keycloak/user/${id}/toggle-status`);
-      setTableData((prev) =>
-        prev.map((user) =>
-          user.id === id
-            ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-            : user
-        )
-      );
-      toast.success('Estado actualizado correctamente');
-    } catch (error) {
-      toast.error('Error al actualizar el estado');
-    }
-  };
-
   return (
     <Container maxWidth="lg">
       <CustomBreadcrumbs
-        heading="Listado de Usuarios"
+        heading="Listado de Roles"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Usuarios', href: paths.dashboard.seguridad.moduloUsuarios.listaUsuario },
-          { name: 'Lista de usuarios' },
+          { name: 'Roles', href: paths.dashboard.seguridad.moduloRoles.listaRol },
+          { name: 'Lista de roles' },
         ]}
         action={
-          
-           tienePermisoCrear && (
+          tienePermisoCrear && (
             <Button
-            component={RouterLink}
-            href={paths.dashboard.seguridad.moduloUsuarios.nuevoUsuario}
-            variant="contained"
-            startIcon={<Iconify icon="mingcute:add-line" />}
-          >
-            Nuevo Usuario
-          </Button>
-          ) 
-       }
+              component={RouterLink}
+              href={paths.dashboard.seguridad.moduloRoles.nuevoRol}
+              variant="contained"
+              startIcon={<Iconify icon="mingcute:add-line" />}
+            >
+              Nuevo Rol
+            </Button>
+          )
+        }
         sx={{
           mb: { xs: 3, md: 5 },
         }}
@@ -218,67 +158,25 @@ useEffect(() => {
       <Card>
         {loading ? (
           <Box sx={{ p: 3, textAlign: 'center' }}>
-            Cargando usuarios...
+            Cargando roles...
           </Box>
         ) : (
           <>
-            <Tabs
-              value={filters.state.status}
-              onChange={handleFilterStatus}
-              sx={{
-                px: 2.5,
-                boxShadow: (theme) =>
-                  `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
-              }}
-            >
-              {STATUS_OPTIONS.map((tab) => (
-                <Tab
-                  key={tab.value}
-                  iconPosition="end"
-                  value={tab.value}
-                  label={tab.label}
-                  icon={
-                    <Label
-                      variant={
-                        ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                        'soft'
-                      }
-                      color={
-                        (tab.value === 'active' && 'success') ||
-                        (tab.value === 'inactive' && 'error') ||
-                        'default'
-                      }
-                    >
-                      {tab.value === 'all'
-                        ? tableData.length
-                        : tableData.filter((user) => user.status === tab.value).length}
-                    </Label>
-                  }
-                />
-              ))}
-            </Tabs>
-
-            <UserTableToolbar
+            <RoleTableToolbar
               filters={filters.state}
               onFilters={(name, value) => {
                 table.onResetPage();
                 filters.setState({ [name]: value });
               }}
-              roleOptions={roleOptions}
-              cargoOptions={cargoOptions}
-              sucursalOptions={sucursalOptions}
             />
 
             {canReset && (
-              <UserTableFiltersResult
+              <RoleTableFiltersResult
                 filters={filters.state}
                 onResetFilters={() => {
                   filters.setState({
                     name: '',
-                    role: [],
-                    cargo: [],
-                    sucursal: [],
-                    status: 'all',
+                    composite: 'all',
                   });
                 }}
                 results={dataFiltered.length}
@@ -345,11 +243,10 @@ useEffect(() => {
                         table.page * table.rowsPerPage + table.rowsPerPage
                       )
                       .map((row) => (
-                        <UserTableRow
+                        <RoleTableRow
                           key={row.id}
                           row={row}
                           onEditRow={() => handleEditRow(row.id)}
-                          onToggleActive={() => handleToggleActive(row.id)}
                           dense={table.dense}
                         />
                       ))}
@@ -384,7 +281,7 @@ useEffect(() => {
         title="Eliminar"
         content={
           <>
-            ¿Estás seguro que deseas eliminar <strong> {table.selected.length} </strong> usuarios?
+            ¿Estás seguro que deseas eliminar <strong> {table.selected.length} </strong> roles?
           </>
         }
         action={
@@ -408,17 +305,14 @@ function applyFilter({
   comparator,
   filters,
 }: {
-  inputData: any[];
+  inputData: Role[];
   comparator: (a: any, b: any) => number;
   filters: {
     name: string;
-    role: string[];
-    cargo: string[];
-    sucursal: string[];
-    status: string;
+    composite: string;
   };
 }) {
-  const { name, role, cargo, sucursal, status } = filters;
+  const { name, composite } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -432,24 +326,12 @@ function applyFilter({
 
   if (name) {
     inputData = inputData.filter(
-      (user) => user.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (role) => role.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
-  if (role.length) {
-    inputData = inputData.filter((user) => role.includes(user.role));
-  }
-
-  if (cargo.length) {
-    inputData = inputData.filter((user) => cargo.includes(user.cargo));
-  }
-
-  if (sucursal.length) {
-    inputData = inputData.filter((user) => sucursal.includes(user.sucursal));
-  }
-
-  if (status !== 'all') {
-    inputData = inputData.filter((user) => user.status === status);
+  if (composite !== 'all') {
+    inputData = inputData.filter((role) => role.composite === (composite === 'true'));
   }
 
   return inputData;

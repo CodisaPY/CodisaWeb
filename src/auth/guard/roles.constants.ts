@@ -17,7 +17,7 @@ export const ROLES = {
   MODULO_SOLICITUD_TIC: 'modulo_solicitudes_tic',
   MODULO_SOLICITUD_COMERCIAL: 'modulo_solicitudes_comercial',
   MODULO_USUARIOS: 'modulo_usuarios',
-
+  MODULO_ROLES: 'modulo_roles',
   /*
   MODULO DE TIC
   */
@@ -57,5 +57,19 @@ export const ROLES = {
   LISTA_USUARIOS_DISABLE: 'pantalla__usuarios__lista_usuario__disable',
   LISTA_USUARIOS_CREATE:  'pantalla__usuarios__lista_usuario__create',
   LISTA_USUARIOS_UPDATE:  'pantalla__usuarios__lista_usuario__update',
+
+
+    /*
+  MODULO ROLES
+  */
+
+  GENERACION_NUEVO_ROL_VIEW:      'pantalla__roles__crear_nuevo_rol__view',
+  GENERACION_NUEVO_ROL_CREATE:    'pantalla__roles__crear_nuevo_rol__create',
+  LISTA_ROLES_VIEW: 'pantalla__roles__lista_roles__view',
+  LISTA_ROLES_UPDATE: 'pantalla__roles__lista_roles__update',
+  LISTA_ROLES_DELETE: 'pantalla__roles__lista_roles__delete',
+  LISTA_ROLES_PERMISSION: 'pantalla__roles__lista_roles__permission',
+  LISTA_ROLES_ENABLE: 'pantalla__roles__lista_roles__enable',
+  LISTA_ROLES_DISABLE: 'pantalla__roles__lista_roles__disable',
   };
   

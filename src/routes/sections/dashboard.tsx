@@ -13,6 +13,9 @@ import { ROLES } from '@guard/roles.constants';
 import { AccountChangePassword } from 'src/sections/account/account-change-password';
 import {} from 'src/pages/auth/auth0/update-password';
 import { UserEditView } from 'src/sections/user/view';
+import { NewRoleView } from 'src/sections/roles/view/new-role-view';
+import { RoleListView } from 'src/sections/roles/view/role-list-view';
+import { RolePermissionsView } from 'src/sections/roles/view/role-permissions-view';
 
 // ----------------------------------------------------------------------
 
@@ -84,6 +87,7 @@ const UserEditPageNew = lazy(() => import('src/sections/user-management/view/use
 
 const PermisosSistemasPage = lazy(() => import('src/pages/dashboard/permisosSistemas'));
 
+ 
 // ----------------------------------------------------------------------
 
 const layoutContent = (
@@ -347,6 +351,60 @@ export const dashboardRoutes = [
                 ),
               },
             ],
+          },
+
+          {
+            path: 'roles',
+            element: (
+              <RoleGuard
+                requiredRoles={[
+                  ROLES.LISTA_ROLES_VIEW,
+                  ROLES.GENERACION_NUEVO_ROL_VIEW,
+                  ROLES.LISTA_ROLES_PERMISSION,
+                ]}
+              >
+                <Outlet />
+              </RoleGuard>
+            ),
+            children: [
+              {
+                path: 'nuevo',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.GENERACION_NUEVO_ROL_VIEW,
+                      ROLES.GENERACION_NUEVO_ROL_CREATE,
+                    ]}
+                  >
+                    <NewRoleView />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'lista',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_ROLES_VIEW,
+                    ]}
+                  >
+                    <RoleListView />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'permisos',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_ROLES_PERMISSION,
+                    ]}
+                  >
+                    <RolePermissionsView />
+                  </RoleGuard>
+                ),
+              }
+            ]
           },
 
         ],

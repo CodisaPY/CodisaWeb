@@ -17,6 +17,7 @@ export type User = {
   department: string;
   cargo: string;
   sucursal: string;
+  groupRole: string;
 };
 
 export function useGetUsers() {
@@ -47,13 +48,14 @@ export function useGetUsers() {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            role: user.attributes?.cargo?.[0] || 'Sin cargo',
             status: user.enabled ? 'active' : 'inactive',
             createdAt: new Date(user.createdTimestamp),
             avatarUrl: null,
             departamento: user.attributes?.departamento?.[0] || 'Sin departamento',
             cargo: user.attributes?.cargo?.[0] || 'Sin cargo',
             sucursal: user.attributes?.sucursal?.[0] || 'Sin sucursal',
+            groupRole: user.groupRole || 'N/A',
+            role: user.groupRoleDescription || 'N/A'
           };
 
           console.log('Usuario formateado:', formattedUser);
