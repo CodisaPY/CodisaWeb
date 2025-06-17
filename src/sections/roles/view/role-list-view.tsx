@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { ROLES } from '@guard/roles.constants';
 import { getRolesFromToken } from '@guard/role-utils';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -7,20 +8,17 @@ import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import { useTable } from 'src/hooks/use-table';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
-import { useTable } from 'src/hooks/use-table';
 
-import { ROLES } from '@guard/roles.constants';
-
-import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
@@ -34,10 +32,12 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
-import { useGetRoles, Role } from '../hooks/use-get-roles';
 import { RoleTableRow } from '../role-table-row';
+import { useGetRoles } from '../hooks/use-get-roles';
 import { RoleTableToolbar } from '../role-table-toolbar';
 import { RoleTableFiltersResult } from '../role-table-filters-result';
+
+import type { Role } from '../hooks/use-get-roles';
 
 // ----------------------------------------------------------------------
 
@@ -45,7 +45,6 @@ const TABLE_HEAD = [
   { id: 'name', label: 'ID del Rol', width: 220, sticky: true },
   { id: 'description', label: 'Descripción', width: 220 },
   { id: 'composite', label: 'Compuesto', width: 120 },
-  { id: 'clientRole', label: 'Rol de Cliente', width: 120 },
   { id: '', width: 88 },
 ];
 
@@ -55,7 +54,7 @@ export function RoleListView() {
   const table = useTable();
   const router = useRouter();
   const confirm = useBoolean();
-  const { roles, loading } = useGetRoles();
+  const { roles, loading, refetch } = useGetRoles();
 
   const [tableData, setTableData] = useState<Role[]>([]);
 
@@ -107,12 +106,12 @@ export function RoleListView() {
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const handleDeleteRow = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
-      toast.success('¡Rol eliminado con éxito!');
       setTableData(deleteRow);
+      refetch();
     },
-    [tableData]
+    [tableData, refetch]
   );
 
   const handleDeleteRows = useCallback(() => {
@@ -247,6 +246,7 @@ export function RoleListView() {
                           key={row.id}
                           row={row}
                           onEditRow={() => handleEditRow(row.id)}
+                          onDeleteRow={() => handleDeleteRow(row.id)}
                           dense={table.dense}
                         />
                       ))}

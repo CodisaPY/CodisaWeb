@@ -1,26 +1,35 @@
-import { useEffect, useState } from 'react';
+import type {
+  SelectChangeEvent} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
+import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
+
 import axios from 'axios';
+import { useState, useEffect } from 'react';
+
 import {
   Box,
   List,
-  ListItemButton,
-  ListItemText,
-  Typography,
-  Divider,
-  Collapse,
   Chip,
   Stack,
-  Checkbox,
-  Tooltip,
-  Snackbar,
   Alert,
   Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  SelectChangeEvent,
   Button,
+  Tooltip,
+  Checkbox,
+  Snackbar,
+  MenuItem,
+  Typography,
+  InputLabel,
+  FormControl,
+  ListItemText,
+  ListItemButton,
+  Collapse,
 } from '@mui/material';
+
+import { CONFIG } from 'src/config-global';
+import { varAlpha, stylesMode } from 'src/theme/styles';
+import { Iconify } from 'src/components/iconify';
 
 type PermisoNode = {
   name: string;
@@ -41,7 +50,57 @@ type SelectedActions = {
   };
 };
 
-const ACCIONES_ORDEN = ['view', 'create', 'update', 'enable', 'disable', 'permission'] as const;
+const ACCIONES_ORDEN = ['view', 'create', 'update', 'delete', 'enable', 'disable', 'permission','password'] as const;
+
+const StyledTreeItem = styled(TreeItem)(({ theme }) => ({
+  color: theme.vars.palette.grey[800],
+  [stylesMode.dark]: { color: theme.vars.palette.grey[200] },
+  [`& .${treeItemClasses.content}`]: {
+    borderRadius: theme.spacing(0.5),
+    padding: theme.spacing(0.5, 1),
+    margin: theme.spacing(0.2, 0),
+    [`& .${treeItemClasses.label}`]: { 
+      fontSize: '0.875rem',
+      fontWeight: (props: any) => props.isPantalla ? 400 : 600,
+    },
+  },
+  [`& .${treeItemClasses.iconContainer}`]: {
+    borderRadius: '50%',
+    backgroundColor: varAlpha(theme.vars.palette.primary.mainChannel, 0.25),
+    [stylesMode.dark]: {
+      color: theme.vars.palette.primary.contrastText,
+      backgroundColor: theme.vars.palette.primary.dark,
+    },
+  },
+  [`& .${treeItemClasses.groupTransition}`]: {
+    marginLeft: 15,
+    paddingLeft: 18,
+    borderLeft: `1px dashed ${varAlpha(theme.vars.palette.text.primaryChannel, 0.4)}`,
+  },
+}));
+
+const getAccionIcon = (accion: string) => {
+  switch (accion) {
+    case 'view':
+      return 'eva:eye-fill';
+    case 'create':
+      return 'eva:plus-fill';
+    case 'update':
+      return 'eva:edit-fill';
+    case 'delete':
+      return 'eva:trash-2-fill';
+    case 'enable':
+      return 'eva:checkmark-circle-fill';
+    case 'disable':
+      return 'eva:close-circle-fill';
+    case 'permission':
+      return 'eva:lock-fill';
+    case 'password':
+      return 'eva:keypad-fill';
+    default:
+      return 'eva:alert-circle-fill';
+  }
+};
 
 const renderAcciones = (
   pantallaId: string,
@@ -60,15 +119,113 @@ const renderAcciones = (
         return 'success';
       case 'update':
         return 'warning';
+      case 'delete':
+        return 'error';
       case 'enable':
         return 'info';
       case 'disable':
         return 'error';
       case 'permission':
         return 'secondary';
+      case 'password':
+        return 'info';
       default:
         return 'default';
     }
+  };
+
+  const getAccionStyles = (accion: string, isSelected: boolean, color: string) => {
+    const baseStyles = {
+      minWidth: '100px',
+      '& .MuiChip-deleteIcon': {
+        ml: 0.5,
+        mr: -0.5,
+        '&:hover': {
+          color: 'inherit'
+        }
+      },
+      '&.MuiChip-root': {
+        bgcolor: isSelected 
+          ? `${color}.lighter`
+          : 'transparent',
+        border: isSelected 
+          ? `1px solid ${color}.main`
+          : '1px solid',
+        borderColor: isSelected 
+          ? `${color}.main`
+          : 'divider',
+        color: isSelected 
+          ? `${color}.main`
+          : 'text.secondary',
+        '&:hover': {
+          bgcolor: isSelected 
+            ? `${color}.light`
+            : 'action.hover'
+        }
+      }
+    };
+
+    // Estilos especiales para acciones específicas
+    if (isSelected) {
+      switch (accion) {
+        case 'delete':
+          return {
+            ...baseStyles,
+            '&.MuiChip-root': {
+              ...baseStyles['&.MuiChip-root'],
+              bgcolor: 'error.dark',
+              borderColor: 'error.main',
+              color: 'error.contrastText',
+              '&:hover': {
+                bgcolor: 'error.main',
+              }
+            }
+          };
+        case 'password':
+          return {
+            ...baseStyles,
+            '&.MuiChip-root': {
+              ...baseStyles['&.MuiChip-root'],
+              bgcolor: 'info.dark',
+              borderColor: 'info.main',
+              color: 'info.contrastText',
+              '&:hover': {
+                bgcolor: 'info.main',
+              }
+            }
+          };
+        case 'enable':
+          return {
+            ...baseStyles,
+            '&.MuiChip-root': {
+              ...baseStyles['&.MuiChip-root'],
+              bgcolor: 'success.dark',
+              borderColor: 'success.main',
+              color: 'success.contrastText',
+              '&:hover': {
+                bgcolor: 'success.main',
+              }
+            }
+          };
+        case 'disable':
+          return {
+            ...baseStyles,
+            '&.MuiChip-root': {
+              ...baseStyles['&.MuiChip-root'],
+              bgcolor: 'error.dark',
+              borderColor: 'error.main',
+              color: 'error.contrastText',
+              '&:hover': {
+                bgcolor: 'error.main',
+              }
+            }
+          };
+        default:
+          return baseStyles;
+      }
+    }
+
+    return baseStyles;
   };
 
   const accionesOrdenadas = [...acciones].sort((a, b) => {
@@ -89,35 +246,7 @@ const renderAcciones = (
               size="small"
               color={color}
               variant="soft"
-              sx={{ 
-                minWidth: '100px',
-                '& .MuiChip-deleteIcon': {
-                  ml: 0.5,
-                  mr: -0.5,
-                  '&:hover': {
-                    color: 'inherit'
-                  }
-                },
-                '&.MuiChip-root': {
-                  bgcolor: isSelected 
-                    ? `${color}.lighter`
-                    : 'transparent',
-                  border: isSelected 
-                    ? `1px solid ${color}.main`
-                    : '1px solid',
-                  borderColor: isSelected 
-                    ? `${color}.main`
-                    : 'divider',
-                  color: isSelected 
-                    ? `${color}.main`
-                    : 'text.secondary',
-                  '&:hover': {
-                    bgcolor: isSelected 
-                      ? `${color}.light`
-                      : 'action.hover'
-                  }
-                }
-              }}
+              icon={<Iconify width={16} icon={getAccionIcon(accion)} />}
               deleteIcon={
                 <Checkbox
                   size="small"
@@ -133,6 +262,7 @@ const renderAcciones = (
                   }}
                 />
               }
+              sx={getAccionStyles(accion, isSelected, color)}
             />
           </Tooltip>
         );
@@ -173,6 +303,18 @@ type GroupRolesResponse = {
   data: GroupRole[];
 };
 
+const ExpandIcon = () => (
+  <Typography component="span" sx={{ fontSize: 20, lineHeight: 1, color: 'text.secondary' }}>
+    ▸
+  </Typography>
+);
+
+const CollapseIcon = () => (
+  <Typography component="span" sx={{ fontSize: 20, lineHeight: 1, color: 'text.secondary' }}>
+    ▾
+  </Typography>
+);
+
 export function ArbolPermisos({ userData }: Props) {
   const [treeData, setTreeData] = useState<PermisoNode | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -198,7 +340,7 @@ export function ArbolPermisos({ userData }: Props) {
   useEffect(() => {
     async function fetchGroupRoles() {
       try {
-        const response = await axios.get<GroupRolesResponse>('http://localhost:4000/api/keycloak/groups/roles');
+        const response = await axios.get<GroupRolesResponse>(`${CONFIG.serverUrl}/api/keycloak/groups/roles`);
         if (response.data.success) {
           setGroupRoles(response.data.data);
           // Si el usuario tiene un groupRole, seleccionarlo
@@ -229,13 +371,13 @@ export function ArbolPermisos({ userData }: Props) {
     async function fetchData() {
       try {
         // 1. Traer árbol de permisos
-        const treeRes = await axios.get('http://localhost:4000/api/keycloak/pantallas/acciones');
+        const treeRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/pantallas/acciones`);
         setTreeData(treeRes.data);
 
         // 2. Traer roles del usuario
         let userRoles: string[] = [];
         if (userData?.id) {
-          const rolesRes = await axios.get(`http://localhost:4000/api/keycloak/user/${userData.id}/roles`);
+          const rolesRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/user/${userData.id}/roles`);
           userRoles = rolesRes.data.map((role: { name: string }) => role.name);
         }
 
@@ -284,57 +426,70 @@ export function ArbolPermisos({ userData }: Props) {
     });
   };
 
-  const renderTree = (node: PermisoNode, nivel = 0): JSX.Element => {
-    const isPantalla = node.tipo === 'pantalla';
-    const isExpanded = expandedItems.has(node.name);
-    const hasChildren = node.children?.length;
+  const renderTree = (node: PermisoNode, nivel: number = 0) => {
     const nombre = Array.isArray(node.attributes.nombre) 
       ? node.attributes.nombre[0] 
       : node.attributes.nombre;
     const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
+    const isPantalla = node.tipo === 'pantalla';
+    const isExpanded = expandedItems.has(node.name);
 
     return (
-      <Box key={node.name} ml={nivel * 2}>
+      <List
+        key={node.name}
+        component="div"
+        disablePadding
+        sx={{
+          pl: nivel * 2,
+          '& .MuiListItemButton-root': {
+            pl: 2,
+            py: 0.5,
+          },
+        }}
+      >
         <ListItemButton
-          onClick={() => !isPantalla && hasChildren && toggleExpand(node.name)}
+          onClick={() => toggleExpand(node.name)}
           sx={{
+            minHeight: 40,
             borderRadius: 1,
-            bgcolor: isPantalla ? 'transparent' : 'action.hover',
             mb: 0.5,
-            cursor: isPantalla ? 'default' : 'pointer',
             '&:hover': {
-              bgcolor: isPantalla ? 'transparent' : 'action.hover'
-            }
+              bgcolor: isPantalla ? 'transparent' : 'action.hover',
+            },
           }}
         >
+          {node.children && node.children.length > 0 && (
+            <Box component="span" sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+              {isExpanded ? <CollapseIcon /> : <ExpandIcon />}
+            </Box>
+          )}
           <ListItemText
             primary={
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box display="flex" alignItems="center">
-                  <Typography fontWeight={isPantalla ? 'normal' : 'bold'}>
-                    {nombre}
-                  </Typography>
-                  {isPantalla && node.acciones && renderAcciones(
-                    pantallaId,
-                    node.acciones,
-                    selectedActions
-                  )}
-                </Box>
-                {hasChildren && !isPantalla && <span>{isExpanded ? '▾' : '▸'}</span>}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: isPantalla ? 'normal' : 'bold',
+                    color: isPantalla ? 'text.primary' : 'text.secondary',
+                  }}
+                >
+                  {nombre}
+                </Typography>
+                {isPantalla && node.acciones && renderAcciones(
+                  pantallaId,
+                  node.acciones,
+                  selectedActions
+                )}
               </Box>
             }
-            
           />
         </ListItemButton>
-
-        {hasChildren && (
+        {node.children && (
           <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-            <List dense disablePadding>
-              {node.children?.map((child) => renderTree(child, nivel + 1))}
-            </List>
+            {node.children.map((child) => renderTree(child, nivel + 1))}
           </Collapse>
         )}
-      </Box>
+      </List>
     );
   };
 
@@ -344,7 +499,7 @@ export function ArbolPermisos({ userData }: Props) {
 
     try {
       // Obtener los roles del grupo seleccionado
-      const response = await axios.get(`http://localhost:4000/api/keycloak/groups/${newGroupRole}/pantallas`);
+      const response = await axios.get(`${CONFIG.serverUrl}/api/keycloak/groups/${newGroupRole}/pantallas`);
       
       // Reinicializar selectedActions
       const initialSelectedActions: SelectedActions = {};
@@ -398,17 +553,22 @@ export function ArbolPermisos({ userData }: Props) {
 
     setIsUpdating(true);
     try {
-      // 1. Eliminar el rol actual (que ahora es el anterior)
+      // 1. Intentar eliminar el rol actual (que ahora es el anterior)
       if (previousGroupRole) {
-        await axios.delete(`http://localhost:4000/api/keycloak/user/${userData.id}/roles`, {
-          data: {
-            roles: [{ name: previousGroupRole }]
-          }
-        });
+        try {
+          await axios.delete(`${CONFIG.serverUrl}/api/keycloak/user/${userData.id}/roles`, {
+            data: {
+              roles: [{ name: previousGroupRole }]
+            }
+          });
+        } catch (deleteError) {
+          console.warn('No se pudo eliminar el rol anterior:', deleteError);
+          // Continuamos con la asignación del nuevo rol aunque falle la eliminación
+        }
       }
 
       // 2. Agregar el nuevo rol
-      const response = await axios.post(`http://localhost:4000/api/keycloak/user/${userData.id}/roles`, {
+      const response = await axios.post(`${CONFIG.serverUrl}/api/keycloak/user/${userData.id}/roles`, {
         roles: [{ name: selectedGroupRole }]
       });
 
@@ -495,13 +655,13 @@ export function ArbolPermisos({ userData }: Props) {
         </Stack>
       </Box>
 
-      <List dense sx={{ width: '100%' }}>
-        {treeData ? (
-          renderTree(treeData)
-        ) : (
-          <Typography>Cargando árbol de permisos...</Typography>
-        )}
-      </List>
+      {treeData ? (
+        <Box sx={{ minHeight: 240 }}>
+          {renderTree(treeData)}
+        </Box>
+      ) : (
+        <Typography>Cargando árbol de permisos...</Typography>
+      )}
 
       <Snackbar
         open={toast.open}

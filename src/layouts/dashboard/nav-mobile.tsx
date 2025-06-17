@@ -11,7 +11,6 @@ import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 import { NavSectionVertical } from 'src/components/nav-section';
 
-import { NavUpgrade } from '../components/nav-upgrade';
 
 // ----------------------------------------------------------------------
 

@@ -1,5 +1,6 @@
 import type { IPostItem } from 'src/types/blog';
 import type { CardProps } from '@mui/material/Card';
+
 import { useRef } from 'react';
 
 import Box from '@mui/material/Box';

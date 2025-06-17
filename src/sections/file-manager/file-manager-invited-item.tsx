@@ -1,6 +1,6 @@
 import type { IFileShared } from 'src/types/file';
 
-import { useState, useCallback, useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';

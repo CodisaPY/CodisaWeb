@@ -1,7 +1,6 @@
 import type { IDateValue } from 'src/types/common';
 import type { RatingProps } from '@mui/material/Rating';
 import type {
-  GridSlots,
   GridColDef,
   GridFilterItem,
   GridFilterOperator,
@@ -36,7 +35,6 @@ import { fDate, fTime } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
-import { EmptyContent } from 'src/components/empty-content';
 
 // ----------------------------------------------------------------------
 

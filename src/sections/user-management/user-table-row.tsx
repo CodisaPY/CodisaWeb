@@ -1,32 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getRolesFromToken } from '@guard/role-utils';
-import { useNavigate } from 'react-router-dom';
+import type { User } from 'src/sections/user-management/hooks/use-get-users';
 
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Avatar from '@mui/material/Avatar';
+import { useNavigate } from 'react-router-dom';
+import { ROLES } from '@guard/roles.constants';
+import { useMemo, useState, useEffect } from 'react';
+import { getRolesFromToken } from '@guard/role-utils';
+
 import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
-import { ROLES } from '@guard/roles.constants';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { MenuPopover } from 'src/components/menu-popover';
 import { ConfirmDialog } from 'src/components/custom-dialog';
-
-import { User } from 'src/sections/user-management/hooks/use-get-users';
 
 // ----------------------------------------------------------------------
 
@@ -65,6 +58,7 @@ export function UserTableRow({ row, onEditRow, onToggleActive, dense = false }: 
     () => userRoles.includes(ROLES.LISTA_USUARIOS_UPDATE),
     [userRoles]
   );
+ 
   
   const tienePermisoConfiguracion = useMemo(
     () =>
@@ -76,7 +70,12 @@ export function UserTableRow({ row, onEditRow, onToggleActive, dense = false }: 
       ].some((r) => userRoles.includes(r)),
     [userRoles]
   );
- 
+
+  const tienePermisoCambiarPass = useMemo(
+    () => userRoles.includes(ROLES.LISTA_USUARIOS_PASSWORD),
+    [userRoles]
+  );
+
 useEffect(() => {
   const roles = getRolesFromToken();
   console.log(roles);
@@ -260,9 +259,37 @@ useEffect(() => {
             sx={{ mr: dense ? 0.5 : 0.75 }} 
           />
           Editar datos
-          </MenuItem>
+        </MenuItem>
         )}
 
+        {tienePermisoCambiarPass && (
+          <MenuItem
+            onClick={() => {
+              navigate('/dashboard/seguridad/cambioPass', { 
+                state: { 
+                  user: {
+                    id: row.id,
+                    name: `${firstName} ${lastName}`
+                  },
+                  from: 'user-table'
+                } 
+              });
+              handleClosePopover();
+            }}
+            sx={{ 
+              fontSize: dense ? '0.65rem' : '0.75rem', 
+              py: dense ? 0.35 : 0.75,
+              minHeight: dense ? 'auto' : 'auto'
+            }}
+          >
+            <Iconify 
+              icon="solar:lock-password-bold" 
+              width={dense ? 12 : 16} 
+              sx={{ mr: dense ? 0.5 : 0.75 }} 
+            />
+            Cambiar clave
+          </MenuItem>
+        )}
 
         <MenuItem
           onClick={() => {

@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { CONFIG } from 'src/config-global';
 
 export const checkKeycloakSession = async (): Promise<boolean> => {
@@ -56,24 +57,20 @@ export const logoutFromKeycloak = async () => {
   }
 };
 
-export const changePasswordFromKeycloak = async (nuevaContraseña: string) => {
+export const changePasswordFromKeycloak = async (
+  nuevaContraseña: string, 
+  idUsuario: string,
+  token: string,
+  requirePasswordChange: boolean = false
+) => {
   try {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      console.warn('No se encontró el token en localStorage');
-      return { success: false, message: 'No se encontró el token en localStorage' };
-    }
-
-    const idUsuario = JSON.parse(atob(token.split('.')[1]))?.sub;
-
-    if (!idUsuario) {
-      console.warn('No se pudo obtener el ID de usuario del token.');
-      return { success: false, message: 'No se pudo obtener el ID de usuario.' };
-    }
-
     const response = await axios.post(
       `${CONFIG.serverUrl}/api/keycloak/change-password`,
-      { userId: idUsuario, newPassword: nuevaContraseña },
+      { 
+        userId: idUsuario, 
+        newPassword: nuevaContraseña,
+        requirePasswordChange 
+      },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -89,8 +86,28 @@ export const changePasswordFromKeycloak = async (nuevaContraseña: string) => {
   }
 };
 
+export const checkPasswordChangeRequired = async (userId: string, token: string): Promise<boolean> => {
+  try {
+    const response = await axios.get(
+      `${CONFIG.serverUrl}/api/keycloak/user/${userId}/check-password-change`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data.requiresPasswordChange === true;
+  } catch (error) {
+    console.error('Error al verificar cambio de contraseña:', error);
+    return false;
+  }
+};
+
 export const loginToKeycloak = async (username: string, password: string) => {
   try {
+    console.log('Intentando login con:', { username });
     const response = await axios.post(
       `${CONFIG.serverUrl}/api/keycloak/login`,
       { username, password },
@@ -100,14 +117,40 @@ export const loginToKeycloak = async (username: string, password: string) => {
         },
       }
     );
+    
+    console.log('Respuesta completa del backend:', response);
+    console.log('Status:', response.status);
+    console.log('Data:', response.data);
 
-    const { access_token, refresh_token } = response.data.data;
+    // Si la respuesta indica que se requiere cambio de contraseña
+    if (response.data?.requiresPasswordChange) {
+      console.log('Se requiere cambio de contraseña');
+      const error = new Error('Se requiere cambio de contraseña');
+      (error as any).response = {
+        data: {
+          requiresPasswordChange: true,
+          message: response.data.data?.message || 'Se requiere cambio de contraseña'
+        }
+      };
+      throw error;
+    }
+
+    // Los tokens están dentro de response.data.data
+    const { access_token, refresh_token } = response.data.data || {};
+
+    if (!access_token || !refresh_token) {
+      console.error('Estructura de la respuesta:', response.data);
+      throw new Error('Tokens no encontrados en la respuesta');
+    }
+
     localStorage.setItem('accessToken', access_token);
     localStorage.setItem('refreshToken', refresh_token);
 
     return access_token;
   } catch (error: any) {
-    throw error.response?.data?.error || 'Error al iniciar sesión';
+    console.error('Error en loginToKeycloak:', error);
+    console.error('Error response:', error.response?.data);
+    throw error;
   }
 };
 

@@ -1,6 +1,8 @@
 import type { IPaymentCard } from 'src/types/common';
 import type { PaperProps } from '@mui/material/Paper';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import MenuList from '@mui/material/MenuList';
@@ -11,7 +13,6 @@ import Typography from '@mui/material/Typography';
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
-import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 

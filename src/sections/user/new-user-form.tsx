@@ -1,25 +1,26 @@
-import { useState, useEffect, useMemo } from 'react';
-import { getRolesFromToken } from '@guard/role-utils';
-
-
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z as zod } from 'zod';
+import { useForm } from 'react-hook-form';
+import { ROLES } from '@guard/roles.constants';
+import { useMemo, useState, useEffect } from 'react';
+import { getRolesFromToken } from '@guard/role-utils';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 
-import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import { toast } from 'src/components/snackbar';
-import { Form, Field } from 'src/components/hook-form';
-import { Iconify } from 'src/components/iconify';
+import { useRouter } from 'src/routes/hooks';
+
 import { useBoolean } from 'src/hooks/use-boolean';
-import { ROLES } from '@guard/roles.constants';
+
+import { CONFIG } from 'src/config-global';
+
+import { toast } from 'src/components/snackbar';
+import { Iconify } from 'src/components/iconify';
+import { Form, Field } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
@@ -96,7 +97,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchSucursales = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/keycloak/sucursales/tree');
+        const response = await fetch(`${CONFIG.serverUrl}/api/keycloak/sucursales/tree`);
         const data = await response.json();
         if (data.children) {
           setSucursales(data.children);
@@ -113,7 +114,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchCargos = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/keycloak/cargos/tree');
+        const response = await fetch(`${CONFIG.serverUrl}/api/keycloak/cargos/tree`);
         const data = await response.json();
 
         // Función recursiva para extraer todos los cargos que comienzan con "cargo_"
@@ -180,7 +181,7 @@ useEffect(() => {
         },
       };
 
-      const response = await fetch('http://localhost:4000/api/keycloak/create-user', {
+      const response = await fetch(`${CONFIG.serverUrl}/api/keycloak/create-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

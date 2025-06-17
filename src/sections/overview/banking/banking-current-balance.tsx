@@ -1,6 +1,6 @@
 import type { BoxProps } from '@mui/material/Box';
 
-import { useCallback, useRef } from 'react';
+import { useRef, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import MenuList from '@mui/material/MenuList';

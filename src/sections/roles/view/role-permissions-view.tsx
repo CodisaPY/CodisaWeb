@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { getRolesFromToken } from '@guard/role-utils';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -11,11 +12,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { getRolesFromToken } from '@guard/role-utils';
-import { ROLES } from '@guard/roles.constants';
-
-import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { toast } from 'src/components/snackbar';
+import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { RolePermissionsTree } from '../role-permissions-tree';
 
@@ -26,7 +24,6 @@ type RoleData = {
   name: string;
   description: string;
   composite: boolean;
-  clientRole: boolean;
 };
 
 export function RolePermissionsView() {
@@ -96,9 +93,6 @@ export function RolePermissionsView() {
             <Stack direction="row" spacing={1}>
               <Typography variant="body2" color="text.secondary">
                 ID: {roleData.id}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                • Tipo: {roleData.clientRole ? 'Cliente' : 'Sistema'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 • Compuesto: {roleData.composite ? 'Sí' : 'No'}

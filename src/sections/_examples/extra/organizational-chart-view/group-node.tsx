@@ -1,4 +1,5 @@
 import type { ColorType } from 'src/theme/core/palette';
+
 import { useRef } from 'react';
 
 import Box from '@mui/material/Box';

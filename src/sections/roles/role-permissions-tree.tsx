@@ -1,19 +1,23 @@
-import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useState, useEffect } from 'react';
+
 import {
   Box,
   List,
-  ListItemButton,
-  ListItemText,
-  Typography,
-  Collapse,
   Chip,
   Stack,
-  Checkbox,
-  Tooltip,
-  Snackbar,
   Alert,
+  Tooltip,
+  Collapse,
+  Checkbox,
+  Snackbar,
+  Typography,
+  ListItemText,
+  ListItemButton,
 } from '@mui/material';
+
+import { CONFIG } from 'src/config-global';
+import { Iconify } from 'src/components/iconify';
 
 type Permission = {
   name: string;
@@ -34,7 +38,30 @@ type SelectedActions = {
   };
 };
 
-const ACCIONES_ORDEN = ['view', 'create', 'update', 'enable', 'disable', 'permission'] as const;
+const ACCIONES_ORDEN = ['view', 'create', 'update', 'delete', 'enable', 'disable', 'permission','password'] as const;
+
+const getAccionIcon = (accion: string) => {
+  switch (accion) {
+    case 'view':
+      return 'eva:eye-fill';
+    case 'create':
+      return 'eva:plus-fill';
+    case 'update':
+      return 'eva:edit-fill';
+    case 'delete':
+      return 'eva:trash-2-fill';
+    case 'enable':
+      return 'eva:checkmark-circle-fill';
+    case 'disable':
+      return 'eva:close-circle-fill';
+    case 'permission':
+      return 'eva:lock-fill';
+    case 'password':
+      return 'eva:keypad-fill';
+    default:
+      return 'eva:alert-circle-fill';
+  }
+};
 
 const renderAcciones = (
   pantallaId: string,
@@ -54,15 +81,113 @@ const renderAcciones = (
         return 'success';
       case 'update':
         return 'warning';
+      case 'delete':
+        return 'error';
       case 'enable':
         return 'info';
       case 'disable':
         return 'error';
       case 'permission':
         return 'secondary';
+      case 'password':
+        return 'info';
       default:
         return 'default';
     }
+  };
+
+  const getAccionStyles = (accion: string, isSelected: boolean, color: string) => {
+    const baseStyles = {
+      minWidth: '100px',
+      '& .MuiChip-deleteIcon': {
+        ml: 0.5,
+        mr: -0.5,
+        '&:hover': {
+          color: 'inherit'
+        }
+      },
+      '&.MuiChip-root': {
+        bgcolor: isSelected 
+          ? `${color}.lighter`
+          : 'transparent',
+        border: isSelected 
+          ? `1px solid ${color}.main`
+          : '1px solid',
+        borderColor: isSelected 
+          ? `${color}.main`
+          : 'divider',
+        color: isSelected 
+          ? `${color}.main`
+          : 'text.secondary',
+        '&:hover': {
+          bgcolor: isSelected 
+            ? `${color}.light`
+            : 'action.hover'
+        }
+      }
+    };
+
+    // Estilos especiales para acciones específicas
+    if (isSelected) {
+      switch (accion) {
+        case 'delete':
+          return {
+            ...baseStyles,
+            '&.MuiChip-root': {
+              ...baseStyles['&.MuiChip-root'],
+              bgcolor: 'error.dark',
+              borderColor: 'error.main',
+              color: 'error.contrastText',
+              '&:hover': {
+                bgcolor: 'error.main',
+              }
+            }
+          };
+        case 'password':
+          return {
+            ...baseStyles,
+            '&.MuiChip-root': {
+              ...baseStyles['&.MuiChip-root'],
+              bgcolor: 'info.dark',
+              borderColor: 'info.main',
+              color: 'info.contrastText',
+              '&:hover': {
+                bgcolor: 'info.main',
+              }
+            }
+          };
+        case 'enable':
+          return {
+            ...baseStyles,
+            '&.MuiChip-root': {
+              ...baseStyles['&.MuiChip-root'],
+              bgcolor: 'success.dark',
+              borderColor: 'success.main',
+              color: 'success.contrastText',
+              '&:hover': {
+                bgcolor: 'success.main',
+              }
+            }
+          };
+        case 'disable':
+          return {
+            ...baseStyles,
+            '&.MuiChip-root': {
+              ...baseStyles['&.MuiChip-root'],
+              bgcolor: 'error.dark',
+              borderColor: 'error.main',
+              color: 'error.contrastText',
+              '&:hover': {
+                bgcolor: 'error.main',
+              }
+            }
+          };
+        default:
+          return baseStyles;
+      }
+    }
+
+    return baseStyles;
   };
 
   const accionesOrdenadas = [...acciones].sort((a, b) => {
@@ -74,7 +199,7 @@ const renderAcciones = (
   return (
     <Stack direction="row" spacing={1} ml={1} alignItems="center">
       {accionesOrdenadas.map((accion) => {
-        const isSelected = selectedActions[pantallaId]?.[accion] ?? true;
+        const isSelected = selectedActions[pantallaId]?.[accion] ?? false;
         const color = getAccionColor(accion, isSelected);
         return (
           <Tooltip key={accion} title={accion}>
@@ -83,6 +208,7 @@ const renderAcciones = (
               size="small"
               color={color}
               variant="soft"
+              icon={<Iconify width={16} icon={getAccionIcon(accion)} />}
               clickable
               onClick={() => onActionChange(pantallaId, accion, !isSelected)}
               deleteIcon={
@@ -104,35 +230,7 @@ const renderAcciones = (
                   }}
                 />
               }
-              sx={{ 
-                minWidth: '100px',
-                '& .MuiChip-deleteIcon': {
-                  ml: 0.5,
-                  mr: -0.5,
-                  '&:hover': {
-                    color: 'inherit'
-                  }
-                },
-                '&.MuiChip-root': {
-                  bgcolor: isSelected 
-                    ? `${color}.lighter`
-                    : 'transparent',
-                  border: isSelected 
-                    ? `1px solid ${color}.main`
-                    : '1px solid',
-                  borderColor: isSelected 
-                    ? `${color}.main`
-                    : 'divider',
-                  color: isSelected 
-                    ? `${color}.main`
-                    : 'text.secondary',
-                  '&:hover': {
-                    bgcolor: isSelected 
-                      ? `${color}.light`
-                      : 'action.hover'
-                  }
-                }
-              }}
+              sx={getAccionStyles(accion, isSelected, color)}
             />
           </Tooltip>
         );
@@ -195,7 +293,7 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
     async function fetchData() {
       try {
         // 1. Traer árbol de permisos
-        const treeRes = await axios.get('http://localhost:4000/api/keycloak/pantallas/acciones');
+        const treeRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/pantallas/acciones`);
         console.log('Tree data received:', treeRes.data);
         
         if (!treeRes.data) {
@@ -212,7 +310,7 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
         if (roleName) {
           try {
             console.log('Fetching permissions for role:', roleName);
-            const rolePermissionsRes = await axios.get(`http://localhost:4000/api/keycloak/groups/${roleName}/pantallas`);
+            const rolePermissionsRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/groups/${roleName}/pantallas`);
             console.log('Role permissions response:', rolePermissionsRes.data);
 
             if (!rolePermissionsRes.data.success) {
@@ -349,7 +447,7 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
       });
 
       if (roleName) {
-        const endpoint = `http://localhost:4000/api/keycloak/groups/${roleName}/roles`;
+        const endpoint = `${CONFIG.serverUrl}/api/keycloak/groups/${roleName}/roles`;
         const method = checked ? 'post' : 'delete';
         
         const response = await axios({
@@ -406,6 +504,18 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
     });
   };
 
+  const ExpandIcon = () => (
+    <Typography component="span" sx={{ fontSize: 20, lineHeight: 1, color: 'text.secondary' }}>
+      ▸
+    </Typography>
+  );
+
+  const CollapseIcon = () => (
+    <Typography component="span" sx={{ fontSize: 20, lineHeight: 1, color: 'text.secondary' }}>
+      ▾
+    </Typography>
+  );
+
   const renderTree = (node: Permission, nivel = 0): JSX.Element => {
     const isPantalla = node.tipo === 'pantalla';
     const isExpanded = expandedItems.has(node.name);
@@ -415,75 +525,63 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
       : node.attributes.nombre;
     const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
 
-    // Si es una pantalla o tiene hijos, renderizar el nodo
-    if (isPantalla || hasChildren) {
-      return (
-        <Box key={node.name} ml={nivel * 2}>
-          <ListItemButton
-            onClick={() => !isPantalla && hasChildren && toggleExpand(node.name)}
-            sx={{
-              borderRadius: 1,
-              bgcolor: isPantalla ? 'transparent' : 'action.hover',
-              mb: 0.5,
-              cursor: isPantalla ? 'default' : 'pointer',
-              '&:hover': {
-                bgcolor: isPantalla ? 'transparent' : 'action.hover'
-              }
-            }}
-          >
-            <ListItemText
-              primary={
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box display="flex" alignItems="center">
-                    <Typography fontWeight={isPantalla ? 'normal' : 'bold'}>
-                      {nombre}
-                    </Typography>
-                    {isPantalla && node.acciones && renderAcciones(
-                      pantallaId,
-                      node.acciones,
-                      selectedActions,
-                      handleActionChange
-                    )}
-                  </Box>
-                  {hasChildren && !isPantalla && <span>{isExpanded ? '▾' : '▸'}</span>}
-                </Box>
-              }
-            />
-          </ListItemButton>
-
-          {hasChildren && (
-            <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-              <List dense disablePadding>
-                {node.children?.map((child) => renderTree(child, nivel + 1))}
-              </List>
-            </Collapse>
-          )}
-        </Box>
-      );
-    }
-
-    // Si no es pantalla ni tiene hijos, solo mostrar el nombre
     return (
-      <Box key={node.name} ml={nivel * 2}>
+      <List
+        key={node.name}
+        component="div"
+        disablePadding
+        sx={{
+          pl: nivel * 2,
+          '& .MuiListItemButton-root': {
+            pl: 2,
+            py: 0.5,
+          },
+        }}
+      >
         <ListItemButton
+          onClick={() => !isPantalla && hasChildren && toggleExpand(node.name)}
           sx={{
+            minHeight: 40,
             borderRadius: 1,
             mb: 0.5,
-            cursor: 'default',
             '&:hover': {
-              bgcolor: 'transparent'
-            }
+              bgcolor: isPantalla ? 'transparent' : 'action.hover',
+            },
           }}
         >
+          {hasChildren && !isPantalla && (
+            <Box component="span" sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+              {isExpanded ? <CollapseIcon /> : <ExpandIcon />}
+            </Box>
+          )}
           <ListItemText
             primary={
-              <Typography>
-                {nombre}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: isPantalla ? 'normal' : 'bold',
+                    color: isPantalla ? 'text.primary' : 'text.secondary',
+                  }}
+                >
+                  {nombre}
+                </Typography>
+                {isPantalla && node.acciones && renderAcciones(
+                  pantallaId,
+                  node.acciones,
+                  selectedActions,
+                  handleActionChange
+                )}
+              </Box>
             }
           />
         </ListItemButton>
-      </Box>
+        {hasChildren && (
+          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+            {node.children?.map((child) => renderTree(child, nivel + 1))}
+          </Collapse>
+        )}
+      </List>
     );
   };
 

@@ -1,4 +1,5 @@
 import type { IUserItem } from 'src/types/user';
+
 import { useLocation } from 'react-router-dom';
 
 import { paths } from 'src/routes/paths';
@@ -6,6 +7,7 @@ import { paths } from 'src/routes/paths';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+
 import UserEditForm from '../user-edit-form';
 
 // ----------------------------------------------------------------------

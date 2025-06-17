@@ -43,7 +43,7 @@ export function AnimateOther() {
         <SvgPath key={count} />
       </ComponentBlock>
 
-      <ComponentBlock title="Path" sx={{ flexDirection: 'column' }}>
+      <ComponentBlock title="Paths" sx={{ flexDirection: 'column' }}>
         <IconButton
           onClick={() => setCount(count + 1)}
           sx={{ position: 'absolute', right: 16, top: 16 }}

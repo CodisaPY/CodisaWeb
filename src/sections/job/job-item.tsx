@@ -1,4 +1,5 @@
 import type { IJobItem } from 'src/types/job';
+
 import { useRef } from 'react';
 
 import Box from '@mui/material/Box';

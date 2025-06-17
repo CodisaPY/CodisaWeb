@@ -1,9 +1,14 @@
-import { useLocation } from 'react-router-dom';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
-import { paths } from 'src/routes/paths';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
+
 import { Box, Chip, Typography } from '@mui/material';
+
+import { paths } from 'src/routes/paths';
+
+import { DashboardContent } from 'src/layouts/dashboard';
+
+import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+
 import { ArbolPermisos } from './arbol-permisos';
 
 export default function PermisosSistemasPage() {

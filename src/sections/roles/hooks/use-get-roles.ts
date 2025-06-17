@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+import { CONFIG } from 'src/config-global';
 
 export interface Role {
   id: string;
@@ -13,30 +15,31 @@ export function useGetRoles() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await fetch('http://localhost:4000/api/keycloak/groups/roles', {
-          headers: {
-            'accept': 'application/json',
-          },
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-          setRoles(result.data);
-        } else {
-          console.error('Error fetching roles:', result.message);
-        }
-      } catch (error) {
-        console.error('Error fetching roles:', error);
-      } finally {
-        setLoading(false);
+  const fetchRoles = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${CONFIG.serverUrl}/api/keycloak/groups/roles`, {
+        headers: {
+          'accept': 'application/json',
+        },
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setRoles(result.data);
+      } else {
+        console.error('Error fetching roles:', result.message);
       }
-    };
-
-    fetchRoles();
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { roles, loading };
+  useEffect(() => {
+    fetchRoles();
+  }, [fetchRoles]);
+
+  return { roles, loading, refetch: fetchRoles };
 } 

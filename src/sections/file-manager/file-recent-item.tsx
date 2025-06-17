@@ -1,7 +1,7 @@
 import type { IFileManager } from 'src/types/file';
 import type { PaperProps } from '@mui/material/Paper';
 
-import { useState, useCallback, useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';

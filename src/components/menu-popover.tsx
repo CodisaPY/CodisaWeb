@@ -1,6 +1,5 @@
 import { forwardRef } from 'react';
 
-import Box from '@mui/material/Box';
 import Popover from '@mui/material/Popover';
 
 // ----------------------------------------------------------------------

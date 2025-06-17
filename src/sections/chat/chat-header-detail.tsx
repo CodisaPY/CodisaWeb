@@ -1,6 +1,6 @@
 import type { IChatParticipant } from 'src/types/chat';
 
-import { useCallback, useRef } from 'react';
+import { useRef, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Badge from '@mui/material/Badge';

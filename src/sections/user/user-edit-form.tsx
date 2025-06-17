@@ -1,17 +1,22 @@
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z as zod } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import { z as zod } from 'zod';
+import { useForm } from 'react-hook-form';
+import { useState, useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Unstable_Grid2';
 import LoadingButton from '@mui/lab/LoadingButton';
+
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
+
+import { CONFIG } from 'src/config-global';
+
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
-import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
 
 const EditUserSchema = zod.object({
   email: zod.string().email({ message: 'Email inválido' }),
@@ -66,13 +71,13 @@ export default function UserEditForm({ initialValues, userId, onSuccess }: Props
   }, [sucursales, cargos, initialValues, reset]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/keycloak/sucursales/tree')
+    fetch(`${CONFIG.serverUrl}/api/keycloak/sucursales/tree`)
       .then(res => res.json())
       .then(data => setSucursales(data.children || []));
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/keycloak/cargos/tree')
+    fetch(`${CONFIG.serverUrl}/api/keycloak/cargos/tree`)
       .then(res => res.json())
       .then(data => {
         const extractCargos = (node: any): Cargo[] => {
@@ -98,7 +103,7 @@ export default function UserEditForm({ initialValues, userId, onSuccess }: Props
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await axios.put(`http://localhost:4000/api/keycloak/user/${userId}`, {
+      await axios.put(`${CONFIG.serverUrl}/api/keycloak/user/${userId}`, {
         ...data,
         firstName: data.firstName,
         lastName: data.lastName,

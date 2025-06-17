@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useState, useEffect } from 'react';
+
 import {
   Box,
-  Card,
-  CardContent,
-  Collapse,
   List,
-  ListItemButton,
-  ListItemText,
-  Typography,
   Divider,
+  Collapse,
+  Typography,
+  ListItemText,
+  ListItemButton,
 } from '@mui/material';
+
+import { CONFIG } from 'src/config-global';
 
 type ModuloNode = {
   name: string;
@@ -55,7 +56,7 @@ export function ArbolModulos({ onSelectPantalla }: Props) {
 
   useEffect(() => {
     axios
-      .get('http://localhost:4000/api/keycloak/modulos/tree')
+      .get(`${CONFIG.serverUrl}/api/keycloak/modulos/tree`)
       .then((res) => {
         const filtrado = filtrarSoloPantallasView(res.data);
         setTreeData(filtrado);

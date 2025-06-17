@@ -2,6 +2,7 @@ import type { ButtonProps } from '@mui/material/Button';
 import type { Theme, SxProps } from '@mui/material/styles';
 
 import { useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth0 } from '@auth0/auth0-react';
 
 import Button from '@mui/material/Button';
@@ -13,12 +14,11 @@ import { CONFIG } from 'src/config-global';
 import { toast } from 'src/components/snackbar';
 
 import { useAuthContext } from 'src/auth/hooks';
+import { logoutFromKeycloak } from 'src/auth/context/jwt/keycloak';
 import { signOut as jwtSignOut } from 'src/auth/context/jwt/action';
 import { signOut as amplifySignOut } from 'src/auth/context/amplify/action';
 import { signOut as supabaseSignOut } from 'src/auth/context/supabase/action';
 import { signOut as firebaseSignOut } from 'src/auth/context/firebase/action';
-import { logoutFromKeycloak } from 'src/auth/context/jwt/keycloak';
-import { useNavigate } from 'react-router';
 // ----------------------------------------------------------------------
 
 const signOut =

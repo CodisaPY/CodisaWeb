@@ -40,8 +40,8 @@ export function UserListFilters({ filters, onFilters, onResetFilters, roleOption
   };
 
   const handleFilterRoles = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    const checked = event.target.checked;
+    const {value} = event.target;
+    const {checked} = event.target;
 
     const roles = checked
       ? [...filters.role, value]

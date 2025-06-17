@@ -1,6 +1,8 @@
 import type { CardProps } from '@mui/material/Card';
 import type { TableHeadCustomProps } from 'src/components/table';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -21,7 +23,6 @@ import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableHeadCustom } from 'src/components/table';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
-import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 

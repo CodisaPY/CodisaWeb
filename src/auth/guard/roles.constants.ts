@@ -57,9 +57,8 @@ export const ROLES = {
   LISTA_USUARIOS_DISABLE: 'pantalla__usuarios__lista_usuario__disable',
   LISTA_USUARIOS_CREATE:  'pantalla__usuarios__lista_usuario__create',
   LISTA_USUARIOS_UPDATE:  'pantalla__usuarios__lista_usuario__update',
-
-
-    /*
+  LISTA_USUARIOS_PASSWORD: 'pantalla__usuarios__lista_usuario__password',
+     /*
   MODULO ROLES
   */
 

@@ -1,19 +1,22 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z as zod } from 'zod';
+import { useForm } from 'react-hook-form';
+import { ROLES } from '@guard/roles.constants';
+import { useMemo, useState, useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { getRolesFromToken } from '@guard/role-utils';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import LoadingButton from '@mui/lab/LoadingButton';
 import Stack from '@mui/material/Stack';
+import LoadingButton from '@mui/lab/LoadingButton';
 
-import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
+
+import { CONFIG } from 'src/config-global';
+
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
-import { getRolesFromToken } from '@guard/role-utils';
-import { ROLES } from '@guard/roles.constants';
 
 // ----------------------------------------------------------------------
 
@@ -59,7 +62,7 @@ export function NewRoleForm() {
     try {
       setLoading(true);
       
-      const response = await fetch('http://localhost:4000/api/keycloak/roles', {
+      const response = await fetch(`${CONFIG.serverUrl}/api/keycloak/roles`, {
         method: 'POST',
         headers: {
           'accept': '*/*',

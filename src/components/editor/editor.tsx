@@ -3,11 +3,11 @@ import LinkExtension from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import ImageExtension from '@tiptap/extension-image';
 import StarterKitExtension from '@tiptap/starter-kit';
+import { useEditor, EditorContent } from '@tiptap/react';
 import TextAlignExtension from '@tiptap/extension-text-align';
 import PlaceholderExtension from '@tiptap/extension-placeholder';
 import { useState, useEffect, forwardRef, useCallback } from 'react';
 import CodeBlockLowlightExtension from '@tiptap/extension-code-block-lowlight';
-import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 
 import Stack from '@mui/material/Stack';
 import Portal from '@mui/material/Portal';
@@ -17,7 +17,6 @@ import FormHelperText from '@mui/material/FormHelperText';
 import { Toolbar } from './toolbar';
 import { StyledRoot } from './styles';
 import { editorClasses } from './classes';
-import { CodeHighlightBlock } from './components/code-highlight-block';
 
 import type { EditorProps } from './types';
 

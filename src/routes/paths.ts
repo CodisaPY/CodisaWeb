@@ -171,25 +171,25 @@ export const paths = {
       },
     },
     seguridad: {
-      root: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones`,
+      root: `${ROOTS.DASHBOARD}/seguridad`,
+      cambioPass: `${ROOTS.DASHBOARD}/seguridad/cambioPass`,
       moduloNotificaciones: {
-        root: `${ROOTS.DASHBOARD}/seguridad`,
+        root: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones`,
         ajusteEnvioNotificaciones: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones/ajusteEnvioNotificaciones`,
         ajusteAutorizacionesFirmas: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones/autorizacionesFirmas`,
       },
       moduloUsuarios: {
-        root: '/dashboard/seguridad/usuarios',
-        nuevoUsuario: '/dashboard/seguridad/usuarios/nuevo',
-        listaUsuario: '/dashboard/seguridad/usuarios/lista',
-        permisos: '/dashboard/seguridad/usuarios/permisos',
-        edit: (id: string) => `/dashboard/seguridad/usuarios/${id}/editar`,
+        root: `${ROOTS.DASHBOARD}/seguridad/usuarios`,
+        nuevoUsuario: `${ROOTS.DASHBOARD}/seguridad/usuarios/nuevo`,
+        listaUsuario: `${ROOTS.DASHBOARD}/seguridad/usuarios/lista`,
+        permisos: `${ROOTS.DASHBOARD}/seguridad/usuarios/permisos`,
+        edit: (id: string) => `${ROOTS.DASHBOARD}/seguridad/usuarios/${id}/editar`,
       },
       moduloRoles: {
-        root: '/dashboard/seguridad/roles',
-        nuevoRol: '/dashboard/seguridad/roles/nuevo',
-        listaRol: '/dashboard/seguridad/roles/lista',
-        permisos: '/dashboard/seguridad/roles/permisos',
-
+        root: `${ROOTS.DASHBOARD}/seguridad/roles`,
+        nuevoRol: `${ROOTS.DASHBOARD}/seguridad/roles/nuevo`,
+        listaRol: `${ROOTS.DASHBOARD}/seguridad/roles/lista`,
+        permisos: `${ROOTS.DASHBOARD}/seguridad/roles/permisos`,
       },
     },
     post: {

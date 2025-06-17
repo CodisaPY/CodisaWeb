@@ -1,5 +1,8 @@
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import UserEditForm, { EditUserSchemaType } from 'src/sections/user/user-edit-form';
+import type { EditUserSchemaType } from 'src/sections/user/user-edit-form';
+
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+
+import UserEditForm from 'src/sections/user/user-edit-form';
 
 export default function UserEditView() {
   const { id } = useParams();

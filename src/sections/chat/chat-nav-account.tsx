@@ -1,6 +1,6 @@
 import type { SelectChangeEvent } from '@mui/material/Select';
 
-import { useState, useCallback, useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';

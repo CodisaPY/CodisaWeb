@@ -13,6 +13,9 @@ RUN rm -f package-lock.json && npm install --legacy-peer-deps
 # 5️⃣ Copiar el resto del código
 COPY . .
 
+# Copia el archivo de entorno de producción
+COPY .env.production .env
+
 # 6️⃣ Construir la app
 RUN npm run build
 

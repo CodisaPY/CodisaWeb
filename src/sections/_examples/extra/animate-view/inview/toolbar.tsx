@@ -38,7 +38,7 @@ export function Toolbar({
       {!isText && (
         <FormControlLabel
           control={<Switch checked={isMulti} onChange={onChangeMulti} />}
-          label="Multiitem"
+          label="Multiitems"
         />
       )}
 

@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+
+import { Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText } from '@mui/material';
 
 // ----------------------------------------------------------------------
 

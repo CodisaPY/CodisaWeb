@@ -1,43 +1,46 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ROLES } from '@guard/roles.constants';
+import { useMemo, useState, useEffect } from 'react';
 import { getRolesFromToken } from '@guard/role-utils';
+import axios from 'axios';
 
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 
-import { useRouter } from 'src/routes/hooks';
-import { useNavigate } from 'react-router-dom';
 import { paths } from 'src/routes/paths';
-
-import { useBoolean } from 'src/hooks/use-boolean';
-import { ROLES } from '@guard/roles.constants';
+import { useRouter } from 'src/routes/hooks';
+import { CONFIG } from 'src/config-global';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { MenuPopover } from 'src/components/menu-popover';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { toast } from 'src/components/snackbar';
 
-import { Role } from './hooks/use-get-roles';
+import type { Role } from './hooks/use-get-roles';
 
 // ----------------------------------------------------------------------
 
 type Props = {
   row: Role;
   onEditRow: VoidFunction;
+  onDeleteRow: VoidFunction;
   dense?: boolean;
 };
 
-export function RoleTableRow({ row, onEditRow, dense = false }: Props) {
-  const { id, name, description, composite, clientRole } = row;
+export function RoleTableRow({ row, onEditRow, onDeleteRow, dense = false }: Props) {
+  const { id, name, description, composite } = row;
 
   const router = useRouter();
   const navigate = useNavigate();
   const [openPopover, setOpenPopover] = useState<HTMLElement | null>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const tienePermisoEditar = useMemo(
     () => userRoles.includes(ROLES.LISTA_ROLES_UPDATE),
@@ -54,6 +57,11 @@ export function RoleTableRow({ row, onEditRow, dense = false }: Props) {
     [userRoles]
   );
 
+  const tienePermisoEliminar = useMemo(
+    () => userRoles.includes(ROLES.LISTA_ROLES_DELETE),
+    [userRoles]
+  );
+
   useEffect(() => {
     const roles = getRolesFromToken();
     setUserRoles(roles);
@@ -65,6 +73,35 @@ export function RoleTableRow({ row, onEditRow, dense = false }: Props) {
 
   const handleClosePopover = () => {
     setOpenPopover(null);
+  };
+
+  const handleOpenConfirm = () => {
+    setOpenConfirm(true);
+    handleClosePopover();
+  };
+
+  const handleCloseConfirm = () => {
+    setOpenConfirm(false);
+  };
+
+  const handleDeleteRole = async () => {
+    try {
+      setIsDeleting(true);
+      const response = await axios.delete(`${CONFIG.serverUrl}/api/keycloak/roles/${name}`);
+      
+      if (response.data.success) {
+        toast.success(response.data.message);
+        onDeleteRow();
+      } else {
+        toast.error('Error al eliminar el rol');
+      }
+    } catch (error) {
+      console.error('Error al eliminar el rol:', error);
+      toast.error('Error al eliminar el rol');
+    } finally {
+      setIsDeleting(false);
+      handleCloseConfirm();
+    }
   };
 
   return (
@@ -137,19 +174,6 @@ export function RoleTableRow({ row, onEditRow, dense = false }: Props) {
           </Label>
         </TableCell>
 
-        <TableCell sx={{ width: dense ? 80 : 100 }}>
-          <Label
-            variant="soft"
-            color={clientRole ? 'info' : 'default'}
-            sx={{
-              fontSize: dense ? '0.65rem' : '0.75rem',
-              lineHeight: dense ? 1 : 1.5,
-            }}
-          >
-            {clientRole ? 'Sí' : 'No'}
-          </Label>
-        </TableCell>
-
         <TableCell align="right" sx={{ width: dense ? 24 : 32 }}>
           {tienePermisoConfiguracion && (
             <IconButton
@@ -200,8 +224,7 @@ export function RoleTableRow({ row, onEditRow, dense = false }: Props) {
                     id,
                     name,
                     description,
-                    composite,
-                    clientRole
+                    composite
                   }
                 }
               });
@@ -221,7 +244,49 @@ export function RoleTableRow({ row, onEditRow, dense = false }: Props) {
             Permisos
           </MenuItem>
         )}
+
+        {tienePermisoEliminar && (
+          <MenuItem
+            onClick={handleOpenConfirm}
+            sx={{
+              color: 'error.main',
+              fontSize: dense ? '0.65rem' : '0.75rem',
+              py: dense ? 0.35 : 0.75,
+              minHeight: dense ? 'auto' : 'auto',
+            }}
+          >
+            <Iconify
+              icon="solar:trash-bin-trash-bold"
+              width={dense ? 12 : 16}
+              sx={{ mr: dense ? 0.5 : 0.75 }}
+            />
+            Eliminar
+          </MenuItem>
+        )}
       </MenuPopover>
+
+      <ConfirmDialog
+        open={openConfirm}
+        onClose={handleCloseConfirm}
+        title="Eliminar"
+        content={
+          <>
+            ¿Estás seguro que deseas eliminar el rol <strong>{name}</strong>?
+            <br />
+            Esta acción no se puede deshacer.
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteRole}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+          </Button>
+        }
+      />
     </>
   );
 } 

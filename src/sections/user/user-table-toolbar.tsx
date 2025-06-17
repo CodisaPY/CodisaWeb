@@ -2,7 +2,7 @@ import type { IUserTableFilters } from 'src/types/user';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import type { UseSetStateReturn } from 'src/hooks/use-set-state';
 
-import { useCallback, useRef } from 'react';
+import { useRef, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Select from '@mui/material/Select';

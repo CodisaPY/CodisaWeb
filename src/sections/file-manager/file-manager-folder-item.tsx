@@ -1,7 +1,7 @@
 import type { CardProps } from '@mui/material/Card';
 import type { IFolderManager } from 'src/types/file';
 
-import { useState, useCallback, useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';

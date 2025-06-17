@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { TableRow, TableHead, TableCell, Checkbox, TableSortLabel } from '@mui/material';
+import { TableRow, TableHead, TableCell, TableSortLabel } from '@mui/material';
 
 // ----------------------------------------------------------------------
 

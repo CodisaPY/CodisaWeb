@@ -1,11 +1,13 @@
-import { paths } from 'src/routes/paths';
-import { CONFIG } from 'src/config-global';
-import { SvgColor } from 'src/components/svg-color';
-import { jwtDecode } from 'jwt-decode';  
-import { ROLES_HIERARCHY, RoleKey } from 'src/auth/guard/roles-hierarchy';
 import { ROLES } from '@guard/roles.constants';
 
- 
+import { paths } from 'src/routes/paths';
+
+import { CONFIG } from 'src/config-global';
+  
+import { SvgColor } from 'src/components/svg-color';
+
+
+
 const icon = (name: string) => (
   <SvgColor src={`${CONFIG.assetsDir}/assets/icons/navbar/${name}.svg`} />
 );

@@ -1,4 +1,5 @@
 import type { IUserProfileFriend } from 'src/types/user';
+
 import { useRef } from 'react';
 
 import Box from '@mui/material/Box';

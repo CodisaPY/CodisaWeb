@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { getRolesFromToken } from '@guard/role-utils';
 import axios from 'axios';
+import { ROLES } from '@guard/roles.constants';
+import { getRolesFromToken } from '@guard/role-utils';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -10,19 +11,19 @@ import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import { useTable } from 'src/hooks/use-table';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
-import { useTable } from 'src/hooks/use-table';
 
+import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';
-import { ROLES } from '@guard/roles.constants';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -39,9 +40,12 @@ import {
 } from 'src/components/table';
 
 import { UserTableFiltersResult } from 'src/sections/user-management/user-table-filters-result';
-import { useGetUsers, User } from '../hooks/use-get-users';
+
 import { UserTableRow } from '../user-table-row';
+import { useGetUsers } from '../hooks/use-get-users';
 import { UserTableToolbar } from '../user-table-toolbar';
+
+import type { User } from '../hooks/use-get-users';
 
 // ----------------------------------------------------------------------
 
@@ -174,7 +178,7 @@ useEffect(() => {
 
   const handleToggleActive = async (id: string) => {
     try {
-      await axios.patch(`http://localhost:4000/api/keycloak/user/${id}/toggle-status`);
+      await axios.patch(`${CONFIG.serverUrl}/api/keycloak/user/${id}/toggle-status`);
       setTableData((prev) =>
         prev.map((user) =>
           user.id === id

@@ -1,5 +1,6 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
 
+import { useRef } from 'react';
 import { m } from 'framer-motion';
 
 import Badge from '@mui/material/Badge';
@@ -15,7 +16,6 @@ import { fToNow } from 'src/utils/format-time';
 import { varHover } from 'src/components/animate';
 import { Scrollbar } from 'src/components/scrollbar';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
-import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 

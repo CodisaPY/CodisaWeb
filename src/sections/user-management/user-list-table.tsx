@@ -1,11 +1,8 @@
 import { useState, useCallback } from 'react';
-import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import Container from '@mui/material/Container';
@@ -13,13 +10,20 @@ import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
+
 import { useBoolean } from 'src/hooks/use-boolean';
+
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/confirm-dialog';
-import { TableEmptyRows, TableNoData, TableHeadCustom, TableSelectedAction, UserTableRow, UserTableToolbar } from 'src/sections/user-management';
+
+import { TableNoData, UserTableRow, TableEmptyRows, TableHeadCustom, UserTableToolbar, TableSelectedAction } from 'src/sections/user-management';
 
 import { useTable } from './hooks/use-table';
-import { useGetUsers, User } from './hooks/use-get-users';
+import { useGetUsers } from './hooks/use-get-users';
+
+import type { User } from './hooks/use-get-users';
 
 // ----------------------------------------------------------------------
 

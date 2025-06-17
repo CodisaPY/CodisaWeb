@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'src/routes/hooks';  
+import { useState, useEffect } from 'react';
+
+import { useRouter } from 'src/routes/hooks';
+  
 import { checkSessionWithRefreshToken } from './context/jwt/keycloak';
 
 export function SessionChecker() {

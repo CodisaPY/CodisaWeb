@@ -1,21 +1,20 @@
 import { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
+import { ROLES } from '@guard/roles.constants';
 
 import { CONFIG } from 'src/config-global';
+import {} from 'src/pages/auth/auth0/update-password';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
 import { LoadingScreen } from 'src/components/loading-screen';
 
-import { AuthGuard } from 'src/auth/guard';
-
-import { RoleGuard } from 'src/auth/guard/role-guard';
-import { ROLES } from '@guard/roles.constants';
-import { AccountChangePassword } from 'src/sections/account/account-change-password';
-import {} from 'src/pages/auth/auth0/update-password';
 import { UserEditView } from 'src/sections/user/view';
 import { NewRoleView } from 'src/sections/roles/view/new-role-view';
 import { RoleListView } from 'src/sections/roles/view/role-list-view';
 import { RolePermissionsView } from 'src/sections/roles/view/role-permissions-view';
+
+import { AuthGuard } from 'src/auth/guard';
+import { RoleGuard } from 'src/auth/guard/role-guard';
 
 // ----------------------------------------------------------------------
 
