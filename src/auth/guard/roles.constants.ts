@@ -16,15 +16,59 @@ export const ROLES = {
   MODULO_NOTIFICACION: 'modulo_notificacion',
   MODULO_SOLICITUD_TIC: 'modulo_solicitudes_tic',
   MODULO_SOLICITUD_COMERCIAL: 'modulo_solicitudes_comercial',
+  MODULO_INVENTARIO_TIC: 'modulo_inventario_tic',
   MODULO_USUARIOS: 'modulo_usuarios',
   MODULO_ROLES: 'modulo_roles',
   /*
   MODULO DE TIC
   */
-  GENERACION_SOLICITUD_TIC_NUEVO_EQUIPO_VIEW:
-    'pantalla__solicitud_tic__solicitud_nuevo_equipo__view',
-  GENERACION_SOLICITUD_TIC_NUEVO_EQUIPO_CREATE:
-    'pantalla__solicitud_tic__solicitud_nuevo_equipo__create',
+      /**
+       * MODULO SOLICITUD TIC
+       */
+      GENERACION_SOLICITUD_TIC_NUEVO_EQUIPO_VIEW:'pantalla__solicitud_tic__solicitud_nuevo_equipo__view',
+      GENERACION_SOLICITUD_TIC_NUEVO_EQUIPO_CREATE:
+        'pantalla__solicitud_tic__solicitud_nuevo_equipo__create',
+
+      /**
+       * MODULO INVENTARIO TIC
+       */
+      MARCA_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__crear_nueva_marca__view',
+      MARCA_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__crear_nueva_marca__create',
+
+      LISTA_MARCAS_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__lista_marcas__view',
+      LISTA_MARCAS_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__lista_marcas__create',
+      LISTA_MARCAS_INVENTARIO_TIC_ENABLE: 'pantalla__inventario_tic__lista_marcas__enable',
+      LISTA_MARCAS_INVENTARIO_TIC_DISABLE: 'pantalla__inventario_tic__lista_marcas__disable',
+      LISTA_MARCAS_INVENTARIO_TIC_UPDATE: 'pantalla__inventario_tic__lista_marcas__update',
+
+
+      MODELO_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__crear_nuevo_modelo__view',
+      MODELO_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__crear_nuevo_modelo__create',
+
+      LISTA_MODELOS_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__lista_modelos__view',
+      LISTA_MODELOS_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__lista_modelos__create',
+      LISTA_MODELOS_INVENTARIO_TIC_ENABLE: 'pantalla__inventario_tic__lista_modelos__enable',
+      LISTA_MODELOS_INVENTARIO_TIC_DISABLE: 'pantalla__inventario_tic__lista_modelos__disable',
+      LISTA_MODELOS_INVENTARIO_TIC_UPDATE: 'pantalla__inventario_tic__lista_modelos__update', 
+    
+      EQUIPO_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__crear_nuevo_equipo__view',
+      EQUIPO_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__crear_nuevo_equipo__create',
+
+      LISTA_EQUIPOS_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__lista_equipos__view',
+      LISTA_EQUIPOS_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__lista_equipos__create',
+      LISTA_EQUIPOS_INVENTARIO_TIC_ENABLE: 'pantalla__inventario_tic__lista_equipos__enable',
+      LISTA_EQUIPOS_INVENTARIO_TIC_DISABLE: 'pantalla__inventario_tic__lista_equipos__disable',
+      LISTA_EQUIPOS_INVENTARIO_TIC_UPDATE: 'pantalla__inventario_tic__lista_equipos__update',
+
+      ATRIBUTO_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__crear_nuevo_atributo_tipo_equipo__view',
+      ATRIBUTO_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__crear_nuevo_atributo_tipo_equipo__create',
+
+      LISTA_ATRIBUTOS_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__lista_atributo_tipo_equipo__view',
+      LISTA_ATRIBUTOS_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__lista_atributo_tipo_equipo__create',
+      LISTA_ATRIBUTOS_INVENTARIO_TIC_ENABLE: 'pantalla__inventario_tic__lista_atributo_tipo_equipo__enable',
+      LISTA_ATRIBUTOS_INVENTARIO_TIC_DISABLE: 'pantalla__inventario_tic__lista_atributo_tipo_equipo__disable',
+      LISTA_ATRIBUTOS_INVENTARIO_TIC_UPDATE: 'pantalla__inventario_tic__lista_atributo_tipo_equipo__update',
+
 
   /*
   MODULO COMERCIAL
@@ -70,5 +114,7 @@ export const ROLES = {
   LISTA_ROLES_PERMISSION: 'pantalla__roles__lista_roles__permission',
   LISTA_ROLES_ENABLE: 'pantalla__roles__lista_roles__enable',
   LISTA_ROLES_DISABLE: 'pantalla__roles__lista_roles__disable',
+
+
   };
   

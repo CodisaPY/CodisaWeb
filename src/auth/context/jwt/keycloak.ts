@@ -2,6 +2,34 @@ import axios from 'axios';
 
 import { CONFIG } from 'src/config-global';
 
+// Función para calcular y mostrar la duración del token
+const logTokenDuration = (accessToken: string) => {
+  try {
+    const decoded = JSON.parse(atob(accessToken.split('.')[1]));
+    const currentTime = Date.now() / 1000;
+    const expirationTime = decoded.exp;
+    const durationInSeconds = expirationTime - currentTime;
+    const durationInMinutes = Math.floor(durationInSeconds / 60);
+    const durationInHours = Math.floor(durationInMinutes / 60);
+    
+    console.log('🔐 Información del Token:');
+    console.log(`   - Emitido: ${new Date(decoded.iat * 1000).toLocaleString()}`);
+    console.log(`   - Expira: ${new Date(expirationTime * 1000).toLocaleString()}`);
+    console.log(`   - Duración: ${durationInMinutes} minutos (${durationInHours} horas)`);
+    console.log(`   - Tiempo restante: ${durationInMinutes} minutos`);
+    
+    return {
+      issuedAt: decoded.iat,
+      expiresAt: expirationTime,
+      durationMinutes: durationInMinutes,
+      durationHours: durationInHours
+    };
+  } catch (error) {
+    console.error('Error al decodificar el token:', error);
+    return null;
+  }
+};
+
 export const checkKeycloakSession = async (): Promise<boolean> => {
   const accessToken = localStorage.getItem('accessToken');
 
@@ -145,6 +173,11 @@ export const loginToKeycloak = async (username: string, password: string) => {
 
     localStorage.setItem('accessToken', access_token);
     localStorage.setItem('refreshToken', refresh_token);
+    // También guardar en sessionStorage para compatibilidad
+    sessionStorage.setItem('jwt_access_token', access_token);
+
+    // Mostrar información de duración del token
+    logTokenDuration(access_token);
 
     return access_token;
   } catch (error: any) {
@@ -176,6 +209,12 @@ export const checkSessionWithRefreshToken = async () => {
     const data = response.data.data;
     localStorage.setItem('accessToken', data.access_token);
     localStorage.setItem('refreshToken', data.refresh_token);
+    // También guardar en sessionStorage para compatibilidad
+    sessionStorage.setItem('jwt_access_token', data.access_token);
+
+    // Mostrar información de duración del token refrescado
+    console.log('🔄 Token refrescado:');
+    logTokenDuration(data.access_token);
 
     return true;
   } catch (error) {

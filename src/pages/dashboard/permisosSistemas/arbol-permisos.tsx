@@ -25,6 +25,8 @@ import {
   ListItemText,
   ListItemButton,
   Collapse,
+  Autocomplete,
+  TextField,
 } from '@mui/material';
 
 import { CONFIG } from 'src/config-global';
@@ -303,6 +305,30 @@ type GroupRolesResponse = {
   data: GroupRole[];
 };
 
+type Usuario = {
+  id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  emailVerified: boolean;
+  attributes?: {
+    cargo?: string[];
+    sucursal?: string[];
+    departamento?: string[];
+    [key: string]: string[] | undefined;
+  };
+  createdTimestamp: number;
+  enabled: boolean;
+  groupRole: string;
+  groupRoleDescription: string;
+};
+
+type UsuariosResponse = {
+  success?: boolean;
+  data?: Usuario[];
+} | Usuario[];
+
 const ExpandIcon = () => (
   <Typography component="span" sx={{ fontSize: 20, lineHeight: 1, color: 'text.secondary' }}>
     ▸
@@ -323,6 +349,9 @@ export function ArbolPermisos({ userData }: Props) {
   const [selectedGroupRole, setSelectedGroupRole] = useState<string>('');
   const [previousGroupRole, setPreviousGroupRole] = useState<string>('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [loadingUsuarios, setLoadingUsuarios] = useState(false);
+  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -359,6 +388,27 @@ export function ArbolPermisos({ userData }: Props) {
     }
     fetchGroupRoles();
   }, [userData?.groupRole]);
+
+  useEffect(() => {
+    async function fetchUsuarios() {
+      setLoadingUsuarios(true);
+      try {
+        const response = await axios.get<UsuariosResponse>(`${CONFIG.serverUrl}/api/keycloak/usuarios`);
+        const usuariosData = Array.isArray(response.data) ? response.data : response.data?.data || [];
+        setUsuarios(usuariosData);
+      } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+        setToast({
+          open: true,
+          message: 'Error al cargar usuarios',
+          severity: 'error'
+        });
+      } finally {
+        setLoadingUsuarios(false);
+      }
+    }
+    fetchUsuarios();
+  }, []);
 
   useEffect(() => {
     // Inicializar el rol anterior cuando se carga el componente
@@ -497,6 +547,11 @@ export function ArbolPermisos({ userData }: Props) {
     const newGroupRole = event.target.value;
     setSelectedGroupRole(newGroupRole);
 
+    // Limpiar la selección de usuario cuando se cambia rol manualmente
+    if (selectedUsuario) {
+      setSelectedUsuario(null);
+    }
+
     try {
       // Obtener los roles del grupo seleccionado
       const response = await axios.get(`${CONFIG.serverUrl}/api/keycloak/groups/${newGroupRole}/pantallas`);
@@ -549,16 +604,17 @@ export function ArbolPermisos({ userData }: Props) {
   };
 
   const handleChangeRole = async () => {
+    // Solo cambiar rol del usuario actual, no del usuario seleccionado
     if (!userData?.id || !selectedGroupRole) return;
 
     setIsUpdating(true);
     try {
-      // 1. Intentar eliminar el rol actual (que ahora es el anterior)
-      if (previousGroupRole) {
+      // 1. Intentar eliminar el rol actual del usuario
+      if (userData.groupRole && userData.groupRole !== 'N/A') {
         try {
           await axios.delete(`${CONFIG.serverUrl}/api/keycloak/user/${userData.id}/roles`, {
             data: {
-              roles: [{ name: previousGroupRole }]
+              roles: [{ name: userData.groupRole }]
             }
           });
         } catch (deleteError) {
@@ -573,13 +629,24 @@ export function ArbolPermisos({ userData }: Props) {
       });
 
       if (response.data.success) {
-        // Actualizar el rol anterior al rol que acabamos de cambiar
+        // Actualizar referencias locales
         setPreviousGroupRole(selectedGroupRole);
+        
+        // Determinar el mensaje según el origen del cambio
+        const successMessage = selectedUsuario 
+          ? `Rol adoptado exitosamente de ${selectedUsuario.firstName} ${selectedUsuario.lastName}`
+          : `Rol cambiado exitosamente a ${groupRoles.find(gr => gr.name === selectedGroupRole)?.description || selectedGroupRole}`;
+        
         setToast({
           open: true,
-          message: 'Rol actualizado exitosamente',
+          message: successMessage,
           severity: 'success'
         });
+
+        // Limpiar selección de usuario después de adoptar su rol
+        if (selectedUsuario) {
+          setSelectedUsuario(null);
+        }
       } else {
         throw new Error(response.data.message || 'Error al actualizar el rol');
       }
@@ -592,6 +659,70 @@ export function ArbolPermisos({ userData }: Props) {
       });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleUsuarioSelect = async (usuario: Usuario | null) => {
+    setSelectedUsuario(usuario);
+    
+    // Si se selecciona un usuario, cargar su rol en el selector de grupo
+    if (usuario && usuario.groupRole !== 'N/A') {
+      setSelectedGroupRole(usuario.groupRole);
+      setPreviousGroupRole(usuario.groupRole);
+      
+      // Cargar los permisos de este usuario
+      try {
+        const response = await axios.get(`${CONFIG.serverUrl}/api/keycloak/groups/${usuario.groupRole}/pantallas`);
+        
+        // Reinicializar selectedActions con los permisos del usuario
+        const initialSelectedActions: SelectedActions = {};
+        const initializeActions = (node: PermisoNode) => {
+          if (node.tipo === 'pantalla' && node.acciones) {
+            const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
+            initialSelectedActions[pantallaId] = {};
+            node.acciones.forEach(action => {
+              const groupRoleNames = response.data.success ? 
+                response.data.data.map((role: { name: string }) => role.name) : 
+                [];
+              const roleName = `${node.name}__${action}`;
+              initialSelectedActions[pantallaId][action] = groupRoleNames.includes(roleName);
+            });
+          }
+          node.children?.forEach(initializeActions);
+        };
+
+        if (treeData) {
+          initializeActions(treeData);
+          setSelectedActions(initialSelectedActions);
+        }
+      } catch (error) {
+        console.error('Error al cargar permisos del usuario:', error);
+      }
+    } else if (usuario && usuario.groupRole === 'N/A') {
+      // Si el usuario no tiene rol, limpiar el selector de grupo
+      setSelectedGroupRole('');
+      setPreviousGroupRole('');
+      
+      // Limpiar permisos
+      if (treeData) {
+        const emptySelectedActions: SelectedActions = {};
+        const initializeEmptyActions = (node: PermisoNode) => {
+          if (node.tipo === 'pantalla' && node.acciones) {
+            const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
+            emptySelectedActions[pantallaId] = {};
+            node.acciones.forEach(action => {
+              emptySelectedActions[pantallaId][action] = false;
+            });
+          }
+          node.children?.forEach(initializeEmptyActions);
+        };
+        initializeEmptyActions(treeData);
+        setSelectedActions(emptySelectedActions);
+      }
+    } else if (userData?.groupRole) {
+      // Si no hay usuario seleccionado, volver a los datos del usuario actual
+      setSelectedGroupRole(userData.groupRole);
+      setPreviousGroupRole(userData.groupRole);
     }
   };
 
@@ -642,17 +773,129 @@ export function ArbolPermisos({ userData }: Props) {
             </Select>
           </FormControl>
           
-          {selectedGroupRole && selectedGroupRole !== previousGroupRole && (
+          {selectedGroupRole && selectedGroupRole !== userData?.groupRole && (
             <Button
               variant="contained"
               onClick={handleChangeRole}
               disabled={isUpdating}
               sx={{ minWidth: 120 }}
             >
-              {isUpdating ? 'Actualizando...' : 'Cambiar Rol'}
+              {isUpdating ? 'Actualizando...' : 
+               selectedUsuario ? `Adoptar Rol de ${selectedUsuario.firstName}` : 'Cambiar Rol'}
             </Button>
           )}
         </Stack>
+      </Box>
+
+      {/* Selector de Usuario */}
+      <Box sx={{ mb: 3 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Autocomplete
+            sx={{ flexGrow: 1 }}
+            options={usuarios.filter(usuario => usuario.groupRole !== 'N/A' && usuario.enabled)}
+            getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+            value={selectedUsuario}
+            onChange={(event, newValue) => {
+              handleUsuarioSelect(newValue);
+            }}
+            disabled={loadingUsuarios}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Buscar rol por usuario"
+                placeholder="Escriba el nombre del usuario..."
+                sx={{
+                  '& .MuiInputBase-root': {
+                    py: 0.5
+                  }
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <li {...props} style={{ padding: '12px 16px' }}>
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ width: '100%' }}>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      {option.firstName} {option.lastName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      @{option.username} • {option.email}
+                    </Typography>
+                    {option.attributes?.cargo && (
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                        {option.attributes.cargo[0]}
+                        {option.attributes?.sucursal && ` • ${option.attributes.sucursal[0]}`}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Chip
+                    label={option.groupRoleDescription}
+                    size="small"
+                    color="primary"
+                    variant="soft"
+                    sx={{ 
+                      maxWidth: 150,
+                      '& .MuiChip-label': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }
+                    }}
+                  />
+                </Stack>
+              </li>
+            )}
+            noOptionsText={
+              loadingUsuarios 
+                ? 'Cargando usuarios...' 
+                : usuarios.filter(usuario => usuario.groupRole !== 'N/A' && usuario.enabled).length === 0
+                  ? 'No hay usuarios con roles asignados'
+                  : 'No se encontraron usuarios'
+            }
+            filterOptions={(options, { inputValue }) => 
+              options.filter(option => {
+                const searchText = inputValue.toLowerCase();
+                const fullName = `${option.firstName} ${option.lastName}`.toLowerCase();
+                const username = option.username.toLowerCase();
+                const email = option.email.toLowerCase();
+                
+                return fullName.includes(searchText) || 
+                       username.includes(searchText) || 
+                       email.includes(searchText);
+              })
+            }
+          />
+        </Stack>
+        
+        {selectedUsuario && (
+          <Alert 
+            severity="info" 
+            sx={{ mt: 2 }}
+            icon={<Iconify icon="eva:eye-fill" />}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="body2">
+                  <strong>Consultando:</strong> {selectedUsuario.firstName} {selectedUsuario.lastName} (@{selectedUsuario.username})
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {selectedUsuario.email}
+                  {selectedUsuario.attributes?.cargo && ` • ${selectedUsuario.attributes.cargo[0]}`}
+                  {selectedUsuario.attributes?.sucursal && ` • ${selectedUsuario.attributes.sucursal[0]}`}
+                </Typography>
+                <Typography variant="caption" color="info.main" sx={{ display: 'block', mt: 0.5 }}>
+                  📋 Los permisos mostrados son de este usuario - Usa &ldquo;Copiar Rol&rdquo; para adoptarlos
+                </Typography>
+              </Box>
+              <Chip
+                label={selectedUsuario.groupRole !== 'N/A' ? selectedUsuario.groupRoleDescription : 'Sin Rol Asignado'}
+                size="small"
+                color={selectedUsuario.groupRole !== 'N/A' ? 'primary' : 'default'}
+                variant={selectedUsuario.groupRole !== 'N/A' ? 'soft' : 'outlined'}
+              />
+            </Stack>
+          </Alert>
+        )}
       </Box>
 
       {treeData ? (

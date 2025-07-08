@@ -71,6 +71,96 @@ export const navData = [
                 ],
               },
             ],
+          },         
+          {
+            title: 'Inventario',
+            path: paths.dashboard.tic.moduloInventario.root,
+            icon: ICONS.folder,
+            roles: [ROLES.MODULO_INVENTARIO_TIC],
+            children: [
+              {
+                title: 'Marcas',
+                path: paths.dashboard.tic.moduloInventario.root,
+                icon: ICONS.blog,
+                children: [
+                  {
+                    title: 'Nueva marca',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevaMarca,
+                    roles: [
+                      ROLES.MARCA_INVENTARIO_TIC_VIEW,
+                      ROLES.MARCA_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de marcas',
+                    path: paths.dashboard.tic.moduloInventario.listaMarcas,
+                    roles: [
+                      ROLES.LISTA_MARCAS_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                ]
+              },
+              {
+                title: 'Modelos',
+                path: paths.dashboard.tic.moduloInventario.root,
+                icon: ICONS.blog,
+                children: [
+                  {
+                    title: 'Nuevo modelo',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoModelo,
+                    roles: [
+                      ROLES.MODELO_INVENTARIO_TIC_VIEW,
+                      ROLES.MODELO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de modelos',
+                    path: paths.dashboard.tic.moduloInventario.listaModelos,
+                    roles: [
+                      ROLES.LISTA_MODELOS_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                ]
+              },
+              {
+                title: 'Equipos',
+                path: paths.dashboard.tic.moduloInventario.root,
+                icon: ICONS.course,
+                children: [
+                  {
+                    title: 'Nuevo equipo',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoEquipo,
+                    roles: [
+                      ROLES.EQUIPO_INVENTARIO_TIC_VIEW,
+                      ROLES.EQUIPO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de equipos',
+                    path: paths.dashboard.tic.moduloInventario.listaEquipos,
+                    roles: [
+                      ROLES.LISTA_EQUIPOS_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                  {
+                    title: 'Nuevo atributo tipo equipo ',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoAtributo,
+                    roles: [
+                      ROLES.ATRIBUTO_INVENTARIO_TIC_VIEW,
+                      ROLES.ATRIBUTO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de atributos tipo equipo',
+                    path: paths.dashboard.tic.moduloInventario.listaAtributos,
+                    roles: [
+                      ROLES.LISTA_ATRIBUTOS_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                ]
+              },
+                  
+            ],
           },
         ],
       },

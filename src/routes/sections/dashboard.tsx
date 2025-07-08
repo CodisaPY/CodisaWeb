@@ -49,6 +49,19 @@ const UserAccountPage = lazy(() => import('src/pages/dashboard/user/account'));
 const UserCreatePage = lazy(() => import('src/pages/dashboard/user/new'));
 const NewUserPage = lazy(() => import('src/pages/dashboard/user/new'));
 
+// Marca
+const NewMarcaPage = lazy(() => import('src/pages/dashboard/tic/nueva-marca'));
+const MarcaListPage = lazy(() => import('src/pages/dashboard/tic/lista-marcas'));
+const MarcaEditPage = lazy(() => import('src/pages/dashboard/tic/editar-marca'));
+const NewModeloPage = lazy(() => import('src/pages/dashboard/tic/nuevo-modelo'));
+const ModeloListPage = lazy(() => import('src/pages/dashboard/tic/lista-modelos'));
+const ModeloEditPage = lazy(() => import('src/pages/dashboard/tic/editar-modelo'));
+const NewEquipoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-equipo'));
+
+// Atributo
+const NewAtributoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-atributo'));
+const AtributoListPage = lazy(() => import('src/pages/dashboard/tic/lista-atributos'));
+const AtributoEditPage = lazy(() => import('src/pages/dashboard/tic/editar-atributo'));
 
 const Notificaciones = lazy(() => import('src/pages/dashboard/notificaciones/edit'));
 const AutorizacionesFirmas = lazy(() => import('src/pages/dashboard/autorizacionesFirmas/edit'));
@@ -225,6 +238,141 @@ export const dashboardRoutes = [
               },
             ],
           },
+
+
+          {
+            path: 'moduloInventario',
+            children: [
+                             {
+                 path: 'nuevaMarca',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.MARCA_INVENTARIO_TIC_CREATE,
+                       ROLES.MARCA_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewMarcaPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaMarcas',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_MARCAS_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <MarcaListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarMarca/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_MARCAS_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <MarcaEditPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'nuevoModelo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.MODELO_INVENTARIO_TIC_CREATE,
+                       ROLES.MODELO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewModeloPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaModelos',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_MODELOS_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <ModeloListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarModelo/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_MODELOS_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <ModeloEditPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'nuevoEquipo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.EQUIPO_INVENTARIO_TIC_CREATE,
+                       ROLES.EQUIPO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewEquipoPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'nuevoAtributo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.ATRIBUTO_INVENTARIO_TIC_CREATE,
+                       ROLES.ATRIBUTO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewAtributoPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaAtributos',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_ATRIBUTOS_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <AtributoListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarAtributo/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_ATRIBUTOS_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <AtributoEditPage />
+                   </RoleGuard>
+                 ),
+               },
+              
+            ],
+          },
+
+
+
         ],
       },
 

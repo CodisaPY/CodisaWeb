@@ -37,11 +37,14 @@ export function AuthGuard({ children }: Props) {
   );
 
   const checkPermissions = async (): Promise<void> => {
+    console.log('🔒 Verificando permisos - Loading:', loading, 'Authenticated:', authenticated);
     if (loading) {
+      console.log('⏳ Aún cargando...');
       return;
     }
 
     if (!authenticated) {
+      console.log('🚫 Usuario no autenticado, redirigiendo al login...');
       const { method } = CONFIG.auth;
 
       const signInPath = {

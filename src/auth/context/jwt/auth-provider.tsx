@@ -22,9 +22,12 @@ export function AuthProvider({ children }: Props) {
 
   const checkUserSession = useCallback(async () => {
     try {
+      console.log('🔍 Verificando sesión de usuario...');
       const accessToken = localStorage.getItem(LOCAL_STORAGE_KEY);
+      console.log('Token encontrado en localStorage:', accessToken ? 'SÍ' : 'NO');
 
       if (accessToken && isValidToken(accessToken)) {
+        console.log('✅ Token válido, configurando sesión...');
         setSession(accessToken);
 
         // Simulando la respuesta de la API
@@ -48,7 +51,9 @@ export function AuthProvider({ children }: Props) {
         };
 
         setState({ user: { ...simulatedResponse.user, accessToken }, loading: false });
+        console.log('✅ Usuario autenticado correctamente');
       } else {
+        console.log('❌ Token no válido o no encontrado');
         setState({ user: null, loading: false });
       }
     } catch (error) {

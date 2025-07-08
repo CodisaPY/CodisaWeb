@@ -39,7 +39,14 @@ export default defineConfig({
   server: { 
     port: PORT, 
     host: true,
-    allowedHosts: ["linkercodisa.codisa.com.py"] // Agrega el host permitido aquí
+    allowedHosts: ["linkercodisa.codisa.com.py"], // Agrega el host permitido aquí
+    proxy: {
+      '/api': {
+        target: 'http://192.168.0.198:9003/backend-linker',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   },
   preview: { port: PORT, host: true ,
     allowedHosts: ["linkercodisa.codisa.com.py"] // Agrega el host permitido aquí

@@ -156,10 +156,25 @@ export const paths = {
     },
 
     tic: {
-      root: `${ROOTS.DASHBOARD}/tic/moduloSolicitudes`,
+      root: `${ROOTS.DASHBOARD}/tic/`,
       moduloSolicitudes: {
         root: `${ROOTS.DASHBOARD}/tic`,
         crearSolicitudNuevaMaquina: `${ROOTS.DASHBOARD}/tic/moduloSolicitudes/nuevaSolicitudMaquina`,
+      },
+      moduloInventario: {
+        root: `${ROOTS.DASHBOARD}/tic`,
+        crearNuevaMarca: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevaMarca`,
+        editarMarca: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarMarca/${id}`,
+        crearNuevoModelo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoModelo`,
+        editarModelo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarModelo/${id}`,
+        listaMarcas: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaMarcas`,
+        listaModelos: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaModelos`,
+        crearNuevoEquipo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoEquipo`,
+        editarEquipo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarEquipo/${id}`,
+        listaEquipos: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaEquipos`,
+        crearNuevoAtributo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoAtributo`,
+        editarAtributo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarAtributo/${id}`,
+        listaAtributos: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaAtributos`,
       },
     },
 

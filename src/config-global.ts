@@ -39,7 +39,7 @@ export const CONFIG: ConfigValue = {
   appVersion: packageJson.version,
 
   serverUrl: import.meta.env.VITE_SERVER_URL || 'http://localhost:4000', // URL base del servidor Node.js
-  springServerUrl: import.meta.env.VITE_SPRING_SERVER_URL || 'http://localhost:8080', // URL base del servidor Spring Boot
+  springServerUrl: import.meta.env.VITE_SPRING_SERVER_URL || 'http://localhost:9003', // URL base del servidor Spring Boot
 
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',
 

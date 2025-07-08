@@ -1,0 +1,36 @@
+# 1️⃣ Etapa de construcción con Node.js Debian (compatible ARM64 y AMD64)
+FROM node:18-bullseye AS builder
+
+WORKDIR /app
+
+# Copiar package.json y package-lock.json
+COPY package*.json ./
+
+# Eliminar package-lock.json para evitar conflictos y luego instalar dependencias con legacy-peer-deps
+RUN rm -f package-lock.json && npm install --legacy-peer-deps
+
+# Copiar resto del código
+COPY . .
+
+# Copiar archivo de entorno para producción
+COPY .env.production .env
+
+# Construir la app
+RUN npm run build
+
+# 2️⃣ Etapa producción: imagen ligera basada en Debian slim
+FROM node:18-bullseye-slim
+
+WORKDIR /app
+
+# Instalar serve globalmente para servir archivos estáticos
+RUN npm install -g serve
+
+# Copiar sólo la carpeta build final desde el builder
+COPY --from=builder /app/dist ./dist
+
+# Exponer el puerto que usará serve
+EXPOSE 3000
+
+# Comando para iniciar el servidor estático en producción
+CMD ["serve", "-s", "dist", "-l", "3000"]
