@@ -51,7 +51,7 @@ export const navData = [
     subheader: 'Linker Codisa',
     items: [
       {
-        title: 'Módulo de TIC',
+        title: 'TIC',
         path: paths.dashboard.tic.root,
         icon: ICONS.tic,
         roles: [ROLES.MODULO_TIC],
@@ -157,6 +157,21 @@ export const navData = [
                       ROLES.LISTA_ATRIBUTOS_INVENTARIO_TIC_VIEW,
                     ],
                   },
+                  {
+                    title: 'Nuevo tipo de equipo',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoTipoEquipo,
+                    roles: [
+                      ROLES.TIPO_EQUIPO_INVENTARIO_TIC_VIEW,
+                      ROLES.TIPO_EQUIPO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de tipos de equipo',
+                    path: paths.dashboard.tic.moduloInventario.listaTiposEquipo,
+                    roles: [
+                      ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
                 ]
               },
                   
@@ -188,9 +203,60 @@ export const navData = [
           },
         ],
       },
+      { title: 'Reserva de sala',
+        path: paths.dashboard.seguridad.root,
+        icon: ICONS.calendar,
+        roles: [ROLES.MODULO_SALA_RESERVA],
+        children: [
+          {
+            title: 'Referenciales',
+            path: paths.dashboard.salaReserva.moduloReferenciales.root,
+            icon: ICONS.mail,
+            roles: [ROLES.MODULO_REFERENCIALES_SALA],
+            children: [
+              {
+                title: 'Salas',
+                path: paths.dashboard.salaReserva.moduloReferenciales.listaSalas,
+                roles: [
+                  ROLES.LISTA_SALA_RESERVA_VIEW,
+                  ROLES.LISTA_SALA_RESERVA_CREATE,
+                 ],
+              },
+              {
+                title: 'Nueva sala',
+                path: paths.dashboard.salaReserva.moduloReferenciales.crearNuevaSala,
+                roles: [
+                  ROLES.LISTA_SALA_RESERVA_VIEW,
+                  ROLES.LISTA_SALA_RESERVA_VIEW,
+                ],
+              },
+             
+            ],
+          },
+          {
+            title: 'Agendamiento',
+            path: paths.dashboard.salaReserva.moduloReferenciales.root,
+            icon: ICONS.mail,
+            roles: [ROLES.MODULO_AGENDAMIENTO_SALA],
+            children: [
+              {
+                title: 'Agendamientos',
+                path: paths.dashboard.salaReserva.moduloAgendamiento.listarAgendamiento,
+                roles: [
+                  ROLES.GENERACION_AGENDAMIENTO_SALA_CREATE,
+                  ROLES.GENERACION_AGENDAMIENTO_SALA_VIEW,
+                 ],
+              },
+             
+             
+            ],
+          },
+        ]
+          
+        },
 
       {
-        title: 'Módulo de configuración',
+        title: 'Configuraciones',
         path: paths.dashboard.seguridad.root,
         icon: ICONS.settings,
         roles: [ROLES.MODULO_SEGURIDAD],

@@ -4,6 +4,7 @@ import { ROLES } from '@guard/roles.constants';
 import { useMemo, useState, useEffect } from 'react';
 import { getRolesFromToken } from '@guard/role-utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@apollo/client';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -16,6 +17,7 @@ import { CONFIG } from 'src/config-global';
 
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
+import { CREAR_MARCA_MUTATION, UPDATE_MARCA_MUTATION } from 'src/graphql/mutations/marcas';
 
 // ----------------------------------------------------------------------
 
@@ -45,12 +47,59 @@ export function NewMarcaForm({ currentMarca }: Props) {
   const [loading, setLoading] = useState(false);
   const [userRoles, setUserRoles] = useState<string[]>([]);
 
+  // Mutation GraphQL para crear marcas
+  const [crearMarca, { loading: mutationLoading, error: mutationError }] = useMutation(CREAR_MARCA_MUTATION, {
+    onCompleted: (data) => {
+      console.log('✅ Mutation CREATE_MARCA ejecutada exitosamente:', data);
+      toast.success('Marca creada exitosamente');
+      router.push(paths.dashboard.tic.moduloInventario.listaMarcas);
+    },
+    onError: (error) => {
+      console.error('❌ Error en mutation CREATE_MARCA:', error);
+      toast.error(error.message || 'Error al crear la marca');
+    },
+    refetchQueries: ['Marcas'],
+    update: (cache, { data: mutationData }) => {
+      if (mutationData?.createMarca) {
+        // Invalidar la caché de marcas
+        cache.evict({ fieldName: 'marcas' });
+        cache.gc();
+      }
+    },
+  });
+
+  // Mutation GraphQL para actualizar marcas
+  const [updateMarca, { loading: updateMutationLoading, error: updateMutationError }] = useMutation(UPDATE_MARCA_MUTATION, {
+    onCompleted: (data) => {
+      console.log('✅ Mutation UPDATE_MARCA ejecutada exitosamente:', data);
+      toast.success('Marca actualizada exitosamente');
+      router.push(paths.dashboard.tic.moduloInventario.listaMarcas);
+    },
+    onError: (error) => {
+      console.error('❌ Error en mutation UPDATE_MARCA:', error);
+      toast.error(error.message || 'Error al actualizar la marca');
+    },
+    refetchQueries: ['Marcas'],
+    update: (cache, { data: mutationData }) => {
+      if (mutationData?.updateMarca) {
+        // Invalidar la caché de marcas
+        cache.evict({ fieldName: 'marcas' });
+        cache.gc();
+      }
+    },
+  });
+
   const tienePermisoCrear = useMemo(
     () =>
       [
         ROLES.MARCA_INVENTARIO_TIC_CREATE,
         ROLES.MARCA_INVENTARIO_TIC_VIEW,
       ].some((r) => userRoles.includes(r)),
+    [userRoles]
+  );
+
+  const tienePermisoEditar = useMemo(
+    () => userRoles.includes(ROLES.LISTA_MARCAS_INVENTARIO_TIC_UPDATE),
     [userRoles]
   );
 
@@ -81,56 +130,31 @@ export function NewMarcaForm({ currentMarca }: Props) {
       const isEdit = !!currentMarca;
       
       if (isEdit) {
-        // Modo edición - PUT
-        const marcaData = {
-          id: currentMarca.id,
-          nombre: data.nombre,
-        };
-
-        const url = `${CONFIG.springServerUrl}/backend-linker/api/marcas/${currentMarca.id}`;
-        console.log('PUT URL:', url);
-        console.log('PUT Data:', marcaData);
-
-        const response = await fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'accept': 'application/json',
-          },
-          body: JSON.stringify(marcaData),
+        // Modo edición - GraphQL
+        console.log('Actualizando marca con GraphQL:', data);
+        
+        await updateMarca({
+          variables: {
+            updateMarcaId: currentMarca.id,
+            input: {
+              nombre: data.nombre,
+            }
+          }
         });
-
-        if (response.ok) {
-          toast.success('Marca actualizada exitosamente');
-          router.push(paths.dashboard.tic.moduloInventario.listaMarcas);
-        } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || 'Error al actualizar la marca');
-        }
       } else {
-        // Modo creación - POST
-        const marcaData = {
-          id: 1, // El endpoint requiere un id, usaremos 1 por defecto o generamos uno
-          nombre: data.nombre,
-        };
-
-        const response = await fetch(`${CONFIG.springServerUrl}/backend-linker/api/marcas`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'accept': 'application/json',
-          },
-          body: JSON.stringify(marcaData),
+        // Modo creación - GraphQL
+        console.log('Creando marca con GraphQL:', data);
+        
+        await crearMarca({
+          variables: {
+            input: {
+              nombre: data.nombre,
+            }
+          }
         });
-
-        if (response.ok) {
-          toast.success('Marca creada exitosamente');
-          reset();
-          router.push(paths.dashboard.tic.moduloInventario.listaMarcas);
-        } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || 'Error al crear la marca');
-        }
+        
+        // Reset del formulario después de crear exitosamente
+        reset();
       }
     } catch (error) {
       console.error(error);
@@ -161,11 +185,11 @@ export function NewMarcaForm({ currentMarca }: Props) {
           />
         </Box>
 
-        {tienePermisoCrear && (
+        {(tienePermisoCrear || (currentMarca && tienePermisoEditar)) && (
           <LoadingButton
             type="submit"
             variant="contained"
-            loading={isSubmitting || loading}
+            loading={isSubmitting || loading || mutationLoading || updateMutationLoading}
             disabled={!methods.formState.isValid}
             sx={{ ml: 'auto' }}
           >

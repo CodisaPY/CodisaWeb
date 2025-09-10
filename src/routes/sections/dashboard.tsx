@@ -63,6 +63,17 @@ const NewAtributoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-atribut
 const AtributoListPage = lazy(() => import('src/pages/dashboard/tic/lista-atributos'));
 const AtributoEditPage = lazy(() => import('src/pages/dashboard/tic/editar-atributo'));
 
+// Tipo Equipo
+const NewTipoEquipoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-tipo-equipo'));
+const TipoEquipoListPage = lazy(() => import('src/pages/dashboard/tic/lista-tipos-equipo'));
+const TipoEquipoEditPage = lazy(() => import('src/pages/dashboard/tic/editar-tipo-equipo'));
+
+// Sala Reserva
+const SalaListPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/listaSalas'));
+const NuevaSalaPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/nuevaSala'));
+const EditarSalaPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/editarSala'));
+const AgendamientoPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloAgendamiento/agendamiento'));
+
 const Notificaciones = lazy(() => import('src/pages/dashboard/notificaciones/edit'));
 const AutorizacionesFirmas = lazy(() => import('src/pages/dashboard/autorizacionesFirmas/edit'));
 
@@ -367,12 +378,114 @@ export const dashboardRoutes = [
                    </RoleGuard>
                  ),
                },
+               {
+                 path: 'nuevoTipoEquipo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.TIPO_EQUIPO_INVENTARIO_TIC_CREATE,
+                       ROLES.TIPO_EQUIPO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewTipoEquipoPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaTiposEquipo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <TipoEquipoListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarTipoEquipo/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <TipoEquipoEditPage />
+                   </RoleGuard>
+                 ),
+               },
               
             ],
           },
 
 
 
+        ],
+      },
+
+      {
+        path: 'salaReserva',
+        children: [
+          {
+            path: 'moduloReferenciales',
+            children: [
+              {
+                path: 'listaSalas',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <SalaListPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'crearNuevaSala',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <NuevaSalaPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'editarSala/:id',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <EditarSalaPage />
+                  </RoleGuard>
+                ),
+              },
+            ],
+          },
+          {
+            path: 'moduloAgendamiento',
+            children: [
+              {
+                path: 'listarAgendamiento',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.GENERACION_AGENDAMIENTO_SALA_CREATE,
+                      ROLES.GENERACION_AGENDAMIENTO_SALA_VIEW,
+                    ]}
+                  >
+                    <AgendamientoPage />
+                  </RoleGuard>
+                ),
+              },
+            ],
+          },
         ],
       },
 

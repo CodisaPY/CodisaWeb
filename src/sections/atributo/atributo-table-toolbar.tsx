@@ -141,6 +141,14 @@ export function AtributoTableToolbar({ filters, options, onResetPage, onResetFil
               />
               Número
             </MenuItem>
+            <MenuItem value="lista">
+              <Checkbox
+                disableRipple
+                size="small"
+                checked={filters.state.tipoDato.includes('lista')}
+              />
+              Lista
+            </MenuItem>
           </Select>
         </FormControl>
 

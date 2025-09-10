@@ -24,6 +24,10 @@ export function AtributoEditView() {
     esObligatorio: searchParams.get('esObligatorio') || '',
     placeholder: searchParams.get('placeholder') || '',
     descripcionAtributo: searchParams.get('descripcionAtributo') || '',
+    opcionesLista: searchParams.get('opcionesLista') || '',
+    tieneDependencia: searchParams.get('tieneDependencia') === 'true',
+    atributoDependienteId: parseInt(searchParams.get('atributoDependienteId') || '0', 10) || undefined,
+    valorDependiente: searchParams.get('valorDependiente') || '',
   };
 
   return (

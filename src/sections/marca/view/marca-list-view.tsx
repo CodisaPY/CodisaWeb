@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation } from '@apollo/client';
 import { ROLES } from '@guard/roles.constants';
 import { getRolesFromToken } from '@guard/role-utils';
 
@@ -19,8 +20,6 @@ import { RouterLink } from 'src/routes/components';
 import { useTable } from 'src/hooks/use-table';
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { CONFIG } from 'src/config-global';
-
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
@@ -35,6 +34,8 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
+import { MARCAS_QUERY } from 'src/graphql/queries/marcas';
+import { DELETE_MARCA_MUTATION, DELETE_MARCAS_MUTATION } from 'src/graphql/mutations/marcas';
 import { MarcaTableRow } from '../marca-table-row';
 
 import type { MarcaItem } from '../marca-table-row';
@@ -55,9 +56,40 @@ export function MarcaListView() {
   const router = useRouter();
   const confirm = useBoolean();
   
-  const [tableData, setTableData] = useState<MarcaItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<string[]>([]);
+
+  // Query GraphQL para obtener marcas
+  const { data, loading, error, refetch } = useQuery(MARCAS_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (queryData) => {
+      console.log('✅ Query MARCAS ejecutada exitosamente:', queryData);
+    },
+    onError: (queryError) => {
+      console.error('❌ Error en query MARCAS:', queryError);
+    }
+  });
+
+  // Mutaciones GraphQL para eliminar marcas
+  const [deleteMarca] = useMutation(DELETE_MARCA_MUTATION, {
+    onCompleted: (mutationData) => {
+      console.log('✅ Mutación DELETE_MARCA ejecutada exitosamente:', mutationData);
+    },
+    onError: (mutationError) => {
+      console.error('❌ Error en mutación DELETE_MARCA:', mutationError);
+    }
+  });
+  
+  const [deleteMarcas] = useMutation(DELETE_MARCAS_MUTATION, {
+    onCompleted: (mutationData) => {
+      console.log('✅ Mutación DELETE_MARCAS ejecutada exitosamente:', mutationData);
+    },
+    onError: (mutationError) => {
+      console.error('❌ Error en mutación DELETE_MARCAS:', mutationError);
+    }
+  });
+
+  const tableData = useMemo(() => data?.marcas || [], [data?.marcas]);
 
   const tienePermisoCrear = useMemo(
     () => userRoles.includes(ROLES.MARCA_INVENTARIO_TIC_CREATE),
@@ -69,34 +101,13 @@ export function MarcaListView() {
     setUserRoles(roles);
   }, []);
 
-  // Cargar marcas del API
-  const fetchMarcas = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${CONFIG.springServerUrl}/backend-linker/api/marcas`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTableData(data);
-      } else {
-        toast.error('Error al cargar las marcas');
-      }
-    } catch (error) {
+  // Manejar errores de GraphQL
+  useEffect(() => {
+    if (error) {
       console.error('Error fetching marcas:', error);
       toast.error('Error al cargar las marcas');
-    } finally {
-      setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchMarcas();
-  }, [fetchMarcas]);
+  }, [error]);
 
   const dataFiltered = tableData;
 
@@ -105,25 +116,39 @@ export function MarcaListView() {
   const notFound = !dataFiltered.length && !loading;
 
   const handleDeleteRow = useCallback(
-    (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== parseInt(id, 10));
-      toast.success('¡Marca eliminada con éxito!');
-      setTableData(deleteRow);
+    async (id: string) => {
+      try {
+        await deleteMarca({
+          variables: { deleteMarcaId: parseInt(id, 10) },
+          refetchQueries: [{ query: MARCAS_QUERY }],
+        });
+        toast.success('¡Marca eliminada con éxito!');
+      } catch (deleteError) {
+        console.error('Error deleting marca:', deleteError);
+        toast.error('Error al eliminar la marca');
+      }
     },
-    [tableData]
+    [deleteMarca]
   );
 
-  const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id.toString()));
-    toast.success('¡Marcas eliminadas con éxito!');
-    setTableData(deleteRows);
-    table.onSelectAllRows(false, []);
-    confirm.onFalse();
-  }, [table, tableData, confirm]);
+  const handleDeleteRows = useCallback(async () => {
+    try {
+      await deleteMarcas({
+        variables: { ids: table.selected.map(id => parseInt(id, 10)) },
+        refetchQueries: [{ query: MARCAS_QUERY }],
+      });
+      toast.success('¡Marcas eliminadas con éxito!');
+      table.onSelectAllRows(false, []);
+      confirm.onFalse();
+    } catch (deleteError) {
+      console.error('Error deleting marcas:', deleteError);
+      toast.error('Error al eliminar las marcas');
+    }
+  }, [deleteMarcas, table, confirm]);
 
   const handleEditRow = useCallback(
     (id: string) => {
-      const marca = tableData.find((item) => item.id.toString() === id);
+      const marca = tableData.find((item: MarcaItem) => item.id.toString() === id);
       if (marca) {
         const editUrl = `${paths.dashboard.tic.moduloInventario.editarMarca(id)}?nombre=${encodeURIComponent(marca.nombre)}`;
         router.push(editUrl);
@@ -174,7 +199,7 @@ export function MarcaListView() {
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    dataFiltered.map((row) => row.id.toString())
+                    dataFiltered.map((row: MarcaItem) => row.id.toString())
                   )
                 }
                 action={
@@ -198,7 +223,7 @@ export function MarcaListView() {
                     onSelectAllRows={(checked) =>
                       table.onSelectAllRows(
                         checked,
-                        dataFiltered.map((row) => row.id.toString())
+                        dataFiltered.map((row: MarcaItem) => row.id.toString())
                       )
                     }
                   />
@@ -209,7 +234,7 @@ export function MarcaListView() {
                         table.page * table.rowsPerPage,
                         table.page * table.rowsPerPage + table.rowsPerPage
                       )
-                      .map((row) => (
+                      .map((row: MarcaItem) => (
                         <MarcaTableRow
                           key={row.id}
                           row={row}

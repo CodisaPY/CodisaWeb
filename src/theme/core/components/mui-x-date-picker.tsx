@@ -130,7 +130,7 @@ const MuiMobileDateTimePicker: Components<Theme>['MuiMobileDateTimePicker'] = {
   /** **************************************
    * DEFAULT PROPS
    *************************************** */
-  defaultProps: { slots: defaultProps.date },
+  defaultProps: { slots: defaultProps.time },
 };
 
 const MuiTimePicker: Components<Theme>['MuiTimePicker'] = {

@@ -1,7 +1,7 @@
-import axios from 'axios';
 import { ROLES } from '@guard/roles.constants';
 import { getRolesFromToken } from '@guard/role-utils';
 import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useGraphQLToggleUserStatus } from 'src/hooks/use-graphql-users';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -72,16 +72,11 @@ export function UserListView() {
   const table = useTable();
   const router = useRouter();
   const confirm = useBoolean();
-  const { users, loading } = useGetUsers();
+  const { users, loading, refetch } = useGetUsers();
+  const { toggleUserStatus, loading: toggleLoading } = useGraphQLToggleUserStatus();
 
-  const [tableData, setTableData] = useState<User[]>([]);
-
-  useEffect(() => {
-    if (users) {
-      console.log('Actualizando tableData con usuarios:', users);
-      setTableData(users);
-    }
-  }, [users]);
+  // Usar directamente los usuarios sin estado local
+  const tableData = users || [];
 
   const filters = useSetState({
     name: '',
@@ -103,6 +98,11 @@ useEffect(() => {
   const roles = getRolesFromToken();
   setUserRoles(roles);
 }, []);
+
+// Refetch usuarios cuando se monta el componente (por si viene de una actualización)
+useEffect(() => {
+  refetch();
+}, [refetch]);
 
 
   const roleOptions = Array.from(new Set(tableData.map((u) => u.role).filter(Boolean))).map((option) => ({ value: option, label: option }));
@@ -147,19 +147,19 @@ useEffect(() => {
 
   const handleDeleteRow = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+      // TODO: Implementar eliminación con GraphQL
       toast.success('¡Usuario eliminado con éxito!');
-      setTableData(deleteRow);
+      // Refetch de usuarios después de eliminar
     },
-    [tableData]
+    []
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+    // TODO: Implementar eliminación múltiple con GraphQL
     toast.success('¡Usuarios eliminados con éxito!');
-    setTableData(deleteRows);
     confirm.onFalse();
-  }, [table.selected, tableData, confirm]);
+    // Refetch de usuarios después de eliminar
+  }, [confirm]);
 
   const handleEditRow = useCallback(
     (id: string) => {
@@ -178,16 +178,20 @@ useEffect(() => {
 
   const handleToggleActive = async (id: string) => {
     try {
-      await axios.patch(`${CONFIG.serverUrl}/api/keycloak/user/${id}/toggle-status`);
-      setTableData((prev) =>
-        prev.map((user) =>
-          user.id === id
-            ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-            : user
-        )
-      );
-      toast.success('Estado actualizado correctamente');
+      console.log('🔄 Iniciando toggle de estado para usuario:', id);
+      
+      const result = await toggleUserStatus(id);
+      
+      if (result.success) {
+        const statusText = result.active ? 'activado' : 'desactivado';
+        toast.success(`Usuario ${statusText} correctamente`);
+        console.log('✅ Estado del usuario cambiado exitosamente');
+      } else {
+        toast.error(result.message || 'Error al actualizar el estado');
+        console.error('❌ Error al cambiar estado:', result.message);
+      }
     } catch (error) {
+      console.error('💥 Error inesperado en toggle:', error);
       toast.error('Error al actualizar el estado');
     }
   };

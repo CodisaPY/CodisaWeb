@@ -18,6 +18,8 @@ import { SettingsDrawer, defaultSettings, SettingsProvider } from 'src/component
 
 import { CheckoutProvider } from 'src/sections/checkout/context';
 
+import { ApolloProvider } from '@apollo/client';
+
 import { AuthProvider as JwtAuthProvider } from 'src/auth/context/jwt';
 import { AuthProvider as Auth0AuthProvider } from 'src/auth/context/auth0';
 import { AuthProvider as AmplifyAuthProvider } from 'src/auth/context/amplify';
@@ -25,6 +27,7 @@ import { AuthProvider as SupabaseAuthProvider } from 'src/auth/context/supabase'
 import { AuthProvider as FirebaseAuthProvider } from 'src/auth/context/firebase';
 
 import { SessionChecker } from './auth/SessionChecker';
+import { apolloClient } from './lib/apollo';
 
 // ----------------------------------------------------------------------
 
@@ -39,24 +42,26 @@ export default function App() {
   useScrollToTop();
 
   return (
-    <I18nProvider>
-      <LocalizationProvider>
-        <AuthProvider>
-          <SettingsProvider settings={defaultSettings}>
-            <ThemeProvider>
-              <MotionLazy>
-                <CheckoutProvider>
-                  <Snackbar />
-                  <ProgressBar />
-                  <SettingsDrawer />
-                  <SessionChecker />
-                  <Router />
-                </CheckoutProvider>
-              </MotionLazy>
-            </ThemeProvider>
-          </SettingsProvider>
-        </AuthProvider>
-      </LocalizationProvider>
-    </I18nProvider>
+    <ApolloProvider client={apolloClient}>
+      <I18nProvider>
+        <LocalizationProvider>
+          <AuthProvider>
+            <SettingsProvider settings={defaultSettings}>
+              <ThemeProvider>
+                <MotionLazy>
+                  <CheckoutProvider>
+                    <Snackbar />
+                    <ProgressBar />
+                    <SettingsDrawer />
+                    <SessionChecker />
+                    <Router />
+                  </CheckoutProvider>
+                </MotionLazy>
+              </ThemeProvider>
+            </SettingsProvider>
+          </AuthProvider>
+        </LocalizationProvider>
+      </I18nProvider>
+    </ApolloProvider>
   );
 }

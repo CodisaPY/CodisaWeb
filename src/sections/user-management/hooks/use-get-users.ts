@@ -1,7 +1,4 @@
-import axios from 'axios';
-import { useState, useEffect } from 'react';
-
-import { CONFIG } from 'src/config-global';
+import { useGraphQLUsers } from 'src/hooks/use-graphql-users';
 
 // ----------------------------------------------------------------------
 
@@ -22,58 +19,24 @@ export type User = {
 };
 
 export function useGetUsers() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { users: graphqlUsers, loading, error, refetch } = useGraphQLUsers();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-          throw new Error('No hay token de acceso');
-        }
+  // Transformar los datos de GraphQL al formato esperado por el componente
+  const users: User[] = graphqlUsers.map((user) => ({
+    id: user.id,
+    name: `${user.firstName} ${user.lastName}`,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    status: user.enabled ? 'active' : 'inactive',
+    createdAt: new Date(parseInt(user.createdTimestamp, 10)),
+    avatarUrl: null,
+    department: user.attributes?.departamento?.[0] || 'Sin departamento',
+    cargo: user.attributes?.cargo?.[0] || 'Sin cargo',
+    sucursal: user.attributes?.sucursal?.[0] || 'Sin sucursal',
+    groupRole: user.groupRole || 'N/A',
+    role: user.groupRoleDescription || 'N/A'
+  }));
 
-        const response = await axios.get(`${CONFIG.serverUrl}/api/keycloak/usuarios`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        console.log('Respuesta de la API:', response.data);
-
-        const formattedUsers = response.data.map((user: any) => {
-          const formattedUser = {
-            id: user.id,
-            name: `${user.firstName} ${user.lastName}`,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            status: user.enabled ? 'active' : 'inactive',
-            createdAt: new Date(user.createdTimestamp),
-            avatarUrl: null,
-            departamento: user.attributes?.departamento?.[0] || 'Sin departamento',
-            cargo: user.attributes?.cargo?.[0] || 'Sin cargo',
-            sucursal: user.attributes?.sucursal?.[0] || 'Sin sucursal',
-            groupRole: user.groupRole || 'N/A',
-            role: user.groupRoleDescription || 'N/A'
-          };
-
-          console.log('Usuario formateado:', formattedUser);
-          return formattedUser;
-        });
-
-        setUsers(formattedUsers);
-      } catch (err) {
-        console.error('Error al obtener usuarios:', err);
-        setError(err instanceof Error ? err.message : 'Error al obtener usuarios');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  return { users, loading, error };
+  return { users, loading, error: error?.message || null, refetch };
 } 

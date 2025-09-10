@@ -175,8 +175,35 @@ export const paths = {
         crearNuevoAtributo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoAtributo`,
         editarAtributo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarAtributo/${id}`,
         listaAtributos: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaAtributos`,
+        crearNuevoTipoEquipo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoTipoEquipo`,
+        editarTipoEquipo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarTipoEquipo/${id}`,
+        listaTiposEquipo: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaTiposEquipo`,
       },
     },
+
+
+
+    salaReserva: {
+      root: `${ROOTS.DASHBOARD}/salaReserva`,
+      moduloReferenciales: {
+        root: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales`,
+        listaSalas: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/listaSalas`,
+        crearNuevaSala: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/crearNuevaSala`,
+        editarSala: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/editarSala/${id}`,
+        verSala: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/verSala/${id}`,
+      },
+      moduloAgendamiento: {
+        root: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento`,
+        listarAgendamiento: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/listarAgendamiento`,
+        crearAgendamiento: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/crearAgendamiento`,
+        editarAgendamiento: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/editarAgendamiento/${id}`,
+        verAgendamiento: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/verAgendamiento/${id}`,
+      },
+    },
+
+
+
+
 
     comercial: {
       root: `${ROOTS.DASHBOARD}/comercial/moduloSolicitudes`,
@@ -242,6 +269,16 @@ export const paths = {
       demo: {
         details: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}`,
         edit: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}/edit`,
+      },
+    },
+    tipoEquipo: {
+      root: `${ROOTS.DASHBOARD}/tipo-equipo`,
+      new: `${ROOTS.DASHBOARD}/tipo-equipo/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/tipo-equipo/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/tipo-equipo/${id}/edit`,
+      demo: {
+        details: `${ROOTS.DASHBOARD}/tipo-equipo/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/tipo-equipo/${MOCK_ID}/edit`,
       },
     },
   },

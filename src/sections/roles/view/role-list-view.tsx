@@ -59,7 +59,7 @@ export function RoleListView() {
   const [tableData, setTableData] = useState<Role[]>([]);
 
   useEffect(() => {
-    if (roles) {
+    if (roles && roles.length > 0) {
       setTableData(roles);
     }
   }, [roles]);
@@ -107,19 +107,17 @@ export function RoleListView() {
 
   const handleDeleteRow = useCallback(
     async (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
-      setTableData(deleteRow);
+      setTableData(prev => prev.filter((row) => row.id !== id));
       refetch();
     },
-    [tableData, refetch]
+    [refetch]
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+    setTableData(prev => prev.filter((row) => !table.selected.includes(row.id)));
     toast.success('¡Roles eliminados con éxito!');
-    setTableData(deleteRows);
     confirm.onFalse();
-  }, [table.selected, tableData, confirm]);
+  }, [table.selected, confirm]);
 
   const handleEditRow = useCallback(
     (id: string) => {

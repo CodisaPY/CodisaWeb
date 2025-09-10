@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # 4️⃣ Eliminar lockfile si da conflictos en Alpine/ARM y luego instalar dependencias
-RUN rm -f package-lock.json && npm install --legacy-peer-deps
+RUN rm -f package-lock.json && npm install --legacy-peer-deps --production=false
 
 # 5️⃣ Copiar el resto del código
 COPY . .
@@ -16,8 +16,8 @@ COPY . .
 # Copia el archivo de entorno de producción
 COPY .env.production .env
 
-# 6️⃣ Construir la app
-RUN npm run build
+# 6️⃣ Construir la app (con más memoria para evitar heap out of memory)
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 # 7️⃣ Segunda etapa: imagen de producción minimalista
 FROM node:18-bullseye-slim

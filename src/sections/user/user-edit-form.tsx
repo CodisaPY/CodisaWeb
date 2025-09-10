@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useGraphQLUpdateUser } from 'src/hooks/use-graphql-users';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -41,6 +41,7 @@ export default function UserEditForm({ initialValues, userId, onSuccess }: Props
   const [sucursales, setSucursales] = useState<Sucursal[]>([]);
   const [cargos, setCargos] = useState<Cargo[]>([]);
   const router = useRouter();
+  const { updateUser, loading: isUpdating } = useGraphQLUpdateUser();
 
   const methods = useForm<EditUserSchemaType>({
     mode: 'onSubmit',
@@ -102,20 +103,44 @@ export default function UserEditForm({ initialValues, userId, onSuccess }: Props
   }, [initialValues, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
+    console.log('🔄 Iniciando actualización de usuario...');
+    console.log('📝 Datos del formulario:', data);
+    console.log('🆔 UserId:', userId);
+    
     try {
-      await axios.put(`${CONFIG.serverUrl}/api/keycloak/user/${userId}`, {
-        ...data,
+      const updateData = {
+        username: data.email.split('@')[0], // Usar email como username temporal
+        email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
         sucursal: data.sucursal.name,
-        cargo: data.cargo.name,
-      });
-      router.push(paths.dashboard.seguridad.moduloUsuarios.listaUsuario);
+        enabled: true,
+        emailVerified: true,
+        attributes: {
+          sucursal: data.sucursal.name,
+          cargo: data.cargo.name,
+          modulo: null
+        }
+      };
+      
+      console.log('📤 Datos que se envían a GraphQL:', JSON.stringify(updateData, null, 2));
+      
+      const result = await updateUser(userId, updateData);
+      
+      console.log('📥 Resultado de la actualización:', JSON.stringify(result, null, 2));
 
-      toast.success('Usuario actualizado correctamente');
-      if (onSuccess) onSuccess();
+      if (result.success) {
+        console.log('✅ Actualización exitosa, redirigiendo...');
+        router.push(paths.dashboard.seguridad.moduloUsuarios.listaUsuario);
+        toast.success(result.message || 'Usuario actualizado correctamente');
+        if (onSuccess) onSuccess();
+      } else {
+        console.log('❌ Error en la actualización:', result.message);
+        toast.error(result.message || 'Error al actualizar el usuario');
+      }
 
     } catch (error) {
+      console.error('💥 Error inesperado:', error);
       toast.error('Error al actualizar el usuario');
     }
   });
@@ -156,7 +181,7 @@ export default function UserEditForm({ initialValues, userId, onSuccess }: Props
               />
             </Box>
             <Stack alignItems="flex-end" sx={{ mt: 3 }}>
-              <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+              <LoadingButton type="submit" variant="contained" loading={isSubmitting || isUpdating}>
                 Guardar cambios
               </LoadingButton>
             </Stack>

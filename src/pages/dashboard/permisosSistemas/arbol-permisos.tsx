@@ -6,6 +6,7 @@ import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import { useQuery, useLazyQuery } from '@apollo/client';
 
 import {
   Box,
@@ -32,6 +33,7 @@ import {
 import { CONFIG } from 'src/config-global';
 import { varAlpha, stylesMode } from 'src/theme/styles';
 import { Iconify } from 'src/components/iconify';
+import { SCREEN_HIERARCHY_LEVEL3_QUERY, GET_USER_ROLES_QUERY, ROLES_QUERY, GET_GROUP_ROLES_QUERY } from 'src/graphql/queries/roles';
 
 type PermisoNode = {
   name: string;
@@ -343,15 +345,14 @@ const CollapseIcon = () => (
 
 export function ArbolPermisos({ userData }: Props) {
   const [treeData, setTreeData] = useState<PermisoNode | null>(null);
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [selectedActions, setSelectedActions] = useState<SelectedActions>({});
-  const [groupRoles, setGroupRoles] = useState<GroupRole[]>([]);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [selectedGroupRole, setSelectedGroupRole] = useState<string>('');
-  const [previousGroupRole, setPreviousGroupRole] = useState<string>('');
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
+  const [previousGroupRole, setPreviousGroupRole] = useState<string>('');
+  const [groupRoles, setGroupRoles] = useState<GroupRole[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -362,40 +363,187 @@ export function ArbolPermisos({ userData }: Props) {
     severity: 'success'
   });
 
+  // Query GraphQL para obtener el árbol de permisos
+  const { data: graphqlData, loading: treeLoading, error: treeError } = useQuery(SCREEN_HIERARCHY_LEVEL3_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (data) => {
+      console.log('✅ Query SCREEN_HIERARCHY_LEVEL3 ejecutada exitosamente:', data);
+      console.log('🔍 Datos completos recibidos:', data);
+      if (data?.screenHierarchyLevel3) {
+        console.log('🌳 Datos del árbol recibidos:', data.screenHierarchyLevel3);
+        setTreeData(data.screenHierarchyLevel3);
+        
+        // Inicializar selectedActions según los roles del usuario
+        const initialSelectedActions: SelectedActions = {};
+        const initializeActions = (node: PermisoNode) => {
+          if (node.tipo === 'pantalla' && node.acciones) {
+            const attributes = node.attributes || {};
+            const pantallaId = attributes.pantalla_id?.[0] || node.name;
+            initialSelectedActions[pantallaId] = {};
+            node.acciones.forEach(action => {
+              const roleName = `${node.name}__${action}`;
+              initialSelectedActions[pantallaId][action] = false; // Se actualizará después con los roles del usuario
+            });
+          }
+          node.children?.forEach(initializeActions);
+        };
+        initializeActions(data.screenHierarchyLevel3);
+        setSelectedActions(initialSelectedActions);
+
+        // Expandir todos los nodos de grupo por defecto
+        const expandedSet = new Set<string>();
+        const collectExpandable = (node: PermisoNode) => {
+          if (node.children && node.children.length > 0) {
+            expandedSet.add(node.name);
+            node.children.forEach(collectExpandable);
+          }
+        };
+        collectExpandable(data.screenHierarchyLevel3);
+        setExpandedItems(expandedSet);
+        console.log('🌳 Árbol inicializado correctamente');
+      } else {
+        console.warn('⚠️ No se recibieron datos del árbol');
+        console.warn('⚠️ Estructura de datos:', data);
+      }
+    },
+    onError: (error) => {
+      console.error('❌ Error en query SCREEN_HIERARCHY_LEVEL3:', error);
+      console.error('❌ Detalles del error:', error.message, error.graphQLErrors, error.networkError);
+    }
+  });
+
+  // Query GraphQL para obtener roles del usuario
+  const { data: userRolesData, loading: userRolesLoading, error: userRolesError } = useQuery(GET_USER_ROLES_QUERY, {
+    variables: { id: userData?.id || '' },
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+    skip: !userData?.id || !treeData,
+    onCompleted: (data) => {
+      console.log('✅ Query GET_USER_ROLES ejecutada exitosamente:', data);
+      if (data?.user?.roles && treeData) {
+        const userRoles = data.user.roles.map((role: { name: string }) => role.name);
+        
+        // Actualizar selectedActions con los roles del usuario
+        const updatedSelectedActions: SelectedActions = {};
+        const initializeActions = (node: PermisoNode) => {
+          if (node.tipo === 'pantalla' && node.acciones) {
+            const attributes = node.attributes || {};
+            const pantallaId = attributes.pantalla_id?.[0] || node.name;
+            updatedSelectedActions[pantallaId] = {};
+            node.acciones.forEach(action => {
+              const roleName = `${node.name}__${action}`;
+              updatedSelectedActions[pantallaId][action] = userRoles.includes(roleName);
+            });
+          }
+          node.children?.forEach(initializeActions);
+        };
+        initializeActions(treeData);
+        setSelectedActions(updatedSelectedActions);
+      }
+    },
+    onError: (error) => {
+      console.error('❌ Error en query GET_USER_ROLES:', error);
+    }
+  });
+
+  // Query GraphQL para obtener roles de grupo iniciales
+  const { data: groupRolesData, loading: groupRolesLoading, error: groupRolesError } = useQuery(ROLES_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (data) => {
+      console.log('✅ Query ROLES ejecutada exitosamente:', data);
+      if (data?.roles) {
+        setGroupRoles(data.roles);
+        // Si el usuario tiene un groupRole, seleccionarlo
+        if (userData?.groupRole) {
+          setSelectedGroupRole(userData.groupRole);
+        }
+      }
+    },
+    onError: (error) => {
+      console.error('❌ Error en query ROLES:', error);
+      setToast({
+        open: true,
+        message: 'Error al cargar roles de grupo',
+        severity: 'error'
+      });
+    }
+  });
+
+  // Lazy query para obtener roles de grupo específico
+  const [getGroupRoles, { loading: getGroupRolesLoading, error: getGroupRolesError }] = useLazyQuery(GET_GROUP_ROLES_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (data) => {
+      console.log('✅ Query GET_GROUP_ROLES ejecutada exitosamente:', data);
+      if (data?.groupRoles?.success && data.groupRoles.data && treeData) {
+        // Reinicializar selectedActions
+        const initialSelectedActions: SelectedActions = {};
+        const initializeActions = (node: PermisoNode) => {
+          if (node.tipo === 'pantalla' && node.acciones) {
+            const attributes = node.attributes || {};
+            const pantallaId = attributes.pantalla_id?.[0] || node.name;
+            initialSelectedActions[pantallaId] = {};
+            node.acciones.forEach(action => {
+              const groupRoleNames = data.groupRoles.data.map((role: { name: string }) => role.name);
+              const roleName = `${node.name}__${action}`;
+              initialSelectedActions[pantallaId][action] = groupRoleNames.includes(roleName);
+            });
+          }
+          node.children?.forEach(initializeActions);
+        };
+        initializeActions(treeData);
+        setSelectedActions(initialSelectedActions);
+      }
+    },
+    onError: (error) => {
+      console.error('❌ Error en query GET_GROUP_ROLES:', error);
+      // En caso de error, desasignar todos los roles
+      if (treeData) {
+        const emptySelectedActions: SelectedActions = {};
+        const initializeEmptyActions = (node: PermisoNode) => {
+          if (node.tipo === 'pantalla' && node.acciones) {
+            const attributes = node.attributes || {};
+            const pantallaId = attributes.pantalla_id?.[0] || node.name;
+            emptySelectedActions[pantallaId] = {};
+            node.acciones.forEach(action => {
+              emptySelectedActions[pantallaId][action] = false;
+            });
+          }
+          node.children?.forEach(initializeEmptyActions);
+        };
+        initializeEmptyActions(treeData);
+        setSelectedActions(emptySelectedActions);
+      }
+      setToast({
+        open: true,
+        message: 'Error al cargar roles del grupo',
+        severity: 'error'
+      });
+    }
+  });
+
   const handleCloseToast = () => {
     setToast(prev => ({ ...prev, open: false }));
   };
 
   useEffect(() => {
-    async function fetchGroupRoles() {
-      try {
-        const response = await axios.get<GroupRolesResponse>(`${CONFIG.serverUrl}/api/keycloak/groups/roles`);
-        if (response.data.success) {
-          setGroupRoles(response.data.data);
-          // Si el usuario tiene un groupRole, seleccionarlo
-          if (userData?.groupRole) {
-            setSelectedGroupRole(userData.groupRole);
-          }
-        }
-      } catch (error) {
-        console.error('Error al cargar roles de grupo:', error);
-        setToast({
-          open: true,
-          message: 'Error al cargar roles de grupo',
-          severity: 'error'
-        });
-      }
-    }
-    fetchGroupRoles();
-  }, [userData?.groupRole]);
-
-  useEffect(() => {
     async function fetchUsuarios() {
-      setLoadingUsuarios(true);
       try {
-        const response = await axios.get<UsuariosResponse>(`${CONFIG.serverUrl}/api/keycloak/usuarios`);
-        const usuariosData = Array.isArray(response.data) ? response.data : response.data?.data || [];
-        setUsuarios(usuariosData);
+        const { getUsersWithGraphQL } = await import('src/auth/context/jwt/graphql-auth');
+        const result = await getUsersWithGraphQL();
+        
+        if (result.success) {
+          // Convertir User[] a Usuario[] para compatibilidad
+          const usuariosData: Usuario[] = result.users.map(user => ({
+            ...user,
+            createdTimestamp: parseInt(user.createdTimestamp, 10)
+          }));
+          setUsuarios(usuariosData);
+        } else {
+          throw new Error(result.message || 'Error al cargar usuarios');
+        }
       } catch (error) {
         console.error('Error al cargar usuarios:', error);
         setToast({
@@ -403,8 +551,6 @@ export function ArbolPermisos({ userData }: Props) {
           message: 'Error al cargar usuarios',
           severity: 'error'
         });
-      } finally {
-        setLoadingUsuarios(false);
       }
     }
     fetchUsuarios();
@@ -416,53 +562,6 @@ export function ArbolPermisos({ userData }: Props) {
       setPreviousGroupRole(userData.groupRole);
     }
   }, [userData?.groupRole]);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // 1. Traer árbol de permisos
-        const treeRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/pantallas/acciones`);
-        setTreeData(treeRes.data);
-
-        // 2. Traer roles del usuario
-        let userRoles: string[] = [];
-        if (userData?.id) {
-          const rolesRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/user/${userData.id}/roles`);
-          userRoles = rolesRes.data.map((role: { name: string }) => role.name);
-        }
-
-        // 3. Inicializar selectedActions según los roles del usuario
-        const initialSelectedActions: SelectedActions = {};
-        const initializeActions = (node: PermisoNode) => {
-          if (node.tipo === 'pantalla' && node.acciones) {
-            const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
-            initialSelectedActions[pantallaId] = {};
-            node.acciones.forEach(action => {
-              const roleName = `${node.name}__${action}`;
-              initialSelectedActions[pantallaId][action] = userRoles.includes(roleName);
-            });
-          }
-          node.children?.forEach(initializeActions);
-        };
-        initializeActions(treeRes.data);
-        setSelectedActions(initialSelectedActions);
-
-        // 4. Expandir todos los nodos de grupo por defecto
-        const expandedSet = new Set<string>();
-        const collectExpandable = (node: PermisoNode) => {
-          if (node.children && node.children.length > 0) {
-            expandedSet.add(node.name);
-            node.children.forEach(collectExpandable);
-          }
-        };
-        collectExpandable(treeRes.data);
-        setExpandedItems(expandedSet);
-      } catch (err) {
-        console.error('Error al cargar árbol de permisos o roles', err);
-      }
-    }
-    fetchData();
-  }, [userData?.id]);
 
   const toggleExpand = (key: string) => {
     setExpandedItems((prev) => {
@@ -477,10 +576,17 @@ export function ArbolPermisos({ userData }: Props) {
   };
 
   const renderTree = (node: PermisoNode, nivel: number = 0) => {
-    const nombre = Array.isArray(node.attributes.nombre) 
-      ? node.attributes.nombre[0] 
-      : node.attributes.nombre;
-    const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
+    // Debug: Log la estructura del nodo
+    if (nivel === 0) {
+      console.log('🔍 Estructura del nodo raíz:', node);
+    }
+    
+    // Validar que node.attributes existe y tiene nombre
+    const attributes = node.attributes || {};
+    const nombre = Array.isArray(attributes.nombre) 
+      ? attributes.nombre[0] || node.name || 'Sin nombre'
+      : attributes.nombre || node.name || 'Sin nombre';
+    const pantallaId = attributes.pantalla_id?.[0] || node.name;
     const isPantalla = node.tipo === 'pantalla';
     const isExpanded = expandedItems.has(node.name);
 
@@ -552,54 +658,9 @@ export function ArbolPermisos({ userData }: Props) {
       setSelectedUsuario(null);
     }
 
-    try {
-      // Obtener los roles del grupo seleccionado
-      const response = await axios.get(`${CONFIG.serverUrl}/api/keycloak/groups/${newGroupRole}/pantallas`);
-      
-      // Reinicializar selectedActions
-      const initialSelectedActions: SelectedActions = {};
-      const initializeActions = (node: PermisoNode) => {
-        if (node.tipo === 'pantalla' && node.acciones) {
-          const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
-          initialSelectedActions[pantallaId] = {};
-          node.acciones.forEach(action => {
-            const groupRoleNames = response.data.success ? 
-              response.data.data.map((role: { name: string }) => role.name) : 
-              [];
-            const roleName = `${node.name}__${action}`;
-            initialSelectedActions[pantallaId][action] = groupRoleNames.includes(roleName);
-          });
-        }
-        node.children?.forEach(initializeActions);
-      };
-
-      if (treeData) {
-        initializeActions(treeData);
-        setSelectedActions(initialSelectedActions);
-      }
-    } catch (error) {
-      console.error('Error al cargar roles del grupo:', error);
-      // En caso de error, desasignar todos los roles
-      if (treeData) {
-        const emptySelectedActions: SelectedActions = {};
-        const initializeEmptyActions = (node: PermisoNode) => {
-          if (node.tipo === 'pantalla' && node.acciones) {
-            const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
-            emptySelectedActions[pantallaId] = {};
-            node.acciones.forEach(action => {
-              emptySelectedActions[pantallaId][action] = false;
-            });
-          }
-          node.children?.forEach(initializeEmptyActions);
-        };
-        initializeEmptyActions(treeData);
-        setSelectedActions(emptySelectedActions);
-      }
-      setToast({
-        open: true,
-        message: 'Error al cargar roles del grupo',
-        severity: 'error'
-      });
+    // Ejecutar query GraphQL para obtener los roles del grupo seleccionado
+    if (newGroupRole && treeData) {
+      getGroupRoles({ variables: { groupName: newGroupRole } });
     }
   };
 
@@ -670,33 +731,36 @@ export function ArbolPermisos({ userData }: Props) {
       setSelectedGroupRole(usuario.groupRole);
       setPreviousGroupRole(usuario.groupRole);
       
-      // Cargar los permisos de este usuario
-      try {
-        const response = await axios.get(`${CONFIG.serverUrl}/api/keycloak/groups/${usuario.groupRole}/pantallas`);
-        
-        // Reinicializar selectedActions con los permisos del usuario
-        const initialSelectedActions: SelectedActions = {};
-        const initializeActions = (node: PermisoNode) => {
-          if (node.tipo === 'pantalla' && node.acciones) {
-            const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
-            initialSelectedActions[pantallaId] = {};
-            node.acciones.forEach(action => {
-              const groupRoleNames = response.data.success ? 
-                response.data.data.map((role: { name: string }) => role.name) : 
-                [];
-              const roleName = `${node.name}__${action}`;
-              initialSelectedActions[pantallaId][action] = groupRoleNames.includes(roleName);
-            });
+      // Cargar los permisos de este usuario usando GraphQL
+      if (treeData) {
+        getGroupRoles({ 
+          variables: { groupName: usuario.groupRole },
+          onCompleted: (data) => {
+            console.log('✅ Query GET_GROUP_ROLES para usuario ejecutada exitosamente:', data);
+            if (data?.groupRoles?.success && data.groupRoles.data) {
+              // Reinicializar selectedActions con los permisos del usuario
+              const initialSelectedActions: SelectedActions = {};
+              const initializeActions = (node: PermisoNode) => {
+                if (node.tipo === 'pantalla' && node.acciones) {
+                  const attributes = node.attributes || {};
+                  const pantallaId = attributes.pantalla_id?.[0] || node.name;
+                  initialSelectedActions[pantallaId] = {};
+                  node.acciones.forEach(action => {
+                    const groupRoleNames = data.groupRoles.data.map((role: { name: string }) => role.name);
+                    const roleName = `${node.name}__${action}`;
+                    initialSelectedActions[pantallaId][action] = groupRoleNames.includes(roleName);
+                  });
+                }
+                node.children?.forEach(initializeActions);
+              };
+              initializeActions(treeData);
+              setSelectedActions(initialSelectedActions);
+            }
+          },
+          onError: (error) => {
+            console.error('❌ Error en query GET_GROUP_ROLES para usuario:', error);
           }
-          node.children?.forEach(initializeActions);
-        };
-
-        if (treeData) {
-          initializeActions(treeData);
-          setSelectedActions(initialSelectedActions);
-        }
-      } catch (error) {
-        console.error('Error al cargar permisos del usuario:', error);
+        });
       }
     } else if (usuario && usuario.groupRole === 'N/A') {
       // Si el usuario no tiene rol, limpiar el selector de grupo
@@ -708,7 +772,8 @@ export function ArbolPermisos({ userData }: Props) {
         const emptySelectedActions: SelectedActions = {};
         const initializeEmptyActions = (node: PermisoNode) => {
           if (node.tipo === 'pantalla' && node.acciones) {
-            const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
+            const attributes = node.attributes || {};
+            const pantallaId = attributes.pantalla_id?.[0] || node.name;
             emptySelectedActions[pantallaId] = {};
             node.acciones.forEach(action => {
               emptySelectedActions[pantallaId][action] = false;
@@ -798,7 +863,7 @@ export function ArbolPermisos({ userData }: Props) {
             onChange={(event, newValue) => {
               handleUsuarioSelect(newValue);
             }}
-            disabled={loadingUsuarios}
+            disabled={false}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -846,11 +911,9 @@ export function ArbolPermisos({ userData }: Props) {
               </li>
             )}
             noOptionsText={
-              loadingUsuarios 
-                ? 'Cargando usuarios...' 
-                : usuarios.filter(usuario => usuario.groupRole !== 'N/A' && usuario.enabled).length === 0
-                  ? 'No hay usuarios con roles asignados'
-                  : 'No se encontraron usuarios'
+              usuarios.filter(usuario => usuario.groupRole !== 'N/A' && usuario.enabled).length === 0
+                ? 'No hay usuarios con roles asignados'
+                : 'No se encontraron usuarios'
             }
             filterOptions={(options, { inputValue }) => 
               options.filter(option => {
@@ -898,12 +961,24 @@ export function ArbolPermisos({ userData }: Props) {
         )}
       </Box>
 
-      {treeData ? (
+      {treeLoading ? (
+        <Box sx={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography>Cargando árbol de permisos...</Typography>
+        </Box>
+      ) : treeError ? (
+        <Box sx={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Alert severity="error">
+            Error al cargar el árbol de permisos: {treeError.message}
+          </Alert>
+        </Box>
+      ) : treeData ? (
         <Box sx={{ minHeight: 240 }}>
           {renderTree(treeData)}
         </Box>
       ) : (
-        <Typography>Cargando árbol de permisos...</Typography>
+        <Box sx={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography>No se pudo cargar el árbol de permisos</Typography>
+        </Box>
       )}
 
       <Snackbar

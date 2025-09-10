@@ -23,6 +23,7 @@ import { Form, Field } from 'src/components/hook-form';
 
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
+import { searchUserWithGraphQL, changePasswordWithGraphQL } from '../../context/jwt/graphql-auth';
 import { signInWithPassword } from '../../context/jwt';
 
 // ----------------------------------------------------------------------
@@ -133,41 +134,25 @@ export function JwtSignInView() {
     try {
       console.log('Iniciando proceso de cambio de contraseña para:', userEmail);
       
-      // 1. Obtener el userId del usuario
-      const userIdResponse = await axios.get(
-        `${CONFIG.serverUrl}/api/keycloak/user-id`,
-        {
-          params: { searchTerm: userEmail },
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!userIdResponse.data.success || !userIdResponse.data.userId) {
-        throw new Error('No se pudo obtener el ID del usuario');
-      }
-
-      const userId = userIdResponse.data.userId;
+      // 1. Obtener el userId del usuario usando GraphQL
+      console.log('🔍 Obteniendo userId para:', userEmail);
+      console.log('📡 Endpoint: https://linker-app-backend.braveglacier-674d7e00.eastus2.azurecontainerapps.io/graphql');
+      
+      const userId = await searchUserWithGraphQL(userEmail);
       console.log('UserId obtenido:', userId);
 
-      // 2. Cambiar la contraseña
-      const changePasswordResponse = await axios.post(
-        `${CONFIG.serverUrl}/api/keycloak/change-password`,
-        {
-          userId,
-          newPassword: data.newPassword,
-          requirePasswordChange: false
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+      // 2. Cambiar la contraseña usando GraphQL
+      console.log('🔐 Cambiando contraseña para userId:', userId);
+      console.log('📡 Endpoint: https://linker-app-backend.braveglacier-674d7e00.eastus2.azurecontainerapps.io/graphql');
+      
+      const changePasswordResult = await changePasswordWithGraphQL(
+        userId,
+        data.newPassword,
+        false // temporary = false
       );
 
-      if (!changePasswordResponse.data.success) {
-        throw new Error(changePasswordResponse.data.message || 'Error al cambiar la contraseña');
+      if (!changePasswordResult.success) {
+        throw new Error(changePasswordResult.message || 'Error al cambiar la contraseña');
       }
 
       console.log('Contraseña cambiada exitosamente');
@@ -185,7 +170,7 @@ export function JwtSignInView() {
       
     } catch (error: any) {
       console.error('Error en el proceso de cambio de contraseña:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Error al cambiar la contraseña';
+      const errorMessage = error.message || 'Error al cambiar la contraseña';
       setErrorMsg(errorMessage);
     }
   });
