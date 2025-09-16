@@ -30,6 +30,7 @@ import { StyledCalendar } from '../../calendar/styles';
 import { useAgendamientoCalendar } from '../hooks/use-agendamiento-calendar';
 import { useAgendamientoEvent } from '../hooks/use-agendamiento-event';
 import { AgendamientoForm } from '../agendamiento-form';
+import { MobileCalendarView } from './mobile-calendar-view';
 
 // ----------------------------------------------------------------------
 
@@ -37,6 +38,45 @@ export function AgendamientoCalendarView() {
   const theme = useTheme();
 
   const openFilters = useBoolean();
+
+  // Detectar si es dispositivo móvil con estado inicial más inteligente
+  const [isMobile, setIsMobile] = useState(() => {
+    // Detección inicial más agresiva para móviles
+    if (typeof window !== 'undefined') {
+      const userAgent = navigator.userAgent;
+      const hasTouch = 'ontouchstart' in window;
+      const isSmallScreen = window.innerWidth <= 768;
+      
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) || 
+             hasTouch || isSmallScreen;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent;
+      const hasTouch = 'ontouchstart' in window;
+      const isSmallScreen = window.innerWidth <= 768;
+      
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) || 
+                     hasTouch || isSmallScreen;
+      
+      console.log('🔍 Detección móvil:', {
+        userAgent: `${userAgent.substring(0, 50)}...`,
+        hasTouch,
+        isSmallScreen,
+        windowWidth: window.innerWidth,
+        isMobile: mobile
+      });
+      
+      setIsMobile(mobile);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Traer eventos con GraphQL (operación pública, sin header Authorization)
   const { data: calendarioData, refetch: refetchCalendario } = useQuery(GET_RESERVAS_SALAS_CALENDARIO, {
@@ -215,7 +255,54 @@ export function AgendamientoCalendarView() {
 
   return (
     <>
-      <DashboardContent maxWidth="xl" sx={{ ...flexProps }}>
+      {isMobile ? (
+        <MobileCalendarView
+          events={events}
+          onSelectRange={(range) => {
+            console.log('📱 Selección móvil recibida:', range);
+            console.log('📱 Llamando a onSelectRange del hook...');
+            
+            // Crear un objeto DateSelectArg válido para el hook
+            const selectArg = {
+              start: range.start,
+              end: range.end,
+              allDay: false,
+              jsEvent: new Event('select') as any,
+              view: { 
+                calendar: {
+                  unselect: () => console.log('📱 Calendar unselect llamado')
+                }
+              } as any,
+              startStr: range.start.toISOString(),
+              endStr: range.end.toISOString(),
+            };
+            
+            console.log('📱 Objeto DateSelectArg creado:', selectArg);
+            onSelectRange(selectArg);
+            console.log('📱 onSelectRange llamado exitosamente');
+          }}
+          onEventClick={(event) => {
+            console.log('📱 Evento clickeado:', event);
+            onClickEvent({ event } as any);
+          }}
+          onEventMove={(eventId, newStart, newEnd) => {
+            console.log('📱 Evento movido:', eventId, newStart, newEnd);
+          }}
+          onEventResize={(eventId, newStart, newEnd) => {
+            console.log('📱 Evento redimensionado:', eventId, newStart, newEnd);
+          }}
+          selectedDate={date}
+          onDateChange={(newDate) => {
+            console.log('📱 Fecha cambiada:', newDate);
+            // Crear una función personalizada para cambiar la fecha
+            const calendarApi = calendarRef.current?.getApi();
+            if (calendarApi) {
+              calendarApi.gotoDate(newDate);
+            }
+          }}
+        />
+      ) : (
+        <DashboardContent maxWidth="xl" sx={{ ...flexProps }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
           <Typography variant="h4">Agendamiento de Salas</Typography>
           <Button
@@ -248,27 +335,9 @@ export function AgendamientoCalendarView() {
                 <Button
                   size="small"
                   variant="outlined"
-                  onClick={onDatePrev}
-                  startIcon={<Iconify icon="eva:arrow-ios-back-fill" />}
-                >
-                  Anterior
-                </Button>
-
-                <Button
-                  size="small"
-                  variant="outlined"
                   onClick={onDateToday}
                 >
                   Hoy
-                </Button>
-
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={onDateNext}
-                  endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
-                >
-                  Siguiente
                 </Button>
 
                 <Button
@@ -305,7 +374,43 @@ export function AgendamientoCalendarView() {
               </Stack>
             </Stack>
 
-            <Box sx={{ flex: '1 1 auto', minHeight: 400 }}>
+            <Box sx={{ 
+              flex: '1 1 auto', 
+              minHeight: 400,
+              '& .fc-daygrid-day': {
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: '60px', // Aumentar altura mínima para mejor toque
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 1,
+                }
+              },
+              '& .fc-daygrid-day:hover': {
+                backgroundColor: 'action.hover',
+              },
+              '& .fc-daygrid-day:active': {
+                backgroundColor: 'action.selected',
+              },
+              // Mejorar experiencia táctil en móviles
+              '@media (max-width: 768px)': {
+                '& .fc-daygrid-day': {
+                  minHeight: '80px',
+                  padding: '8px',
+                },
+                '& .fc-daygrid-day-number': {
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                }
+              }
+            }}>
               <Calendar
                 weekends
                 editable
@@ -325,8 +430,47 @@ export function AgendamientoCalendarView() {
                 select={onSelectRange}
                 eventClick={onClickEvent}
                 eventContent={renderEventContent}
+                dayCellDidMount={(info) => {
+                  // Detectar si es dispositivo móvil
+                  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                                        ('ontouchstart' in window);
+                  
+                  // Agregar listeners para clics y toques
+                  const handleInteraction = (e: Event) => {
+                    // Solo procesar si no se hizo clic en un evento
+                    const target = e.target as Element;
+                    if (target && !target.closest('.fc-event')) {
+                      const start = info.date;
+                      const end = new Date(start);
+                      end.setHours(23, 59, 59, 999);
+                      
+                      onSelectRange({
+                        start,
+                        end,
+                        allDay: false,
+                        jsEvent: e,
+                        view: info.view
+                      } as any);
+                    }
+                  };
+                  
+                  // Para móviles, usar touchstart para mejor respuesta
+                  if (isMobileDevice) {
+                    info.el.addEventListener('touchstart', handleInteraction, { passive: true });
+                  } else {
+                    info.el.addEventListener('click', handleInteraction);
+                  }
+                }}
                 aspectRatio={1.8}
                 locale={esLocale}
+                selectMirror
+                selectOverlap
+                unselectAuto={false}
+                longPressDelay={100}
+                dayMaxEvents={false}
+                moreLinkClick="popover"
+                selectLongPressDelay={50}
+                selectMinDistance={0}
                 eventDrop={(arg) => {
                   onDropEvent(arg, () => {
                     console.log('Event dropped:', arg);
@@ -349,6 +493,7 @@ export function AgendamientoCalendarView() {
           </StyledCalendar>
         </Card>
       </DashboardContent>
+      )}
 
       <Dialog
         fullWidth

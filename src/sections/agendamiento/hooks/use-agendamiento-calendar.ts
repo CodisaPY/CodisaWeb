@@ -87,25 +87,37 @@ export function useAgendamientoCalendar() {
   }, [calendarEl]);
 
   const onSelectRange = useCallback((arg: DateSelectArg) => {
+    console.log('🔧 Hook onSelectRange llamado con:', arg);
+    
     const calendarApi = arg.view.calendar;
+    console.log('🔧 Calendar API:', calendarApi);
 
     calendarApi.unselect();
+    console.log('🔧 Calendar unselect ejecutado');
 
     setSelectedRange({
       start: arg.start.toISOString(),
       end: arg.end.toISOString(),
     });
+    console.log('🔧 SelectedRange actualizado');
 
     setSelectEventId('');
+    console.log('🔧 SelectEventId limpiado');
+
     setOpenForm(true);
+    console.log('🔧 OpenForm establecido en true');
   }, []);
 
   const onClickEvent = useCallback((arg: EventClickArg) => {
     const { event } = arg;
 
-    setSelectEventId(event.id);
-    setSelectedRange(null);
-    setOpenForm(true);
+    // Permitir selección de rango incluso cuando hay eventos
+    // Solo abrir el modal si se hace clic directamente en el evento
+    if (arg.jsEvent.target === arg.el) {
+      setSelectEventId(event.id);
+      setSelectedRange(null);
+      setOpenForm(true);
+    }
   }, []);
 
   const onDropEvent = useCallback(

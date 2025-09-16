@@ -38,7 +38,7 @@ export const CONFIG: ConfigValue = {
   appName: 'Linker Codisa',
   appVersion: packageJson.version,
 
-  serverUrl: import.meta.env.VITE_SERVER_URL || 'https://linker-app-backend.braveglacier-674d7e00.eastus2.azurecontainerapps.io', // URL base del servidor GraphQL
+  serverUrl: import.meta.env.VITE_SERVER_URL || 'https://linker.codisa.com.py', // URL base del servidor GraphQL
   springServerUrl: import.meta.env.VITE_SPRING_SERVER_URL || 'http://localhost:9003', // URL base del servidor Spring Boot
 
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',

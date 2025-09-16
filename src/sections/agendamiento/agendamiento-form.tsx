@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z as zod } from 'zod';
@@ -17,6 +17,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import Autocomplete from '@mui/material/Autocomplete';
 import DateTimePicker from '@mui/lab/DateTimePicker';
 import Calendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -73,16 +74,158 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
   const [selectedEndTime, setSelectedEndTime] = useState<string>('');
   
+  // Detectar si es dispositivo móvil
+  const [isMobile, setIsMobile] = useState(false);
+  const [showTimeSelector, setShowTimeSelector] = useState(false);
+  const [selectedSalaId, setSelectedSalaId] = useState<number | null>(null);
+  const calendarRef = useRef<any>(null);
+  
+  // Función para manejar cambio de sala
+  const handleSalaChange = (salaId: number | null) => {
+    console.log('🏢 ===== INICIO handleSalaChange =====');
+    console.log('🏢 Sala seleccionada:', salaId);
+    console.log('🏢 Tipo de salaId:', typeof salaId);
+    
+    if (salaId === null || Number.isNaN(salaId)) {
+      console.log('🏢 Valor inválido, limpiando selección');
+      setSelectedSalaId(null);
+      methods.setValue('idSala', 0);
+      console.log('🏢 ===== FIN handleSalaChange (valor inválido) =====');
+      return;
+    }
+    
+    console.log('🏢 Sala encontrada:', salasData?.getAllSalasReuniones?.find((sala: any) => sala.idSala === salaId));
+    
+    console.log('🏢 Estado antes del cambio:');
+    console.log('🏢 - selectedSalaId:', selectedSalaId);
+    console.log('🏢 - showTimeSelector:', showTimeSelector);
+    
+    setSelectedSalaId(salaId);
+    console.log('🏢 setSelectedSalaId ejecutado');
+    
+    methods.setValue('idSala', salaId);
+    console.log('🏢 methods.setValue ejecutado');
+    
+    // Verificar que el valor se estableció correctamente
+    const formValue = methods.getValues('idSala');
+    console.log('🏢 Valor en formulario después de setValue:', formValue);
+    
+    // Buscar reservas de la sala seleccionada
+    console.log('🔍 Buscando reservas para sala:', salaId);
+    console.log('🔍 Reservas existentes antes del filtro:', existingReservations.length);
+    
+    // Filtrar las reservas existentes por la sala seleccionada
+    const reservasFiltradas = existingReservations.filter(reserva => reserva.idSala === salaId);
+    console.log('🔍 Reservas filtradas para sala', salaId, ':', reservasFiltradas.length);
+    
+    // Si estamos en el selector de tiempo, actualizar las reservas mostradas
+    if (showTimeSelector) {
+      console.log('🔄 Actualizando calendario de tiempo con reservas filtradas');
+      // El filtrado se hace automáticamente en el render del Calendar
+      // pero podemos forzar una actualización si es necesario
+    }
+    
+    console.log('🏢 ===== FIN handleSalaChange =====');
+  };
+  
+  // Cleanup para asegurar que el scroll se reactive al desmontar
+  useEffect(() => () => {
+    // Asegurar que el scroll esté reactivado al desmontar el componente
+    document.body.style.overflow = 'auto';
+  }, []);
+  
+  // Manejar eventos de touch para el calendario móvil
+  useEffect(() => {
+    if (!isMobile || !showTimeSelector) return undefined;
+
+    const calendarElement = calendarRef.current?.getApi()?.el;
+    if (!calendarElement) return undefined;
+
+    let isSelecting = false;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Verificar si el touch está en el área de selección del calendario
+      const target = e.target as Element;
+      if (target.closest('.fc-timegrid-slot') || 
+          target.closest('.fc-timegrid-slot-label') ||
+          target.closest('.fc-event') ||
+          target.closest('.fc-event-main') ||
+          target.closest('.fc-event-title')) {
+        console.log('📅 Touch iniciado en área de selección/evento:', target.className);
+        isSelecting = true;
+        // Solo desactivar scroll del body, no interferir con FullCalendar
+        document.body.style.overflow = 'hidden';
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isSelecting) {
+        // Solo prevenir scroll de la página, pero permitir que FullCalendar maneje el arrastre
+        const target = e.target as Element;
+        if (target.closest('.fc-event') || target.closest('.fc-event-main') || target.closest('.fc-event-title')) {
+          // Para eventos, solo prevenir scroll vertical
+          if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            const deltaY = Math.abs(touch.clientY - (touch as any).startY || 0);
+            if (deltaY > 10) {
+              e.preventDefault();
+              console.log('📅 Preveniendo scroll durante arrastre de evento');
+            }
+          }
+        } else {
+          // Para slots vacíos, prevenir scroll
+          e.preventDefault();
+          console.log('📅 Touch move durante selección de slots');
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (isSelecting) {
+        console.log('📅 Touch terminado, reactivando scroll');
+        // Reactivar scroll después de un pequeño delay
+        setTimeout(() => {
+          document.body.style.overflow = 'auto';
+          isSelecting = false;
+        }, 100);
+      }
+    };
+
+    calendarElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+    calendarElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+    calendarElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      calendarElement.removeEventListener('touchstart', handleTouchStart);
+      calendarElement.removeEventListener('touchmove', handleTouchMove);
+      calendarElement.removeEventListener('touchend', handleTouchEnd);
+      // Asegurar que el scroll esté reactivado
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMobile, showTimeSelector]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     ('ontouchstart' in window) ||
+                     window.innerWidth <= 768;
+      setIsMobile(mobile);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
   // Función para verificar si hay superposición con reservas existentes
-  const hasTimeOverlap = (startTime: Date, endTime: Date): boolean => {
-    return existingReservations.some(reservation => {
+  const hasTimeOverlap = (startTime: Date, endTime: Date): boolean => 
+    existingReservations.some(reservation => {
       const resStart = new Date(reservation.fechaInicio);
       const resEnd = new Date(reservation.fechaFin);
       
       // Verificar si hay superposición
       return (startTime < resEnd && endTime > resStart);
     });
-  };
 
   // Función para mostrar mensaje de error de superposición
   const showOverlapError = () => {
@@ -125,10 +268,18 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
 
   // Query para obtener las salas disponibles
   const { data: salasData } = useQuery(GET_ALL_SALAS_QUERY);
+  
+  // Debug de salas
+  useEffect(() => {
+    console.log('🏢 Datos de salas cargados:', salasData);
+    console.log('🏢 Salas disponibles:', salasData?.getAllSalasReuniones?.length || 0);
+    if (salasData?.getAllSalasReuniones) {
+      console.log('🏢 Lista de salas:', salasData.getAllSalasReuniones.map((sala: any) => ({ idSala: sala.idSala, nombre: sala.nombre, color: sala.color })));
+    }
+  }, [salasData]);
 
   // Estado para las reservas existentes
   const [existingReservations, setExistingReservations] = useState<any[]>([]);
-  const [selectedSalaId, setSelectedSalaId] = useState<number | null>(null);
 
   // Query para obtener reservas filtradas por sala y fecha
   const { data: reservasFiltradasData, refetch: refetchReservasFiltradas, loading: loadingReservas } = useQuery(
@@ -227,16 +378,6 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
     });
     return () => subscription.unsubscribe();
   }, [watch]);
-
-  // Función para manejar el cambio de sala
-  const handleSalaChange = (salaId: number) => {
-    console.log('🏢 Sala seleccionada:', salaId);
-    setSelectedSalaId(salaId);
-    // Refetch las reservas cuando cambie la sala
-    if (salaId) {
-      refetchReservasFiltradas();
-    }
-  };
 
   // Función para manejar la selección de horarios en el mini calendario
   const handleTimeSelect = (arg: any) => {
@@ -392,7 +533,7 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
         console.log('📅 Reservas existentes que NO se envían:', existingReservations.length);
         console.log('🟢 Solo se envía el evento verde (vista previa)');
 
-        const response = await fetch('http://localhost:4001/graphql', {
+        const response = await fetch('http://192.168.6.102/graphql', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -438,7 +579,614 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
 
   return (
     <Form methods={methods} onSubmit={onSubmit}>
-      <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+      {isMobile ? (
+        // Vista móvil
+        <Box sx={{ 
+          height: '100vh', 
+          display: 'flex', 
+          flexDirection: 'column',
+          backgroundColor: 'background.default'
+        }}>
+          {!showTimeSelector ? (
+            // Vista principal móvil
+            <>
+              {/* Header */}
+              <Box sx={{ 
+                p: 2, 
+                backgroundColor: 'background.paper',
+                borderBottom: 1,
+                borderColor: 'divider'
+              }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  {isNew ? 'Nuevo Agendamiento' : 'Editar Agendamiento'}
+                </Typography>
+              </Box>
+
+              {/* Formulario principal */}
+              <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {/* Título de la reunión */}
+                <Field.Text
+                  name="titulo"
+                  label="Título de la reunión"
+                  placeholder="Ingrese el título del agendamiento"
+                  fullWidth
+                />
+
+                {/* Sala */}
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                    Seleccionar Sala
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {salasData?.getAllSalasReuniones?.map((sala: any, index: number) => {
+                      const salaId = sala.idSala || sala.id || sala._id || sala.ID || index;
+                      return (
+                        <Button
+                          key={salaId}
+                          variant={selectedSalaId === salaId ? 'contained' : 'outlined'}
+                        onClick={() => {
+                          console.log('🎯 Botón sala clickeado - Sala completa:', sala);
+                          console.log('🎯 Botón sala clickeado - sala.idSala:', sala.idSala);
+                          console.log('🎯 Botón sala clickeado - sala.nombre:', sala.nombre);
+                          console.log('🎯 Botón sala clickeado - typeof sala.idSala:', typeof sala.idSala);
+                          console.log('🎯 Botón sala clickeado - Object.keys(sala):', Object.keys(sala));
+                          
+                          // Intentar diferentes propiedades de ID
+                          const finalSalaId = sala.idSala || sala.id || sala._id || sala.ID || sala.salaId;
+                          console.log('🎯 Botón sala clickeado - salaId final:', finalSalaId);
+                          
+                          if (finalSalaId) {
+                            handleSalaChange(finalSalaId);
+                          } else {
+                            console.log('🎯 Botón sala clickeado - No se encontró ID válido');
+                          }
+                        }}
+                        sx={{
+                          justifyContent: 'flex-start',
+                          textTransform: 'none',
+                          p: 2,
+                          border: selectedSalaId === salaId ? 2 : 1,
+                          borderColor: selectedSalaId === salaId ? sala.color : 'divider',
+                          backgroundColor: selectedSalaId === salaId ? sala.color : 'transparent',
+                          color: selectedSalaId === salaId ? 'white' : 'text.primary',
+                          '&:hover': {
+                            backgroundColor: selectedSalaId === salaId ? sala.color : 'action.hover',
+                            borderColor: sala.color,
+                          }
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              backgroundColor: selectedSalaId === salaId ? 'white' : sala.color,
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ fontWeight: selectedSalaId === salaId ? 'bold' : 'normal' }}>
+                            {sala.nombre}
+                          </Typography>
+                        </Box>
+                      </Button>
+                    );
+                  })}
+                  </Box>
+                </Box>
+                
+                {/* Debug info */}
+                <Box sx={{ p: 1, backgroundColor: 'grey.100', borderRadius: 1, fontSize: '0.75rem' }}>
+                  <Typography variant="caption" component="div">
+                    <strong>Debug:</strong> Sala seleccionada: {selectedSalaId || 'Ninguna'}
+                  </Typography>
+                  <Typography variant="caption" component="div">
+                    Salas disponibles: {salasData?.getAllSalasReuniones?.length || 0}
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => {
+                      console.log('🔍 Botón de prueba - Salas disponibles:');
+                      console.log('🔍 salasData:', salasData);
+                      console.log('🔍 getAllSalasReuniones:', salasData?.getAllSalasReuniones);
+                      if (salasData?.getAllSalasReuniones) {
+                        salasData.getAllSalasReuniones.forEach((sala: any, index: number) => {
+                          console.log(`🔍 Sala ${index}:`, { idSala: sala.idSala, nombre: sala.nombre, color: sala.color });
+                        });
+                      }
+                    }}
+                    sx={{ mt: 1, fontSize: '0.7rem' }}
+                  >
+                    🔍 Ver Salas en Consola
+                  </Button>
+                </Box>
+
+                {/* Botón de fecha/hora */}
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => setShowTimeSelector(true)}
+                  sx={{ 
+                    height: 56,
+                    justifyContent: 'flex-start',
+                    textAlign: 'left',
+                    borderColor: 'divider',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      backgroundColor: 'action.hover'
+                    }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Fecha y Hora
+                    </Typography>
+                    <Typography variant="body1">
+                      {selectedStartTime && selectedEndTime 
+                        ? `${selectedStartTime} - ${selectedEndTime}`
+                        : 'Seleccionar fecha y hora'
+                      }
+                    </Typography>
+                  </Box>
+                </Button>
+
+                {/* Botones */}
+                <Box sx={{ mt: 'auto', pt: 2, display: 'flex', gap: 2 }}>
+                  <Button 
+                    variant="outlined" 
+                    onClick={onClose} 
+                    disabled={loading} 
+                    fullWidth
+                    size="large"
+                  >
+                    Cancelar
+                  </Button>
+                  <LoadingButton
+                    type="submit"
+                    variant="contained"
+                    loading={loading}
+                    disabled={loading || !selectedStartTime || !selectedEndTime}
+                    size="large"
+                    fullWidth
+                    startIcon={<Iconify icon="eva:save-fill" />}
+                  >
+                    {isNew ? 'Reservar' : 'Actualizar'}
+                  </LoadingButton>
+                </Box>
+              </Box>
+            </>
+          ) : (
+            // Selector de tiempo móvil
+            <Box sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              backgroundColor: 'background.default'
+            }}>
+              {/* Header del selector */}
+              <Box sx={{ 
+                p: 2, 
+                backgroundColor: 'background.paper',
+                borderBottom: 1,
+                borderColor: 'divider',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Seleccionar Hora
+                  </Typography>
+                  {selectedSalaId ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          backgroundColor: salasData?.getAllSalasReuniones?.find((sala: any) => sala.id === selectedSalaId)?.color || 'primary.main',
+                        }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        Sala: {salasData?.getAllSalasReuniones?.find((sala: any) => sala.id === selectedSalaId)?.nombre}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="caption" color="error.main">
+                      ⚠️ Selecciona una sala primero
+                    </Typography>
+                  )}
+                </Box>
+                <Button
+                  variant="contained"
+                  onClick={() => setShowTimeSelector(false)}
+                  sx={{ minWidth: 'auto', px: 2 }}
+                >
+                  ✓
+                </Button>
+              </Box>
+
+              {/* Botón para cambiar sala */}
+              {selectedSalaId && (
+                <Box sx={{ p: 1, backgroundColor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    onClick={() => {
+                      setShowTimeSelector(false);
+                      setSelectedSalaId(null);
+                      methods.setValue('idSala', 0);
+                    }}
+                    sx={{ fontSize: '0.75rem' }}
+                  >
+                    🔄 Cambiar Sala
+                  </Button>
+                </Box>
+              )}
+
+              {/* Botón de navegación superior */}
+              <Box sx={{ p: 1, backgroundColor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  onClick={() => {
+                    console.log('📅 Navegando hacia arriba');
+                    const calendarApi = calendarRef.current?.getApi();
+                    if (calendarApi) {
+                      const currentDate = calendarApi.getDate();
+                      const newDate = new Date(currentDate);
+                      newDate.setHours(currentDate.getHours() - 1);
+                      calendarApi.gotoDate(newDate);
+                      console.log('📅 Nueva fecha:', newDate);
+                    }
+                  }}
+                  sx={{ fontSize: '0.75rem' }}
+                >
+                  ⬆️ Ver hora anterior
+                </Button>
+              </Box>
+
+              {/* Calendario de tiempo */}
+              <Box sx={{ flex: 1, p: 1 }}>
+                <Card sx={{ 
+                  height: '100%', 
+                  overflow: 'hidden',
+                  // Permitir scroll normal por defecto
+                  touchAction: 'auto',
+                  userSelect: 'auto'
+                }}>
+                  <Calendar
+                    ref={calendarRef}
+                    plugins={[timeGridPlugin, interactionPlugin]}
+                    initialView="timeGridDay"
+                    initialDate={(() => {
+                      const fecha = selectedRange?.start ? new Date(selectedRange.start) : new Date();
+                      console.log('📅 Fecha inicial del calendario:', fecha);
+                      console.log('📅 selectedRange:', selectedRange);
+                      return fecha;
+                    })()}
+                    events={(() => {
+                      const eventosFiltrados = existingReservations
+                        .filter(reserva => !selectedSalaId || reserva.idSala === selectedSalaId)
+                        .map(reserva => {
+                          console.log('🔄 Mapeando reserva:', reserva);
+                          console.log('🔄 Reserva.usuario:', reserva.usuario);
+                          console.log('🔄 Reserva.sala:', reserva.sala);
+                          console.log('🔄 Reserva.fechaInicio:', reserva.fechaInicio, typeof reserva.fechaInicio);
+                          console.log('🔄 Reserva.fechaFin:', reserva.fechaFin, typeof reserva.fechaFin);
+                          console.log('🔄 Reserva.color:', reserva.color);
+                          const evento = {
+                            id: `existing-${reserva.id}`,
+                            title: `${reserva.title} - ${reserva.usuario || 'Usuario desconocido'}`,
+                            start: reserva.fechaInicio,
+                            end: reserva.fechaFin,
+                            backgroundColor: reserva.color || '#f44336',
+                            borderColor: reserva.color || '#f44336',
+                            textColor: 'white',
+                            editable: false,
+                            display: 'block',
+                            extendedProps: {
+                              usuario: reserva.usuario || 'Usuario desconocido',
+                              sala: reserva.sala
+                            }
+                          };
+                          console.log('🔄 Evento mapeado:', evento);
+                          return evento;
+                        });
+                      
+                      console.log('📅 Eventos en calendario móvil:', {
+                        salaSeleccionada: selectedSalaId,
+                        totalReservas: existingReservations.length,
+                        eventosFiltrados: eventosFiltrados.length,
+                        eventos: eventosFiltrados,
+                        reservaEjemplo: existingReservations[0], // Mostrar estructura de una reserva
+                        slotMinTime: '00:00:00',
+                        slotMaxTime: '23:59:59'
+                      });
+                      
+                      return eventosFiltrados;
+                    })()}
+                    locale={esLocale}
+                    headerToolbar={false}
+                    selectable
+                    selectMirror
+                    selectOverlap={false}
+                    unselectAuto={false}
+                    select={(arg) => {
+                      const start = arg.start;
+                      const end = arg.end;
+                      
+                      console.log('📅 Selección confirmada en calendario móvil:', arg);
+                      
+                      // Asegurar que el scroll esté reactivado después de la selección
+                      document.body.style.overflow = 'auto';
+                      document.body.style.touchAction = 'auto';
+                      
+                      setSelectedStartTime(start.toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      }));
+                      setSelectedEndTime(end.toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      }));
+                      
+                      // Actualizar el formulario
+                      methods.setValue('fechaInicio', start.toISOString());
+                      methods.setValue('fechaFin', end.toISOString());
+                    }}
+                    height="100%"
+                    slotMinTime="00:00:00"
+                    slotMaxTime="23:59:59"
+                    slotDuration="00:30:00"
+                    slotLabelInterval="01:00:00"
+                    allDaySlot={false}
+                    dayHeaderFormat={{ weekday: 'long' }}
+                    // Estilos para móvil
+                    dayMaxEvents={false}
+                    eventDisplay="block"
+                    // Mejorar interacción táctil
+                    longPressDelay={100}
+                    selectLongPressDelay={50}
+                    selectMinDistance={0}
+                    // Configuración para arrastre de eventos
+                    eventStartEditable
+                    eventDurationEditable
+                    eventResizableFromStart
+                    // Configuración específica para móvil
+                    eventDragMinDistance={5}
+                    eventLongPressDelay={100}
+                    // Configuración adicional para asegurar que los eventos se muestren
+                    eventDidMount={(info) => {
+                      console.log('📅 Evento montado en calendario móvil:', info.event);
+                      
+                      // Agregar handles de redimensionamiento personalizados
+                      const eventElement = info.el;
+                      if (eventElement) {
+                        // Crear handle superior
+                        const topHandle = document.createElement('div');
+                        topHandle.className = 'fc-event-resize-handle-top';
+                        topHandle.style.cssText = `
+                          position: absolute;
+                          top: -5px;
+                          left: 50%;
+                          transform: translateX(-50%);
+                          width: 20px;
+                          height: 10px;
+                          background: #1976d2;
+                          border-radius: 50%;
+                          cursor: ns-resize;
+                          z-index: 1000;
+                          border: 2px solid white;
+                          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        `;
+                        
+                        // Crear handle inferior
+                        const bottomHandle = document.createElement('div');
+                        bottomHandle.className = 'fc-event-resize-handle-bottom';
+                        bottomHandle.style.cssText = `
+                          position: absolute;
+                          bottom: -5px;
+                          left: 50%;
+                          transform: translateX(-50%);
+                          width: 20px;
+                          height: 10px;
+                          background: #1976d2;
+                          border-radius: 50%;
+                          cursor: ns-resize;
+                          z-index: 1000;
+                          border: 2px solid white;
+                          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        `;
+                        
+                        eventElement.appendChild(topHandle);
+                        eventElement.appendChild(bottomHandle);
+                        
+                        // Agregar eventos de touch para los handles
+                        const addHandleEvents = (handle: HTMLElement, isTop: boolean) => {
+                          let startY = 0;
+                          let startTime = 0;
+                          let currentStartTime = 0;
+                          let currentEndTime = 0;
+                          
+                          const handleTouchStart = (e: TouchEvent) => {
+                            e.stopPropagation();
+                            startY = e.touches[0].clientY;
+                            
+                            // Capturar los tiempos actuales del evento
+                            const eventStart = info.event.start;
+                            const eventEnd = info.event.end;
+                            
+                            if (!eventStart || !eventEnd) {
+                              console.log('📅 Error: Evento sin start/end válidos');
+                              return;
+                            }
+                            
+                            // Guardar tiempos actuales para usar durante el arrastre
+                            currentStartTime = eventStart.getTime();
+                            currentEndTime = eventEnd.getTime();
+                            startTime = isTop ? currentStartTime : currentEndTime;
+                            
+                            console.log('📅 Handle touch iniciado:', isTop ? 'top' : 'bottom', 'startTime:', new Date(startTime).toLocaleTimeString());
+                            
+                            // Desactivar scroll durante redimensionamiento
+                            document.body.style.overflow = 'hidden';
+                          };
+                          
+                          const handleTouchMove = (e: TouchEvent) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const currentY = e.touches[0].clientY;
+                            const deltaY = currentY - startY;
+                            
+                            // Convertir movimiento en tiempo (aproximadamente 30px = 1 hora)
+                            const timeDelta = (deltaY / 30) * 60 * 60 * 1000; // en milisegundos
+                            const newTime = startTime + timeDelta;
+                            
+                            if (isTop) {
+                              // Redimensionar desde arriba
+                              const newStart = new Date(newTime);
+                              if (newStart.getTime() < currentEndTime) {
+                                // Actualizar el evento si es válido, sino usar el estado local
+                                try {
+                                  info.event.setStart(newStart);
+                                  console.log('📅 Redimensionando desde arriba:', newStart.toLocaleTimeString());
+                                } catch (error) {
+                                  console.log('📅 Evento no disponible, usando estado local');
+                                }
+                              }
+                            } else {
+                              // Redimensionar desde abajo
+                              const newEnd = new Date(newTime);
+                              if (newEnd.getTime() > currentStartTime) {
+                                // Actualizar el evento si es válido, sino usar el estado local
+                                try {
+                                  info.event.setEnd(newEnd);
+                                  console.log('📅 Redimensionando desde abajo:', newEnd.toLocaleTimeString());
+                                } catch (error) {
+                                  console.log('📅 Evento no disponible, usando estado local');
+                                }
+                              }
+                            }
+                          };
+                          
+                          const handleTouchEnd = (e: TouchEvent) => {
+                            e.stopPropagation();
+                            console.log('📅 Handle touch terminado');
+                            
+                            // Reactivar scroll
+                            document.body.style.overflow = 'auto';
+                            
+                            // Calcular los nuevos tiempos basados en el movimiento
+                            const currentY = e.changedTouches[0].clientY;
+                            const deltaY = currentY - startY;
+                            const timeDelta = (deltaY / 30) * 60 * 60 * 1000;
+                            const newTime = startTime + timeDelta;
+                            
+                            let finalStartTime = currentStartTime;
+                            let finalEndTime = currentEndTime;
+                            
+                            if (isTop) {
+                              // Redimensionar desde arriba
+                              const newStart = new Date(newTime);
+                              if (newStart.getTime() < currentEndTime) {
+                                finalStartTime = newStart.getTime();
+                              }
+                            } else {
+                              // Redimensionar desde abajo
+                              const newEnd = new Date(newTime);
+                              if (newEnd.getTime() > currentStartTime) {
+                                finalEndTime = newEnd.getTime();
+                              }
+                            }
+                            
+                            // Actualizar el formulario con los tiempos finales
+                            const finalStart = new Date(finalStartTime);
+                            const finalEnd = new Date(finalEndTime);
+                            
+                            setSelectedStartTime(finalStart.toLocaleTimeString('es-ES', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            }));
+                            setSelectedEndTime(finalEnd.toLocaleTimeString('es-ES', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            }));
+                            
+                            methods.setValue('fechaInicio', finalStart.toISOString());
+                            methods.setValue('fechaFin', finalEnd.toISOString());
+                            
+                            console.log('📅 Formulario actualizado:', finalStart.toLocaleTimeString(), '→', finalEnd.toLocaleTimeString());
+                          };
+                          
+                          handle.addEventListener('touchstart', handleTouchStart, { passive: false });
+                          handle.addEventListener('touchmove', handleTouchMove, { passive: false });
+                          handle.addEventListener('touchend', handleTouchEnd, { passive: false });
+                        };
+                        
+                        addHandleEvents(topHandle, true);
+                        addHandleEvents(bottomHandle, false);
+                      }
+                    }}
+                    eventWillUnmount={(info) => {
+                      console.log('📅 Evento desmontado en calendario móvil:', info.event);
+                    }}
+                    // Callback cuando se mueve un evento
+                    eventDrop={(info) => {
+                      console.log('📅 Evento movido:', info.event);
+                      const start = info.event.start;
+                      const end = info.event.end;
+                      
+                      if (start && end) {
+                        setSelectedStartTime(start.toLocaleTimeString('es-ES', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        }));
+                        setSelectedEndTime(end.toLocaleTimeString('es-ES', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        }));
+                        
+                        // Actualizar el formulario
+                        methods.setValue('fechaInicio', start.toISOString());
+                        methods.setValue('fechaFin', end.toISOString());
+                      }
+                    }}
+                  />
+                </Card>
+              </Box>
+
+              {/* Botón de navegación inferior */}
+              <Box sx={{ p: 1, backgroundColor: 'background.paper', borderTop: 1, borderColor: 'divider' }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  onClick={() => {
+                    console.log('📅 Navegando hacia abajo');
+                    const calendarApi = calendarRef.current?.getApi();
+                    if (calendarApi) {
+                      const currentDate = calendarApi.getDate();
+                      const newDate = new Date(currentDate);
+                      newDate.setHours(currentDate.getHours() + 1);
+                      calendarApi.gotoDate(newDate);
+                      console.log('📅 Nueva fecha:', newDate);
+                    }
+                  }}
+                  sx={{ fontSize: '0.75rem' }}
+                >
+                  ⬇️ Ver hora siguiente
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </Box>
+      ) : (
+        // Vista desktop (existente)
+        <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
         {/* Panel izquierdo - Formulario */}
         <Box sx={{ 
           flex: '0 0 65%', 
@@ -449,19 +1197,7 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
           display: 'flex',
           flexDirection: 'column'
         }}>
-          {/* Botón Guardar en la parte superior */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
-            <LoadingButton
-              type="submit"
-              variant="contained"
-              loading={loading}
-              disabled={loading}
-              size="large"
-              startIcon={<Iconify icon="eva:save-fill" />}
-            >
-              {isNew ? 'Reservar' : 'Actualizar Reserva'}
-            </LoadingButton>
-          </Box>
+        
 
           {/* Campos del formulario */}
           <Box sx={{ flex: 1 }}>
@@ -510,12 +1246,21 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
               Selecciona el horario en el calendario de la derecha
             </Typography>
           </Box>
-
-          {/* Botón Cancelar en la parte inferior */}
-          <Box sx={{ mt: 'auto', pt: 2 }}>
-            <Button variant="outlined" onClick={onClose} disabled={loading} fullWidth>
+          {/* Botones en la parte inferior */}
+          <Box sx={{ mt: 'auto', pt: 2, display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+            <Button variant="contained" onClick={onClose} disabled={loading} size="large">
               Cancelar
             </Button>
+            <LoadingButton
+              type="submit"
+              variant="contained"
+              loading={loading}
+              disabled={loading}
+              size="large"
+              startIcon={<Iconify icon="eva:save-fill" />}
+            >
+              {isNew ? 'Reservar' : 'Actualizar Reserva'}
+            </LoadingButton>
           </Box>
         </Box>
 
@@ -528,10 +1273,7 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
           display: 'flex',
           flexDirection: 'column'
         }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Vista previa del horario
-          </Typography>
-          
+       
           {/* Loading de consultando disponibilidades */}
           {loadingReservas && selectedSalaId && (
             <Box sx={{ 
@@ -567,7 +1309,7 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
               select={handleTimeSelect}
               height="auto"
               headerToolbar={{
-                left: 'prev,next',
+                left: '',
                 center: 'title',
                 right: ''
               }}
@@ -707,6 +1449,7 @@ export function AgendamientoForm({ currentEvent, isNew, selectedRange, onClose, 
           </Box>
         </Box>
       </Box>
+      )}
     </Form>
   );
 }
