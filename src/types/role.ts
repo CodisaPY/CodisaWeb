@@ -117,12 +117,12 @@ export interface AddRolesToGroupResponse {
 }
 
 export interface AddRolesToGroupMutationResponse {
-  addRolesToSpecificGroup: AddRolesToGroupResponse;
+  addRolesToGroup: boolean;
 }
 
 export interface AddRolesToGroupMutationVariables {
   groupName: string;
-  input: AddRolesToGroupInput;
+  roles: string[];
 }
 
 export interface RemoveRolesFromGroupInput {
@@ -141,12 +141,12 @@ export interface RemoveRolesFromGroupResponse {
 }
 
 export interface RemoveRolesFromGroupMutationResponse {
-  removeRolesFromSpecificGroup: RemoveRolesFromGroupResponse;
+  removeRolesFromGroup: boolean;
 }
 
 export interface RemoveRolesFromGroupMutationVariables {
   groupName: string;
-  input: RemoveRolesFromGroupInput;
+  roles: string[];
 }
 
 export interface Permission {

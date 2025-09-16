@@ -2,8 +2,20 @@ import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
 // Configuración del servidor GraphQL
+// En contenedor unificado con nginx, usar localhost/graphql
+// En desarrollo/producción separada, usar la URL externa
+const getGraphQLUri = () => {
+  // Si estamos en un contenedor unificado (detectado por variable de entorno)
+  if (import.meta.env.VITE_UNIFIED_CONTAINER === 'true') {
+    return '/graphql'; // Usar ruta relativa para nginx
+  }
+  
+  // URL por defecto para desarrollo/producción separada
+  return `${import.meta.env.VITE_GRAPHQL_SERVER_URL || 'https://linker-app-backend.braveglacier-674d7e00.eastus2.azurecontainerapps.io'}/graphql`;
+};
+
 const httpLink = createHttpLink({
-  uri: `${import.meta.env.VITE_GRAPHQL_SERVER_URL || 'https://linker-app-backend.braveglacier-674d7e00.eastus2.azurecontainerapps.io'}/graphql`,
+  uri: getGraphQLUri(),
 });
 
 // Link para agregar el token de autorización solo cuando sea necesario
@@ -12,27 +24,14 @@ const authLink = setContext((_, { headers, operationName }) => {
   const token = localStorage.getItem('accessToken');
   
   // Lista de operaciones que NO requieren token
-  const operationsWithoutAuth = [
-    'createAtributo',
-    'updateAtributo',
-    'deleteAtributo',
-    'CreateReservaSala',
-    'UpdateReservaSala',
-    'GetReservasSalasCalendario',
-  ];
-  
-  console.log('🔍 Operation name:', operationName);
-  console.log('🔍 Operations without auth:', operationsWithoutAuth);
-  console.log('🔍 Should skip auth:', operationName && operationsWithoutAuth.includes(operationName));
+  const operationsWithoutAuth = ['createAtributo', 'updateAtributo', 'deleteAtributo'];
   
   // Si la operación NO requiere token, no enviar autorización
   if (operationName && operationsWithoutAuth.includes(operationName)) {
-    console.log('✅ No enviando token para operación:', operationName);
     return { headers };
   }
   
   // Para otras operaciones, enviar el token si existe
-  console.log('🔐 Enviando token para operación:', operationName);
   return {
     headers: {
       ...headers,

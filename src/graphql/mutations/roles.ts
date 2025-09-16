@@ -47,59 +47,25 @@ export const DELETE_ROLE_MUTATION = gql`
 `;
 
 export const ASSIGN_ROLES_TO_USER_MUTATION = gql`
-  mutation AssignRolesToUser($userId: String!, $roleNames: [String!]!) {
-    assignRolesToUser(userId: $userId, roleNames: $roleNames) {
-      success
-      message
-    }
+  mutation AssignRolesToUser($userId: ID!, $roles: [String!]!) {
+    assignRolesToUser(userId: $userId, roles: $roles)
   }
 `;
 
 export const REMOVE_ROLES_FROM_USER_MUTATION = gql`
-  mutation RemoveRolesFromUser($userId: String!, $roleNames: [String!]!) {
-    removeRolesFromUser(userId: $userId, roleNames: $roleNames) {
-      success
-      message
-    }
+  mutation RemoveRolesFromUser($userId: ID!, $roles: [String!]!) {
+    removeRolesFromUser(userId: $userId, roles: $roles)
   }
 `;
 
 export const ADD_ROLES_TO_GROUP_MUTATION = gql`
-  mutation AddRolesToSpecificGroup($groupName: String!, $input: AddRolesToGroupInput!) {
-    addRolesToSpecificGroup(groupName: $groupName, input: $input) {
-      success
-      message
-      data {
-        groupName
-        addedRoles {
-          id
-          name
-          description
-          composite
-          clientRole
-          containerId
-        }
-      }
-    }
+  mutation AddRolesToGroup($groupName: String!, $roles: [String!]!) {
+    addRolesToGroup(groupName: $groupName, roles: $roles)
   }
 `;
 
 export const REMOVE_ROLES_FROM_GROUP_MUTATION = gql`
-  mutation RemoveRolesFromSpecificGroup($groupName: String!, $input: RemoveRolesFromGroupInput!) {
-    removeRolesFromSpecificGroup(groupName: $groupName, input: $input) {
-      success
-      message
-      data {
-        groupName
-        removedRoles {
-          id
-          name
-          description
-          composite
-          clientRole
-          containerId
-        }
-      }
-    }
+  mutation RemoveRolesFromGroup($groupName: String!, $roles: [String!]!) {
+    removeRolesFromGroup(groupName: $groupName, roles: $roles)
   }
 `; 

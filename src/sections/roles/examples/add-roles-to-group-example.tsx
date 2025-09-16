@@ -40,9 +40,7 @@ export function AddRolesToGroupExample() {
       await addRolesToGroup({
         variables: {
           groupName,
-          input: {
-            rolesToAdd,
-          },
+          roles: rolesToAdd,
         },
       });
       

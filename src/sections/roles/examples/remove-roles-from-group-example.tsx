@@ -40,9 +40,7 @@ export function RemoveRolesFromGroupExample() {
       await removeRolesFromGroup({
         variables: {
           groupName,
-          input: {
-            rolesToRemove,
-          },
+          roles: rolesToRemove,
         },
       });
       

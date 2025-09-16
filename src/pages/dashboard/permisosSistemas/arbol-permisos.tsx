@@ -6,7 +6,7 @@ import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import { useQuery, useLazyQuery } from '@apollo/client';
+import { useQuery, useLazyQuery, useMutation } from '@apollo/client';
 
 import {
   Box,
@@ -34,6 +34,7 @@ import { CONFIG } from 'src/config-global';
 import { varAlpha, stylesMode } from 'src/theme/styles';
 import { Iconify } from 'src/components/iconify';
 import { SCREEN_HIERARCHY_LEVEL3_QUERY, GET_USER_ROLES_QUERY, ROLES_QUERY, GET_GROUP_ROLES_QUERY } from 'src/graphql/queries/roles';
+import { ASSIGN_ROLES_TO_USER_MUTATION, REMOVE_ROLES_FROM_USER_MUTATION } from 'src/graphql/mutations/roles';
 
 type PermisoNode = {
   name: string;
@@ -524,6 +525,28 @@ export function ArbolPermisos({ userData }: Props) {
     }
   });
 
+  // Mutation para asignar roles a usuario
+  const [assignRolesToUser] = useMutation(ASSIGN_ROLES_TO_USER_MUTATION, {
+    errorPolicy: 'all',
+    onCompleted: (data) => {
+      console.log('✅ Roles asignados exitosamente:', data);
+    },
+    onError: (error) => {
+      console.error('❌ Error al asignar roles:', error);
+    }
+  });
+
+  // Mutation para remover roles de usuario
+  const [removeRolesFromUser] = useMutation(REMOVE_ROLES_FROM_USER_MUTATION, {
+    errorPolicy: 'all',
+    onCompleted: (data) => {
+      console.log('✅ Roles removidos exitosamente:', data);
+    },
+    onError: (error) => {
+      console.error('❌ Error al remover roles:', error);
+    }
+  });
+
   const handleCloseToast = () => {
     setToast(prev => ({ ...prev, open: false }));
   };
@@ -673,10 +696,14 @@ export function ArbolPermisos({ userData }: Props) {
       // 1. Intentar eliminar el rol actual del usuario
       if (userData.groupRole && userData.groupRole !== 'N/A') {
         try {
-          await axios.delete(`${CONFIG.serverUrl}/api/keycloak/user/${userData.id}/roles`, {
-            data: {
-              roles: [{ name: userData.groupRole }]
-            }
+          const removeVariables = {
+            userId: userData.id,
+            roles: [userData.groupRole]
+          };
+          console.log('🔍 Enviando REMOVE_ROLES_FROM_USER con variables:', removeVariables);
+          
+          await removeRolesFromUser({
+            variables: removeVariables
           });
         } catch (deleteError) {
           console.warn('No se pudo eliminar el rol anterior:', deleteError);
@@ -684,12 +711,20 @@ export function ArbolPermisos({ userData }: Props) {
         }
       }
 
-      // 2. Agregar el nuevo rol
-      const response = await axios.post(`${CONFIG.serverUrl}/api/keycloak/user/${userData.id}/roles`, {
-        roles: [{ name: selectedGroupRole }]
+      // 2. Agregar el nuevo rol usando GraphQL mutation
+      const assignVariables = {
+        userId: userData.id,
+        roles: [selectedGroupRole]
+      };
+      console.log('🔍 Enviando ASSIGN_ROLES_TO_USER con variables:', assignVariables);
+      
+      const response = await assignRolesToUser({
+        variables: assignVariables
       });
 
-      if (response.data.success) {
+      console.log('📥 Respuesta completa de ASSIGN_ROLES_TO_USER:', response);
+
+      if (response.data?.assignRolesToUser) {
         // Actualizar referencias locales
         setPreviousGroupRole(selectedGroupRole);
         
@@ -709,7 +744,7 @@ export function ArbolPermisos({ userData }: Props) {
           setSelectedUsuario(null);
         }
       } else {
-        throw new Error(response.data.message || 'Error al actualizar el rol');
+        throw new Error('Error al actualizar el rol');
       }
     } catch (error) {
       console.error('Error al cambiar el rol:', error);

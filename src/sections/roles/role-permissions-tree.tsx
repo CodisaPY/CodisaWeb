@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLazyQuery } from '@apollo/client';
 import {
   Box,
   List,
@@ -16,14 +17,13 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
-import { CONFIG } from 'src/config-global';
 import { 
   useAddRolesToGroup, 
   useRemoveRolesFromGroup,
   useGetScreenHierarchyLevel3
 } from 'src/hooks/use-graphql-roles';
+import { GET_GROUP_ROLES_QUERY } from 'src/graphql/queries/roles';
 import { Permission } from 'src/types/role';
-import axios from 'axios';
 
 type SelectedActions = {
   [key: string]: {
@@ -262,6 +262,18 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
   // Query GraphQL para el árbol de permisos
   const { data: treeData, loading: loadingTree, error: treeError } = useGetScreenHierarchyLevel3();
 
+  // Lazy query para obtener roles de un grupo específico
+  const [getGroupRoles, { loading: loadingGroupRoles, error: groupRolesError }] = useLazyQuery(GET_GROUP_ROLES_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (data) => {
+      console.log('✅ Query GET_GROUP_ROLES ejecutada exitosamente:', data);
+    },
+    onError: (error) => {
+      console.error('❌ Error en query GET_GROUP_ROLES:', error);
+    }
+  });
+
   const handleCloseToast = () => {
     setToast(prev => ({ ...prev, open: false }));
   };
@@ -292,21 +304,25 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
       const unselectedActions = initializeAllActionsAsUnselected(treeData.screenHierarchyLevel3);
       setSelectedActions(unselectedActions);
 
-      // Si hay roleName, traer los permisos del rol usando REST temporalmente
+      // Si hay roleName, traer los permisos del rol usando GraphQL
       if (roleName) {
         const fetchRolePermissions = async () => {
           try {
             console.log('Fetching permissions for role:', roleName);
-            const rolePermissionsRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/groups/${roleName}/pantallas`);
-            console.log('Role permissions response:', rolePermissionsRes.data);
+            
+            const response = await getGroupRoles({
+              variables: { groupName: roleName }
+            });
 
-            if (!rolePermissionsRes.data.success) {
-              console.warn('La respuesta de permisos no fue exitosa:', rolePermissionsRes.data);
+            console.log('Role permissions response:', response.data);
+
+            if (!response.data?.groupRoles?.success) {
+              console.warn('La respuesta de permisos no fue exitosa:', response.data);
               return;
             }
 
             // Actualizar selectedActions con los permisos del rol
-            const rolePermissions = rolePermissionsRes.data.data || [];
+            const rolePermissions = response.data.groupRoles.data || [];
             console.log('Role permissions array:', rolePermissions);
 
             if (!Array.isArray(rolePermissions)) {
@@ -389,7 +405,7 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
         });
       }
     }
-  }, [treeData, roleName]);
+  }, [treeData, roleName, getGroupRoles]);
 
   const handleActionChange = async (pantallaId: string, action: string, checked: boolean) => {
     // Actualizar el estado local
@@ -430,23 +446,27 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
       if (roleName) {
         if (checked) {
           // Agregar permiso usando GraphQL
+          const addVariables = {
+            groupName: roleName,
+            roles: [permissionName],
+          };
+          console.log('🔍 Enviando ADD_ROLES_TO_GROUP con variables:', addVariables);
+          
+          // @ts-ignore - Types will be updated after TypeScript cache refresh
           await addRolesToGroup({
-            variables: {
-              groupName: roleName,
-              input: {
-                rolesToAdd: [permissionName],
-              },
-            },
+            variables: addVariables,
           });
         } else {
           // Remover permiso usando GraphQL
+          const removeVariables = {
+            groupName: roleName,
+            roles: [permissionName],
+          };
+          console.log('🔍 Enviando REMOVE_ROLES_FROM_GROUP con variables:', removeVariables);
+          
+          // @ts-ignore - Types will be updated after TypeScript cache refresh
           await removeRolesFromGroup({
-            variables: {
-              groupName: roleName,
-              input: {
-                rolesToRemove: [permissionName],
-              },
-            },
+            variables: removeVariables,
           });
         }
 

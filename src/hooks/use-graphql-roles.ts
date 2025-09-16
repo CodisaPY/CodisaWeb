@@ -222,14 +222,14 @@ export const useAddRolesToGroup = () => {
     AddRolesToGroupMutationVariables
   >(ADD_ROLES_TO_GROUP_MUTATION, {
     onCompleted: (data) => {
-      if (data.addRolesToSpecificGroup.success) {
-        enqueueSnackbar(data.addRolesToSpecificGroup.message || 'Roles agregados exitosamente', { variant: 'success' });
+      if (data.addRolesToGroup) {
+        enqueueSnackbar('Roles agregados exitosamente', { variant: 'success' });
         // Refetch group roles
         client.refetchQueries({
           include: [GROUP_ROLES_QUERY],
         });
       } else {
-        enqueueSnackbar(data.addRolesToSpecificGroup.message || 'Error al agregar roles', { variant: 'error' });
+        enqueueSnackbar('Error al agregar roles', { variant: 'error' });
       }
     },
     onError: (error) => {
@@ -254,14 +254,14 @@ export const useRemoveRolesFromGroup = () => {
     RemoveRolesFromGroupMutationVariables
   >(REMOVE_ROLES_FROM_GROUP_MUTATION, {
     onCompleted: (data) => {
-      if (data.removeRolesFromSpecificGroup.success) {
-        enqueueSnackbar(data.removeRolesFromSpecificGroup.message || 'Roles removidos exitosamente', { variant: 'success' });
+      if (data.removeRolesFromGroup) {
+        enqueueSnackbar('Roles removidos exitosamente', { variant: 'success' });
         // Refetch group roles
         client.refetchQueries({
           include: [GROUP_ROLES_QUERY],
         });
       } else {
-        enqueueSnackbar(data.removeRolesFromSpecificGroup.message || 'Error al remover roles', { variant: 'error' });
+        enqueueSnackbar('Error al remover roles', { variant: 'error' });
       }
     },
     onError: (error) => {

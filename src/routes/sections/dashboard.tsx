@@ -68,12 +68,6 @@ const NewTipoEquipoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-tipo-
 const TipoEquipoListPage = lazy(() => import('src/pages/dashboard/tic/lista-tipos-equipo'));
 const TipoEquipoEditPage = lazy(() => import('src/pages/dashboard/tic/editar-tipo-equipo'));
 
-// Sala Reserva
-const SalaListPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/listaSalas'));
-const NuevaSalaPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/nuevaSala'));
-const EditarSalaPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/editarSala'));
-const AgendamientoPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloAgendamiento/agendamiento'));
-
 const Notificaciones = lazy(() => import('src/pages/dashboard/notificaciones/edit'));
 const AutorizacionesFirmas = lazy(() => import('src/pages/dashboard/autorizacionesFirmas/edit'));
 
