@@ -1,6 +1,8 @@
 import type { CardProps } from '@mui/material/Card';
 import type { TableHeadCustomProps } from 'src/components/table';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -77,6 +79,7 @@ type RowItemProps = {
 
 function RowItem({ row }: RowItemProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleDownload = () => {
     popover.onClose();
@@ -121,7 +124,11 @@ function RowItem({ row }: RowItemProps) {
         </TableCell>
 
         <TableCell align="right" sx={{ pr: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+          <IconButton
+            ref={buttonRef}
+            color={popover.open ? 'inherit' : 'default'}
+            onClick={popover.onOpen}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>
@@ -129,7 +136,7 @@ function RowItem({ row }: RowItemProps) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

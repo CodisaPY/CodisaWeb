@@ -1,5 +1,7 @@
 import type { IUserProfileFriend } from 'src/types/user';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
@@ -82,6 +84,7 @@ type FriendCardProps = {
 
 function FriendCard({ item }: FriendCardProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleDelete = () => {
     popover.onClose();
@@ -126,6 +129,7 @@ function FriendCard({ item }: FriendCardProps) {
         </Stack>
 
         <IconButton
+          ref={buttonRef}
           color={popover.open ? 'inherit' : 'default'}
           onClick={popover.onOpen}
           sx={{ top: 8, right: 8, position: 'absolute' }}
@@ -136,7 +140,7 @@ function FriendCard({ item }: FriendCardProps) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

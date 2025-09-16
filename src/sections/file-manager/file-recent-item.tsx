@@ -1,7 +1,7 @@
 import type { IFileManager } from 'src/types/file';
 import type { PaperProps } from '@mui/material/Paper';
 
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -41,6 +41,7 @@ export function FileRecentItem({ file, onDelete, sx, ...other }: Props) {
   const share = useBoolean();
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   const details = useBoolean();
 
@@ -135,6 +136,7 @@ export function FileRecentItem({ file, onDelete, sx, ...other }: Props) {
   return (
     <>
       <Paper
+        ref={buttonRef}
         variant="outlined"
         sx={{
           gap: 2,
@@ -165,7 +167,7 @@ export function FileRecentItem({ file, onDelete, sx, ...other }: Props) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

@@ -1,30 +1,29 @@
-import { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-  Checkbox,
-  FormControlLabel,
-  Box,
-  Typography,
-  Stack,
-  Card,
-  CardContent,
-  CardHeader,
-  Divider,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,FormControl,Select, InputLabel,MenuItem
-} from '@mui/material';
-import Autocomplete from '@mui/material/Autocomplete';
+import { useState, useEffect } from 'react';
+import { ROLES } from '@guard/roles.constants';
+import { getRolesFromToken } from '@guard/role-utils';
+
 import Avatar from '@mui/material/Avatar';
+import Autocomplete from '@mui/material/Autocomplete';
 import ListSubheader from '@mui/material/ListSubheader';
+import {
+  Box,
+  Card,
+  Stack,
+  Dialog,
+  Button,
+  Divider,
+  Checkbox,
+  TextField,
+  Typography,
+  IconButton,
+  CardContent,
+  DialogTitle,DialogContent, DialogActions
+} from '@mui/material';
+
+import { CONFIG } from 'src/config-global';
 
 import { Iconify } from 'src/components/iconify';
-import { getRolesFromToken } from '@guard/role-utils';
-import { ROLES } from '@guard/roles.constants';
  
 type Estado = {
   id: number;
@@ -81,7 +80,7 @@ const [userRoles, setUserRoles] = useState<string[]>([]);
 
 useEffect(() => {
   axios
-    .get('http://localhost:4000/api/keycloak/usuarios-por-roles?roles=cargos_todos')
+    .get(`${CONFIG.serverUrl}/api/keycloak/usuarios-por-roles?roles=cargos_todos`)
     .then((res) => setUsuariosSugeridos(res.data))
     .catch((err) => console.error('Error al obtener usuarios:', err));
 }, []);
@@ -89,8 +88,8 @@ useEffect(() => {
 useEffect(() => {
   const obtenerCargosYGrupos = async () => {
     try {
-      const res = await axios.get('http://localhost:4000/api/keycloak/cargos/tree');
-      const data = res.data;
+      const res = await axios.get(`${CONFIG.serverUrl}/api/keycloak/cargos/tree`);
+      const {data} = res;
 
       const extraerNodos = (nodo: any): CargoOGrupo[] => {
         const resultados: CargoOGrupo[] = [];
@@ -128,7 +127,7 @@ useEffect(() => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/backend-linker/estado-formulario/por-pantalla/${pantallaId}`, {
+      .get(`${CONFIG.springServerUrl}/backend-linker/estado-formulario/por-pantalla/${pantallaId}`, {
         params: { pantallaId },
       })
       .then((res) => setEstados(res.data))
@@ -137,7 +136,7 @@ useEffect(() => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8080/backend-linker/tipo-destino-notificaciones')
+      .get(`${CONFIG.springServerUrl}/backend-linker/tipo-destino-notificaciones`)
       .then((res) => setTiposDestino(res.data))
       .catch((err) => console.error('Error al obtener tipos de destino:', err));
   }, []);

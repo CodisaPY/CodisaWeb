@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 import Card from '@mui/material/Card';
 import Avatar from '@mui/material/Avatar';
 import MenuList from '@mui/material/MenuList';
@@ -15,6 +17,7 @@ import type { NodeProps } from './data';
 
 export function StandardNode({ name, avatarUrl, role, sx }: NodeProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const onDelete = () => {
     popover.onClose();
@@ -61,7 +64,7 @@ export function StandardNode({ name, avatarUrl, role, sx }: NodeProps) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'left-center' } }}
       >

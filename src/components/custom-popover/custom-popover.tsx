@@ -29,7 +29,7 @@ export function CustomPopover({
 
   return (
     <Popover
-      open={!!open}
+      open={open}
       anchorEl={anchorEl}
       onClose={onClose}
       anchorOrigin={anchorOrigin}

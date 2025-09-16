@@ -1,5 +1,7 @@
 import axios, { endpoints } from 'src/utils/axios';
 
+import { useGraphQLLogin } from 'src/hooks/use-graphql-auth';
+
 import { setSession } from './utils';
 import { STORAGE_KEY } from './constant';
 import { loginToKeycloak } from './keycloak';
@@ -23,7 +25,9 @@ export type SignUpParams = {
  *************************************** */
 export const signInWithPassword = async ({ email, password }: SignInParams): Promise<void> => {
   try {
-    const accessToken = await loginToKeycloak(email, password);
+    // Usar GraphQL para el login
+    const { loginWithGraphQL } = await import('./graphql-auth');
+    const accessToken = await loginWithGraphQL(email, password);
     if (!accessToken) {
       throw new Error('Access token not found in response');
     }

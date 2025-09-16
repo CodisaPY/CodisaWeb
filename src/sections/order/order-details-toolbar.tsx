@@ -1,5 +1,7 @@
 import type { IDateValue } from 'src/types/common';
 
+import { useRef } from 'react';
+
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import MenuList from '@mui/material/MenuList';
@@ -35,6 +37,7 @@ export function OrderDetailsToolbar({
   onChangeStatus,
 }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -74,6 +77,7 @@ export function OrderDetailsToolbar({
           justifyContent="flex-end"
         >
           <Button
+            ref={buttonRef}
             color="inherit"
             variant="outlined"
             endIcon={<Iconify icon="eva:arrow-ios-downward-fill" />}
@@ -99,7 +103,7 @@ export function OrderDetailsToolbar({
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'top-right' } }}
       >

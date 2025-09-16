@@ -101,13 +101,6 @@ export const _notifications = [...Array(9)].map((_, index) => ({
 
 // ----------------------------------------------------------------------
 
-export const _mapContact = [
-  { latlng: [33, 65], address: _mock.fullAddress(1), phoneNumber: _mock.phoneNumber(1) },
-  { latlng: [-12.5, 18.5], address: _mock.fullAddress(2), phoneNumber: _mock.phoneNumber(2) },
-];
-
-// ----------------------------------------------------------------------
-
 export const _socials = [
   {
     value: 'facebook',
@@ -214,6 +207,6 @@ export const _testimonials = [
     postedDate: _mock.time(6),
     ratingNumber: _mock.number.rating(6),
     avatarUrl: _mock.image.avatar(6),
-    content: `CEO of Codealy.io here. We’ve built a developer assessment platform that makes sense - tasks are based on git repositories and run in virtual machines. We automate the pain points - storing candidates code, running it and sharing test results with the whole team, remotely. Bought this template as we need to provide an awesome dashboard for our early customers. I am super happy with purchase. The code is just as good as the design. Thanks!`,
+    content: `CEO of Codealy.io here. We've built a developer assessment platform that makes sense - tasks are based on git repositories and run in virtual machines. We automate the pain points - storing candidates code, running it and sharing test results with the whole team, remotely. Bought this template as we need to provide an awesome dashboard for our early customers. I am super happy with purchase. The code is just as good as the design. Thanks!`,
   },
 ];

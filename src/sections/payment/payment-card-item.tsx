@@ -1,6 +1,8 @@
 import type { IPaymentCard } from 'src/types/common';
 import type { PaperProps } from '@mui/material/Paper';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import MenuList from '@mui/material/MenuList';
@@ -20,6 +22,7 @@ type PaymentItemProps = PaperProps & {
 
 export function PaymentCardItem({ card, sx, ...other }: PaymentItemProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -35,12 +38,20 @@ export function PaymentCardItem({ card, sx, ...other }: PaymentItemProps) {
 
         <Typography variant="subtitle2">{card.cardNumber}</Typography>
 
-        <IconButton onClick={popover.onOpen} sx={{ top: 8, right: 8, position: 'absolute' }}>
+        <IconButton
+          ref={buttonRef}
+          onClick={popover.onOpen}
+          sx={{ top: 8, right: 8, position: 'absolute' }}
+        >
           <Iconify icon="eva:more-vertical-fill" />
         </IconButton>
       </Paper>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover
+        open={popover.open}
+        anchorEl={buttonRef.current}
+        onClose={popover.onClose}
+      >
         <MenuList>
           <MenuItem onClick={popover.onClose}>
             <Iconify icon="eva:star-fill" />

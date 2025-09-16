@@ -1,5 +1,34 @@
 import axios from 'axios';
+
 import { CONFIG } from 'src/config-global';
+
+// Función para calcular y mostrar la duración del token
+const logTokenDuration = (accessToken: string) => {
+  try {
+    const decoded = JSON.parse(atob(accessToken.split('.')[1]));
+    const currentTime = Date.now() / 1000;
+    const expirationTime = decoded.exp;
+    const durationInSeconds = expirationTime - currentTime;
+    const durationInMinutes = Math.floor(durationInSeconds / 60);
+    const durationInHours = Math.floor(durationInMinutes / 60);
+    
+    console.log('🔐 Información del Token:');
+    console.log(`   - Emitido: ${new Date(decoded.iat * 1000).toLocaleString()}`);
+    console.log(`   - Expira: ${new Date(expirationTime * 1000).toLocaleString()}`);
+    console.log(`   - Duración: ${durationInMinutes} minutos (${durationInHours} horas)`);
+    console.log(`   - Tiempo restante: ${durationInMinutes} minutos`);
+    
+    return {
+      issuedAt: decoded.iat,
+      expiresAt: expirationTime,
+      durationMinutes: durationInMinutes,
+      durationHours: durationInHours
+    };
+  } catch (error) {
+    console.error('Error al decodificar el token:', error);
+    return null;
+  }
+};
 
 export const checkKeycloakSession = async (): Promise<boolean> => {
   const accessToken = localStorage.getItem('accessToken');
@@ -10,21 +39,12 @@ export const checkKeycloakSession = async (): Promise<boolean> => {
   }
 
   try {
-    const response = await axios.post(
-      `${CONFIG.serverUrl}:4000/api/keycloak/check-session`, // ✅ Usa CONFIG.serverUrl
-      { token: accessToken }, // Enviar token en el body
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    console.log('Respuesta del backend:', response.data);
-
-    return response.data.active === true; // Retornar si el token es activo
+    // Usar GraphQL para check session
+    const { checkSessionWithGraphQL } = await import('./graphql-auth');
+    const isValid = await checkSessionWithGraphQL();
+    return isValid;
   } catch (error) {
-    console.error('Error al verificar la sesión:', error);
+    console.error('Error al verificar la sesión con GraphQL:', error);
     return false; // Si hay error, consideramos que la sesión ha expirado
   }
 };
@@ -39,138 +59,150 @@ export const logoutFromKeycloak = async () => {
   }
 
   try {
-    const response = await axios.post(
-      `${CONFIG.serverUrl}:4000/api/keycloak/logout`,
-      { refresh_token: refreshToken }, // Enviamos en el body
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    console.log('Sesión cerrada en Keycloak correctamente:', response.data);
+    // Usar GraphQL para el logout
+    const { logoutWithGraphQL } = await import('./graphql-auth');
+    await logoutWithGraphQL(refreshToken);
+    console.log('Sesión cerrada con GraphQL correctamente');
   } catch (error) {
-    console.error('❌ Error al cerrar sesión en Keycloak:', error.response?.data || error.message);
+    console.error('❌ Error al cerrar sesión con GraphQL:', error);
   } finally {
     handleLocalLogout();
   }
 };
- 
-export const changePasswordFromKeycloak = async (nuevaContraseña: string) => {
+
+export const changePasswordFromKeycloak = async (
+  nuevaContraseña: string, 
+  idUsuario: string,
+  token: string,
+  requirePasswordChange: boolean = false
+) => {
   try {
-    const token = localStorage.getItem('accessToken'); // Obtener el token
-    if (!token) {
-      console.warn('No se encontró el token en localStorage');
-      return { success: false, message: 'No se encontró el token en localStorage' };
-    }
-
-    // Decodificar el token para obtener el userId
-    const idUsuario = JSON.parse(atob(token.split('.')[1]))?.sub; // Extraer el "sub" que es el userId
-
-    if (!idUsuario) {
-      console.warn('No se pudo obtener el ID de usuario del token.');
-      return { success: false, message: 'No se pudo obtener el ID de usuario.' };
-    }
-
-    // Llamar a la API para cambiar la contraseña
     const response = await axios.post(
-      `${CONFIG.serverUrl}:4000/api/keycloak/change-password`,
-      { userId: idUsuario, newPassword: nuevaContraseña }, // Enviamos en el body
+      `${CONFIG.serverUrl}/api/keycloak/change-password`,
+      { 
+        userId: idUsuario, 
+        newPassword: nuevaContraseña,
+        requirePasswordChange 
+      },
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Enviar el token en el header
+          Authorization: `Bearer ${token}`,
         },
       }
     );
 
-    return response.data; // Retorna el mensaje de éxito
+    return response.data;
   } catch (error: any) {
     console.error('❌ Error al cambiar la contraseña:', error.response?.data || error.message);
     return { success: false, message: 'Error al cambiar la contraseña' };
   }
 };
 
+export const checkPasswordChangeRequired = async (userId: string, token: string): Promise<boolean> => {
+  try {
+    const response = await axios.get(
+      `${CONFIG.serverUrl}/api/keycloak/user/${userId}/check-password-change`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data.requiresPasswordChange === true;
+  } catch (error) {
+    console.error('Error al verificar cambio de contraseña:', error);
+    return false;
+  }
+};
 
 export const loginToKeycloak = async (username: string, password: string) => {
   try {
-    const response: any = await axios.post(
-      `${CONFIG.serverUrl}:4000/api/keycloak/login`,
-      JSON.stringify({ username, password }), // Asegurar que se envía en formato JSON
+    console.log('Intentando login con:', { username });
+    const response = await axios.post(
+      `${CONFIG.serverUrl}/api/keycloak/login`,
+      { username, password },
       {
         headers: {
           'Content-Type': 'application/json',
         },
       }
     );
-    const { access_token, refresh_token } = response.data.data;
+    
+    console.log('Respuesta completa del backend:', response);
+    console.log('Status:', response.status);
+    console.log('Data:', response.data);
+
+    // Si la respuesta indica que se requiere cambio de contraseña
+    if (response.data?.requiresPasswordChange) {
+      console.log('Se requiere cambio de contraseña');
+      const error = new Error('Se requiere cambio de contraseña');
+      (error as any).response = {
+        data: {
+          requiresPasswordChange: true,
+          message: response.data.data?.message || 'Se requiere cambio de contraseña'
+        }
+      };
+      throw error;
+    }
+
+    // Los tokens están dentro de response.data.data
+    const { access_token, refresh_token } = response.data.data || {};
+
+    if (!access_token || !refresh_token) {
+      console.error('Estructura de la respuesta:', response.data);
+      throw new Error('Tokens no encontrados en la respuesta');
+    }
+
     localStorage.setItem('accessToken', access_token);
     localStorage.setItem('refreshToken', refresh_token);
+    // También guardar en sessionStorage para compatibilidad
+    sessionStorage.setItem('jwt_access_token', access_token);
+
+    // Mostrar información de duración del token
+    logTokenDuration(access_token);
 
     return access_token;
   } catch (error: any) {
-    throw error.response.data.error;
+    console.error('Error en loginToKeycloak:', error);
+    console.error('Error response:', error.response?.data);
+    throw error;
   }
 };
 
 export const checkSessionWithRefreshToken = async () => {
-  const url = 'http://192.168.0.198:8089/realms/master/protocol/openid-connect/token';
-  const client_id = 'codisa-system';
-  const client_secret = 'dIqawCwNKrvQNWw5638NkKThI0dVbCKc';
-  const refresh_token = localStorage.getItem('refreshToken');
+  const refreshToken = localStorage.getItem('refreshToken');
 
-  if (!refresh_token) {
+  if (!refreshToken) {
     console.warn('No hay refresh token disponible.');
     return true; // Usuario no autenticado
   }
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id,
-        client_secret,
-        grant_type: 'refresh_token',
-        refresh_token,
-      }),
-    });
-
-    // Si la respuesta no es exitosa, el token no es válido
-    if (!response.ok) {
-      console.warn('El refresh token ya no es válido.');
-      return false; // Sesión expirada
+    // Usar GraphQL para refresh token
+    const { refreshTokenWithGraphQL } = await import('./graphql-auth');
+    await refreshTokenWithGraphQL(refreshToken);
+    console.log('🔄 Token refrescado con GraphQL correctamente');
+    return true;
+  } catch (error: any) {
+    console.error('Error al refrescar token con GraphQL:', error);
+    
+    // Si el refresh token es inválido, limpiar sesión
+    if (error.requiresReauth) {
+      console.log('🔄 Refresh token inválido, limpiando sesión');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('jwt_access_token');
     }
-
-    const data = await response.json();
-
-    // Si el servidor responde con un error (ej. "invalid_grant"), también lo consideramos sesión expirada
-    if (data.error) {
-      console.warn('El refresh token ha expirado:', data.error_description || data.error);
-      return false;
-    }
-
-    console.log('Nuevo token obtenido:', data);
-
-    // Actualizar tokens en localStorage
-    localStorage.setItem('accessToken', data.access_token);
-    localStorage.setItem('refreshToken', data.refresh_token);
-
-    return true; // Usuario sigue autenticado
-  } catch (error) {
-    console.error('Error al refrescar token:', error);
-    return false; // Usuario no autenticado
+    
+    return false;
   }
 };
 
 const handleLocalLogout = () => {
-  // Elimina los tokens del localStorage
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
-
-  // Redirigir al login
   window.location.href = '/auth/jwt/sign-in';
 };

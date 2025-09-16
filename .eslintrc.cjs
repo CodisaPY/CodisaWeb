@@ -106,5 +106,6 @@ module.exports = {
         'internal-pattern': ['src/**'],
       },
     ],
+    'import/extensions': 'off',
   },
 };

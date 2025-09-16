@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
+
 import { AutorizacionesFirmasView } from 'src/sections/autorizacionesFirmas/view/autorizaciones-firmas-view';
  
  

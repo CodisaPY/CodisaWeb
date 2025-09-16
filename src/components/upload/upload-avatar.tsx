@@ -9,7 +9,6 @@ import { varAlpha } from 'src/theme/styles';
 import { Image } from '../image';
 import { Iconify } from '../iconify';
 import { uploadClasses } from './classes';
-import { RejectionFiles } from './components/rejection-files';
 
 import type { UploadProps } from './types';
 
@@ -136,7 +135,6 @@ export function UploadAvatar({
 
       {helperText && helperText}
 
-      <RejectionFiles files={fileRejections} />
-    </>
+     </>
   );
 }

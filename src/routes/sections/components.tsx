@@ -48,7 +48,6 @@ const RadioButtonsPage = lazy(() => import('src/pages/components/mui/radio-butto
 const TransferListPage = lazy(() => import('src/pages/components/mui/transfer-list'));
 
 // Extra components
-const MapPage = lazy(() => import('src/pages/components/extra/map'));
 const DndPage = lazy(() => import('src/pages/components/extra/dnd'));
 const ChartPage = lazy(() => import('src/pages/components/extra/chart'));
 const ImagePage = lazy(() => import('src/pages/components/extra/image'));
@@ -146,7 +145,6 @@ export const componentsRoutes = [
                 element: <Navigate to="/components/extra/animate" replace />,
                 index: true,
               },
-              { path: 'map', element: <MapPage /> },
               { path: 'dnd', element: <DndPage /> },
               { path: 'chart', element: <ChartPage /> },
               { path: 'image', element: <ImagePage /> },

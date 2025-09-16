@@ -1,11 +1,13 @@
-import { paths } from 'src/routes/paths';
-import { CONFIG } from 'src/config-global';
-import { SvgColor } from 'src/components/svg-color';
-import { jwtDecode } from 'jwt-decode';  
-import { ROLES_HIERARCHY, RoleKey } from 'src/auth/guard/roles-hierarchy';
 import { ROLES } from '@guard/roles.constants';
 
- 
+import { paths } from 'src/routes/paths';
+
+import { CONFIG } from 'src/config-global';
+  
+import { SvgColor } from 'src/components/svg-color';
+
+
+
 const icon = (name: string) => (
   <SvgColor src={`${CONFIG.assetsDir}/assets/icons/navbar/${name}.svg`} />
 );
@@ -49,7 +51,7 @@ export const navData = [
     subheader: 'Linker Codisa',
     items: [
       {
-        title: 'Módulo de TIC',
+        title: 'TIC',
         path: paths.dashboard.tic.root,
         icon: ICONS.tic,
         roles: [ROLES.MODULO_TIC],
@@ -68,6 +70,111 @@ export const navData = [
                   ROLES.GENERACION_SOLICITUD_TIC_NUEVO_EQUIPO_CREATE,
                 ],
               },
+            ],
+          },         
+          {
+            title: 'Inventario',
+            path: paths.dashboard.tic.moduloInventario.root,
+            icon: ICONS.folder,
+            roles: [ROLES.MODULO_INVENTARIO_TIC],
+            children: [
+              {
+                title: 'Marcas',
+                path: paths.dashboard.tic.moduloInventario.root,
+                icon: ICONS.blog,
+                children: [
+                  {
+                    title: 'Nueva marca',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevaMarca,
+                    roles: [
+                      ROLES.MARCA_INVENTARIO_TIC_VIEW,
+                      ROLES.MARCA_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de marcas',
+                    path: paths.dashboard.tic.moduloInventario.listaMarcas,
+                    roles: [
+                      ROLES.LISTA_MARCAS_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                ]
+              },
+              {
+                title: 'Modelos',
+                path: paths.dashboard.tic.moduloInventario.root,
+                icon: ICONS.blog,
+                children: [
+                  {
+                    title: 'Nuevo modelo',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoModelo,
+                    roles: [
+                      ROLES.MODELO_INVENTARIO_TIC_VIEW,
+                      ROLES.MODELO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de modelos',
+                    path: paths.dashboard.tic.moduloInventario.listaModelos,
+                    roles: [
+                      ROLES.LISTA_MODELOS_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                ]
+              },
+              {
+                title: 'Equipos',
+                path: paths.dashboard.tic.moduloInventario.root,
+                icon: ICONS.course,
+                children: [
+                  {
+                    title: 'Nuevo equipo',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoEquipo,
+                    roles: [
+                      ROLES.EQUIPO_INVENTARIO_TIC_VIEW,
+                      ROLES.EQUIPO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de equipos',
+                    path: paths.dashboard.tic.moduloInventario.listaEquipos,
+                    roles: [
+                      ROLES.LISTA_EQUIPOS_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                  {
+                    title: 'Nuevo atributo tipo equipo ',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoAtributo,
+                    roles: [
+                      ROLES.ATRIBUTO_INVENTARIO_TIC_VIEW,
+                      ROLES.ATRIBUTO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de atributos tipo equipo',
+                    path: paths.dashboard.tic.moduloInventario.listaAtributos,
+                    roles: [
+                      ROLES.LISTA_ATRIBUTOS_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                  {
+                    title: 'Nuevo tipo de equipo',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoTipoEquipo,
+                    roles: [
+                      ROLES.TIPO_EQUIPO_INVENTARIO_TIC_VIEW,
+                      ROLES.TIPO_EQUIPO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de tipos de equipo',
+                    path: paths.dashboard.tic.moduloInventario.listaTiposEquipo,
+                    roles: [
+                      ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
+                ]
+              },
+                  
             ],
           },
         ],
@@ -96,13 +203,65 @@ export const navData = [
           },
         ],
       },
+      { title: 'Reserva de sala',
+        path: paths.dashboard.seguridad.root,
+        icon: ICONS.calendar,
+        roles: [ROLES.MODULO_SALA_RESERVA],
+        children: [
+          {
+            title: 'Referenciales',
+            path: paths.dashboard.salaReserva.moduloReferenciales.root,
+            icon: ICONS.mail,
+            roles: [ROLES.MODULO_REFERENCIALES_SALA],
+            children: [
+              {
+                title: 'Salas',
+                path: paths.dashboard.salaReserva.moduloReferenciales.listaSalas,
+                roles: [
+                  ROLES.LISTA_SALA_RESERVA_VIEW,
+                  ROLES.LISTA_SALA_RESERVA_CREATE,
+                 ],
+              },
+              {
+                title: 'Nueva sala',
+                path: paths.dashboard.salaReserva.moduloReferenciales.crearNuevaSala,
+                roles: [
+                  ROLES.LISTA_SALA_RESERVA_VIEW,
+                  ROLES.LISTA_SALA_RESERVA_VIEW,
+                ],
+              },
+             
+            ],
+          },
+          {
+            title: 'Agendamiento',
+            path: paths.dashboard.salaReserva.moduloReferenciales.root,
+            icon: ICONS.mail,
+            roles: [ROLES.MODULO_AGENDAMIENTO_SALA],
+            children: [
+              {
+                title: 'Agendamientos',
+                path: paths.dashboard.salaReserva.moduloAgendamiento.listarAgendamiento,
+                roles: [
+                  ROLES.GENERACION_AGENDAMIENTO_SALA_CREATE,
+                  ROLES.GENERACION_AGENDAMIENTO_SALA_VIEW,
+                 ],
+              },
+             
+             
+            ],
+          },
+        ]
+          
+        },
 
       {
-        title: 'Módulo de seguridad',
+        title: 'Configuraciones',
         path: paths.dashboard.seguridad.root,
         icon: ICONS.settings,
         roles: [ROLES.MODULO_SEGURIDAD],
         children: [
+         
           {
             title: 'Parametrizaciones',
             path: paths.dashboard.seguridad.moduloNotificaciones.root,
@@ -122,6 +281,58 @@ export const navData = [
                 path: paths.dashboard.seguridad.moduloNotificaciones.ajusteAutorizacionesFirmas,
                 roles: [ROLES.PARAMETRIZAR_FIRMA_VIEW, ROLES.PARAMETRIZAR_FIRMA_CREATE],
               },
+            ],
+          },
+          {
+            title: 'Usuarios',
+            path: paths.dashboard.seguridad.moduloUsuarios.root,
+            icon: ICONS.user,
+            roles: [ROLES.MODULO_USUARIOS],
+            children: [
+              {
+                title: 'Nuevo usuario',
+                path: paths.dashboard.seguridad.moduloUsuarios.nuevoUsuario,
+                roles: [
+                  ROLES.GENERACION_NUEVO_USUARIO_VIEW,
+                ],
+              },
+              {
+                title: 'Lista de usuarios',
+                path: paths.dashboard.seguridad.moduloUsuarios.listaUsuario,
+                roles: [
+                    ROLES.LISTA_USUARIOS_VIEW,
+                    ROLES.LISTA_USUARIOS_CREATE,
+                    ROLES.LISTA_USUARIOS_UPDATE,
+                    ROLES.LISTA_USUARIOS_ENABLE,
+                    ROLES.LISTA_USUARIOS_DISABLE,
+                    ROLES.LISTA_USUARIOS_PERMISSION,
+                ],
+              } 
+            ],
+          },   
+          {
+            title: 'Roles',
+            path: paths.dashboard.seguridad.moduloRoles.root,
+            icon: ICONS.lock,
+            roles: [ROLES.MODULO_ROLES],
+            children: [
+              {
+                title: 'Nuevo rol',
+                path: paths.dashboard.seguridad.moduloRoles.nuevoRol,
+                roles: [
+                  ROLES.GENERACION_NUEVO_ROL_VIEW,
+                  ROLES.GENERACION_NUEVO_ROL_CREATE,
+                ],
+              },
+              {
+                title: 'Lista de roles',
+                path: paths.dashboard.seguridad.moduloRoles.listaRol,
+                roles: [
+                    ROLES.LISTA_ROLES_VIEW,
+                  
+                ],
+              } 
+ 
             ],
           },
         ],

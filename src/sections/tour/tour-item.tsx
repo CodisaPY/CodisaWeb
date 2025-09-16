@@ -1,5 +1,7 @@
 import type { ITourItem } from 'src/types/tour';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
@@ -30,6 +32,7 @@ type Props = {
 
 export function TourItem({ tour, onView, onEdit, onDelete }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const renderRating = (
     <Stack
@@ -129,7 +132,11 @@ export function TourItem({ tour, onView, onEdit, onDelete }: Props) {
       spacing={1.5}
       sx={{ position: 'relative', p: (theme) => theme.spacing(0, 2.5, 2.5, 2.5) }}
     >
-      <IconButton onClick={popover.onOpen} sx={{ position: 'absolute', bottom: 20, right: 8 }}>
+      <IconButton
+        ref={buttonRef}
+        onClick={popover.onOpen}
+        sx={{ position: 'absolute', bottom: 20, right: 8 }}
+      >
         <Iconify icon="eva:more-vertical-fill" />
       </IconButton>
 
@@ -173,7 +180,7 @@ export function TourItem({ tour, onView, onEdit, onDelete }: Props) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

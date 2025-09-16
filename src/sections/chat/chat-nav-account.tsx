@@ -1,6 +1,6 @@
 import type { SelectChangeEvent } from '@mui/material/Select';
 
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
@@ -27,6 +27,7 @@ export function ChatNavAccount() {
   const { user } = useMockedUser();
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const [status, setStatus] = useState<'online' | 'alway' | 'busy' | 'offline'>('online');
 
@@ -49,7 +50,7 @@ export function ChatNavAccount() {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{
           paper: { sx: { p: 0 } },

@@ -27,11 +27,12 @@ export function PopoverView() {
   const [arrow, setArrow] = useState<PopoverArrow['placement']>('top-left');
 
   const clickPopover = usePopover();
+  const clickButtonRef = useRef<HTMLButtonElement>(null);
 
   const customizedPopover = usePopover();
+  const customizedButtonRef = useRef<HTMLButtonElement>(null);
 
-  const hoverPopoverRef = useRef<HTMLButtonElement | null>(null);
-
+  const hoverPopoverRef = useRef<HTMLButtonElement>(null);
   const [hoverPopoverOpen, setHoverPopoverOpen] = useState<boolean>(false);
 
   const handleChangePopoverArrow = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,13 +67,13 @@ export function PopoverView() {
       >
         <ComponentBlock title="Click & hover" sx={{ gap: 3 }}>
           <div>
-            <Button variant="contained" onClick={clickPopover.onOpen}>
+            <Button ref={clickButtonRef} variant="contained" onClick={clickPopover.onOpen}>
               Click popover
             </Button>
             <CustomPopover
               open={clickPopover.open}
               onClose={clickPopover.onClose}
-              anchorEl={clickPopover.anchorEl}
+              anchorEl={clickButtonRef.current}
               slotProps={{ arrow: { placement: 'top-center' } }}
             >
               <Box sx={{ p: 2, maxWidth: 280 }}>
@@ -99,6 +100,7 @@ export function PopoverView() {
             <CustomPopover
               open={hoverPopoverOpen}
               anchorEl={hoverPopoverRef.current}
+              onClose={handleHoverPopoverClose}
               slotProps={{
                 arrow: { placement: 'bottom-center' },
                 paper: {
@@ -122,7 +124,7 @@ export function PopoverView() {
         </ComponentBlock>
 
         <ComponentBlock title="Customized" sx={{ gap: 5 }}>
-          <IconButton onClick={customizedPopover.onOpen} sx={{ bgcolor: 'action.hover' }}>
+          <IconButton ref={customizedButtonRef} onClick={customizedPopover.onOpen} sx={{ bgcolor: 'action.hover' }}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
 
@@ -156,7 +158,7 @@ export function PopoverView() {
           <CustomPopover
             open={customizedPopover.open}
             onClose={customizedPopover.onClose}
-            anchorEl={customizedPopover.anchorEl}
+            anchorEl={customizedButtonRef.current}
             slotProps={{ arrow: { placement: arrow } }}
           >
             <Box sx={{ p: 2, maxWidth: 280 }}>

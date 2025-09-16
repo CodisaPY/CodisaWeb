@@ -1,17 +1,20 @@
 import { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
+import { ROLES } from '@guard/roles.constants';
 
 import { CONFIG } from 'src/config-global';
+import {} from 'src/pages/auth/auth0/update-password';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
 import { LoadingScreen } from 'src/components/loading-screen';
 
-import { AuthGuard } from 'src/auth/guard';
+import { UserEditView } from 'src/sections/user/view';
+import { NewRoleView } from 'src/sections/roles/view/new-role-view';
+import { RoleListView } from 'src/sections/roles/view/role-list-view';
+import { RolePermissionsView } from 'src/sections/roles/view/role-permissions-view';
 
+import { AuthGuard } from 'src/auth/guard';
 import { RoleGuard } from 'src/auth/guard/role-guard';
-import { ROLES } from '@guard/roles.constants';
-import { AccountChangePassword } from 'src/sections/account/account-change-password';
-import {} from 'src/pages/auth/auth0/update-password';
 
 // ----------------------------------------------------------------------
 
@@ -41,10 +44,35 @@ const InvoiceEditPage = lazy(() => import('src/pages/dashboard/invoice/edit'));
 // User
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
-const UserListPage = lazy(() => import('src/pages/dashboard/user/list'));
+const UserListPage = lazy(() => import('src/pages/user-management/user-list'));
 const UserAccountPage = lazy(() => import('src/pages/dashboard/user/account'));
 const UserCreatePage = lazy(() => import('src/pages/dashboard/user/new'));
+const NewUserPage = lazy(() => import('src/pages/dashboard/user/new'));
 
+// Marca
+const NewMarcaPage = lazy(() => import('src/pages/dashboard/tic/nueva-marca'));
+const MarcaListPage = lazy(() => import('src/pages/dashboard/tic/lista-marcas'));
+const MarcaEditPage = lazy(() => import('src/pages/dashboard/tic/editar-marca'));
+const NewModeloPage = lazy(() => import('src/pages/dashboard/tic/nuevo-modelo'));
+const ModeloListPage = lazy(() => import('src/pages/dashboard/tic/lista-modelos'));
+const ModeloEditPage = lazy(() => import('src/pages/dashboard/tic/editar-modelo'));
+const NewEquipoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-equipo'));
+
+// Atributo
+const NewAtributoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-atributo'));
+const AtributoListPage = lazy(() => import('src/pages/dashboard/tic/lista-atributos'));
+const AtributoEditPage = lazy(() => import('src/pages/dashboard/tic/editar-atributo'));
+
+// Tipo Equipo
+const NewTipoEquipoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-tipo-equipo'));
+const TipoEquipoListPage = lazy(() => import('src/pages/dashboard/tic/lista-tipos-equipo'));
+const TipoEquipoEditPage = lazy(() => import('src/pages/dashboard/tic/editar-tipo-equipo'));
+
+// Sala Reserva
+const SalaListPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/listaSalas'));
+const NuevaSalaPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/nuevaSala'));
+const EditarSalaPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloReferenciales/editarSala'));
+const AgendamientoPage = lazy(() => import('src/pages/dashboard/salaReserva/moduloAgendamiento/agendamiento'));
 
 const Notificaciones = lazy(() => import('src/pages/dashboard/notificaciones/edit'));
 const AutorizacionesFirmas = lazy(() => import('src/pages/dashboard/autorizacionesFirmas/edit'));
@@ -78,6 +106,11 @@ const PermissionDeniedPage = lazy(() => import('src/pages/dashboard/permission')
 const ParamsPage = lazy(() => import('src/pages/dashboard/params'));
 const BlankPage = lazy(() => import('src/pages/dashboard/blank'));
 
+const UserEditPageNew = lazy(() => import('src/sections/user-management/view/user-edit-view'));
+
+const PermisosSistemasPage = lazy(() => import('src/pages/dashboard/permisosSistemas'));
+
+ 
 // ----------------------------------------------------------------------
 
 const layoutContent = (
@@ -107,7 +140,7 @@ export const dashboardRoutes = [
           { path: 'profile', element: <UserProfilePage /> },
           { path: 'cards', element: <UserCardsPage /> },
           { path: 'list', element: <UserListPage /> },
-          { path: 'new', element: <UserCreatePage /> },
+          { path: 'new', element: <NewUserPage /> },
           { path: ':id/edit', element: <UserEditPage /> },
           { path: 'account', element: <UserAccountPage /> },
         ],
@@ -216,6 +249,243 @@ export const dashboardRoutes = [
               },
             ],
           },
+
+
+          {
+            path: 'moduloInventario',
+            children: [
+                             {
+                 path: 'nuevaMarca',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.MARCA_INVENTARIO_TIC_CREATE,
+                       ROLES.MARCA_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewMarcaPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaMarcas',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_MARCAS_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <MarcaListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarMarca/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_MARCAS_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <MarcaEditPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'nuevoModelo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.MODELO_INVENTARIO_TIC_CREATE,
+                       ROLES.MODELO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewModeloPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaModelos',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_MODELOS_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <ModeloListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarModelo/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_MODELOS_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <ModeloEditPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'nuevoEquipo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.EQUIPO_INVENTARIO_TIC_CREATE,
+                       ROLES.EQUIPO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewEquipoPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'nuevoAtributo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.ATRIBUTO_INVENTARIO_TIC_CREATE,
+                       ROLES.ATRIBUTO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewAtributoPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaAtributos',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_ATRIBUTOS_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <AtributoListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarAtributo/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_ATRIBUTOS_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <AtributoEditPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'nuevoTipoEquipo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.TIPO_EQUIPO_INVENTARIO_TIC_CREATE,
+                       ROLES.TIPO_EQUIPO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewTipoEquipoPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaTiposEquipo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <TipoEquipoListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarTipoEquipo/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <TipoEquipoEditPage />
+                   </RoleGuard>
+                 ),
+               },
+              
+            ],
+          },
+
+
+
+        ],
+      },
+
+      {
+        path: 'salaReserva',
+        children: [
+          {
+            path: 'moduloReferenciales',
+            children: [
+              {
+                path: 'listaSalas',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <SalaListPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'crearNuevaSala',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <NuevaSalaPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'editarSala/:id',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <EditarSalaPage />
+                  </RoleGuard>
+                ),
+              },
+            ],
+          },
+          {
+            path: 'moduloAgendamiento',
+            children: [
+              {
+                path: 'listarAgendamiento',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.GENERACION_AGENDAMIENTO_SALA_CREATE,
+                      ROLES.GENERACION_AGENDAMIENTO_SALA_VIEW,
+                    ]}
+                  >
+                    <AgendamientoPage />
+                  </RoleGuard>
+                ),
+              },
+            ],
+          },
         ],
       },
 
@@ -292,6 +562,111 @@ export const dashboardRoutes = [
               },
             ],
           },
+
+          {
+            path: 'usuarios',
+            children: [
+              {
+                path: 'nuevo',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.GENERACION_NUEVO_USUARIO_VIEW,
+                      ROLES.LISTA_USUARIOS_CREATE,
+                    ]}
+                  >
+                    <NewUserPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'lista',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_USUARIOS_VIEW,
+                      ROLES.LISTA_USUARIOS_CREATE,
+                      ROLES.LISTA_USUARIOS_UPDATE,
+                      ROLES.LISTA_USUARIOS_ENABLE,
+                      ROLES.LISTA_USUARIOS_DISABLE,
+                      ROLES.LISTA_USUARIOS_PERMISSION,
+                    ]}
+                  >
+                    <UserListPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: ':id/editar',
+                element: (
+                     <UserEditView />
+                 ),
+              },
+              {
+                path: 'permisos',
+                element: (
+                  <RoleGuard requiredRoles={[ROLES.LISTA_USUARIOS_PERMISSION]}>
+                    <PermisosSistemasPage />
+                  </RoleGuard>
+                ),
+              },
+            ],
+          },
+
+          {
+            path: 'roles',
+            element: (
+              <RoleGuard
+                requiredRoles={[
+                  ROLES.LISTA_ROLES_VIEW,
+                  ROLES.GENERACION_NUEVO_ROL_VIEW,
+                  ROLES.LISTA_ROLES_PERMISSION,
+                ]}
+              >
+                <Outlet />
+              </RoleGuard>
+            ),
+            children: [
+              {
+                path: 'nuevo',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.GENERACION_NUEVO_ROL_VIEW,
+                      ROLES.GENERACION_NUEVO_ROL_CREATE,
+                    ]}
+                  >
+                    <NewRoleView />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'lista',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_ROLES_VIEW,
+                    ]}
+                  >
+                    <RoleListView />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'permisos',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_ROLES_PERMISSION,
+                    ]}
+                  >
+                    <RolePermissionsView />
+                  </RoleGuard>
+                ),
+              }
+            ]
+          },
+
         ],
       },
 

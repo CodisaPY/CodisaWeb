@@ -40,7 +40,7 @@ export function KanbanColumnToolBar({
   onUpdateColumn,
 }: Props) {
   const renameRef = useRef<HTMLInputElement>(null);
-
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const popover = usePopover();
 
   const confirmDialog = useBoolean();
@@ -98,6 +98,7 @@ export function KanbanColumnToolBar({
         </IconButton>
 
         <IconButton
+          ref={buttonRef}
           size="small"
           color={popover.open ? 'inherit' : 'default'}
           onClick={popover.onOpen}
@@ -110,7 +111,7 @@ export function KanbanColumnToolBar({
         </IconButton>
       </Stack>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={popover.onClose}>
         <MenuList>
           <MenuItem onClick={popover.onClose}>
             <Iconify icon="solar:pen-bold" />

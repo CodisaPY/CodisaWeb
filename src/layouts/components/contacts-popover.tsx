@@ -1,5 +1,6 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
 
+import { useRef } from 'react';
 import { m } from 'framer-motion';
 
 import Badge from '@mui/material/Badge';
@@ -34,10 +35,12 @@ export type ContactsPopoverProps = IconButtonProps & {
 
 export function ContactsPopover({ data = [], sx, ...other }: ContactsPopoverProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
       <IconButton
+        ref={buttonRef}
         component={m.button}
         whileTap="tap"
         whileHover="hover"
@@ -60,7 +63,7 @@ export function ContactsPopover({ data = [], sx, ...other }: ContactsPopoverProp
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{
           arrow: { offset: 20 },

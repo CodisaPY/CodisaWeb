@@ -1,6 +1,6 @@
 import type { IAddressItem } from 'src/types/common';
 
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -27,6 +27,7 @@ export function AccountBillingAddress({ addressBook }: Props) {
   const [addressId, setAddressId] = useState('');
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const addressForm = useBoolean();
 
@@ -86,7 +87,7 @@ export function AccountBillingAddress({ addressBook }: Props) {
         </Stack>
       </Card>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={handleClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={handleClose}>
         <MenuList>
           <MenuItem
             onClick={() => {

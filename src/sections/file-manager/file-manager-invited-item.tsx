@@ -1,6 +1,6 @@
 import type { IFileShared } from 'src/types/file';
 
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -24,6 +24,7 @@ export function FileManagerInvitedItem({ person }: Props) {
   const [permission, setPermission] = useState(person.permission);
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleChangePermission = useCallback((newPermission: string) => {
     setPermission(newPermission);
@@ -56,6 +57,7 @@ export function FileManagerInvitedItem({ person }: Props) {
               sx={{ ml: -0.5 }}
             />
           }
+          ref={buttonRef}
           onClick={popover.onOpen}
           sx={{
             flexShrink: 0,
@@ -67,7 +69,7 @@ export function FileManagerInvitedItem({ person }: Props) {
         </Button>
       </Box>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={popover.onClose}>
         <MenuList>
           <MenuItem
             selected={permission === 'view'}

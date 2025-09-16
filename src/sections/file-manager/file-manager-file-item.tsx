@@ -1,7 +1,7 @@
 import type { IFileManager } from 'src/types/file';
 import type { CardProps } from '@mui/material/Card';
 
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -50,6 +50,7 @@ export function FileManagerFileItem({ file, selected, onSelect, onDelete, sx, ..
   const details = useBoolean();
 
   const popover = usePopover();
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   const checkbox = useBoolean();
 
@@ -172,6 +173,7 @@ export function FileManagerFileItem({ file, selected, onSelect, onDelete, sx, ..
   return (
     <>
       <Paper
+        ref={buttonRef}
         variant="outlined"
         sx={{
           p: 2.5,
@@ -201,7 +203,7 @@ export function FileManagerFileItem({ file, selected, onSelect, onDelete, sx, ..
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

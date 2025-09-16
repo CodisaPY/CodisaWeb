@@ -1,5 +1,7 @@
 import type { IJobItem } from 'src/types/job';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
@@ -32,11 +34,16 @@ type Props = {
 
 export function JobItem({ job, onView, onEdit, onDelete }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      <Card>
-        <IconButton onClick={popover.onOpen} sx={{ position: 'absolute', top: 8, right: 8 }}>
+      <Card sx={{ position: 'relative' }}>
+        <IconButton
+          ref={buttonRef}
+          onClick={popover.onOpen}
+          sx={{ position: 'absolute', top: 8, right: 8 }}
+        >
           <Iconify icon="eva:more-vertical-fill" />
         </IconButton>
 
@@ -120,7 +127,7 @@ export function JobItem({ job, onView, onEdit, onDelete }: Props) {
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

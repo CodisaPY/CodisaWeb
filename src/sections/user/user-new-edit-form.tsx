@@ -1,9 +1,10 @@
 import type { IUserItem } from 'src/types/user';
 
 import { z as zod } from 'zod';
+import { useForm } from 'react-hook-form';
 import { useMemo, useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, Controller } from 'react-hook-form';
+import { getRolesFromToken } from '@guard/role-utils';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
 
 import Box from '@mui/material/Box';
@@ -11,13 +12,14 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Unstable_Grid2';
 import LoadingButton from '@mui/lab/LoadingButton';
+
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
 import { toast } from 'src/components/snackbar';
-import { Form, Field, schemaHelper } from 'src/components/hook-form';
-import { getRolesFromToken } from '@guard/role-utils'; // Ya lo tienes
+import { Form, Field, schemaHelper } from 'src/components/hook-form'; // Ya lo tienes
 import { ROLES } from '@guard/roles.constants';
+
 import { useModuloActual } from 'src/hooks/useModuloActual'; // <--- importar el hook
 
 export type NewUserSchemaType = zod.infer<typeof NewUserSchema>;
@@ -31,7 +33,7 @@ export const NewUserSchema = zod.object({
     .email({ message: 'Email must be a valid email address!' }),
   phoneNumber: schemaHelper.phoneNumber({ isValidPhoneNumber }),
   country: schemaHelper.objectOrNull<string | null>({
-    message: { required_error: 'Country is required!' },
+    message: { required_error: 'Country is required!' }, 
   }),
   address: zod.string().min(1, { message: 'Address is required!' }),
   company: zod.string().min(1, { message: 'Company is required!' }),

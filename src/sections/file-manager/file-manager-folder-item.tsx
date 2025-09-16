@@ -1,7 +1,7 @@
 import type { CardProps } from '@mui/material/Card';
 import type { IFolderManager } from 'src/types/file';
 
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -68,6 +68,8 @@ export function FileManagerFolderItem({
   const [inviteEmail, setInviteEmail] = useState('');
 
   const [folderName, setFolderName] = useState(folder.name);
+
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   const handleChangeInvite = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setInviteEmail(event.target.value);
@@ -177,6 +179,7 @@ export function FileManagerFolderItem({
   return (
     <>
       <Paper
+        ref={buttonRef}
         variant="outlined"
         sx={{
           gap: 1,
@@ -208,7 +211,7 @@ export function FileManagerFolderItem({
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

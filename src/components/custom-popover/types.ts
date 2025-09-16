@@ -1,38 +1,32 @@
-import type { PopoverProps } from '@mui/material/Popover';
+import type { PopoverProps } from '@mui/material';
 import type { Theme, SxProps } from '@mui/material/styles';
 
 // ----------------------------------------------------------------------
 
 export type PopoverArrow = {
-  hide?: boolean;
-  size?: number;
+  placement?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'left-top' | 'left-center' | 'left-bottom' | 'right-top' | 'right-center' | 'right-bottom';
   offset?: number;
+  size?: number;
+  hide?: boolean;
   sx?: SxProps<Theme>;
-  placement?:
-    | 'top-left'
-    | 'top-center'
-    | 'top-right'
-    | 'bottom-left'
-    | 'bottom-center'
-    | 'bottom-right'
-    | 'left-top'
-    | 'left-center'
-    | 'left-bottom'
-    | 'right-top'
-    | 'right-center'
-    | 'right-bottom';
 };
 
-export type UsePopoverReturn = {
-  open: PopoverProps['open'];
-  anchorEl: PopoverProps['anchorEl'];
-  onClose: () => void;
-  onOpen: (event: React.MouseEvent<HTMLElement>) => void;
-  setAnchorEl: React.Dispatch<React.SetStateAction<PopoverProps['anchorEl']>>;
-};
-
-export type CustomPopoverProps = PopoverProps & {
-  slotProps?: PopoverProps['slotProps'] & {
+export interface CustomPopoverProps extends Omit<PopoverProps, 'open'> {
+  open: boolean;
+  onClose: VoidFunction;
+  arrow?: PopoverArrow;
+  hiddenArrow?: boolean;
+  children?: React.ReactNode;
+  slotProps?: {
+    paper?: PopoverProps['PaperProps'];
     arrow?: PopoverArrow;
   };
+}
+
+export type UsePopoverReturn = {
+  open: boolean;
+  onOpen: (event: React.MouseEvent<HTMLElement>) => void;
+  onClose: VoidFunction;
+  onToggle: (event: React.MouseEvent<HTMLElement>) => void;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };

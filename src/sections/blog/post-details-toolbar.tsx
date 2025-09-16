@@ -1,5 +1,7 @@
 import type { StackProps } from '@mui/material/Stack';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -39,6 +41,7 @@ export function PostDetailsToolbar({
   ...other
 }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -82,7 +85,7 @@ export function PostDetailsToolbar({
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'top-right' } }}
       >

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -39,6 +39,8 @@ export function KanbanDetailsToolbar({
 
   const popover = usePopover();
 
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
   const [status, setStatus] = useState(taskStatus);
 
   const handleChangeStatus = useCallback(
@@ -68,6 +70,7 @@ export function KanbanDetailsToolbar({
         )}
 
         <Button
+          ref={buttonRef}
           size="small"
           variant="soft"
           endIcon={<Iconify icon="eva:arrow-ios-downward-fill" width={16} sx={{ ml: -0.5 }} />}
@@ -97,7 +100,7 @@ export function KanbanDetailsToolbar({
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'top-right' } }}
       >

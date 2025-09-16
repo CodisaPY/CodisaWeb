@@ -1,7 +1,7 @@
 import type { BoxProps } from '@mui/material/Box';
 import type { CardProps } from '@mui/material/Card';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -70,6 +70,7 @@ type ItemProps = BoxProps & {
 
 function Item({ item, checked, onChange, sx, ...other }: ItemProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleMarkComplete = () => {
     popover.onClose();
@@ -120,14 +121,18 @@ function Item({ item, checked, onChange, sx, ...other }: ItemProps) {
           sx={{ flexGrow: 1, m: 0 }}
         />
 
-        <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+        <IconButton
+          ref={buttonRef}
+          color={popover.open ? 'inherit' : 'default'}
+          onClick={popover.onOpen}
+        >
           <Iconify icon="eva:more-vertical-fill" />
         </IconButton>
       </Box>
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

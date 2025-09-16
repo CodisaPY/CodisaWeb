@@ -156,12 +156,54 @@ export const paths = {
     },
 
     tic: {
-      root: `${ROOTS.DASHBOARD}/tic/moduloSolicitudes`,
+      root: `${ROOTS.DASHBOARD}/tic/`,
       moduloSolicitudes: {
         root: `${ROOTS.DASHBOARD}/tic`,
         crearSolicitudNuevaMaquina: `${ROOTS.DASHBOARD}/tic/moduloSolicitudes/nuevaSolicitudMaquina`,
       },
+      moduloInventario: {
+        root: `${ROOTS.DASHBOARD}/tic`,
+        crearNuevaMarca: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevaMarca`,
+        editarMarca: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarMarca/${id}`,
+        crearNuevoModelo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoModelo`,
+        editarModelo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarModelo/${id}`,
+        listaMarcas: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaMarcas`,
+        listaModelos: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaModelos`,
+        crearNuevoEquipo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoEquipo`,
+        editarEquipo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarEquipo/${id}`,
+        listaEquipos: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaEquipos`,
+        crearNuevoAtributo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoAtributo`,
+        editarAtributo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarAtributo/${id}`,
+        listaAtributos: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaAtributos`,
+        crearNuevoTipoEquipo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoTipoEquipo`,
+        editarTipoEquipo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarTipoEquipo/${id}`,
+        listaTiposEquipo: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaTiposEquipo`,
+      },
     },
+
+
+
+    salaReserva: {
+      root: `${ROOTS.DASHBOARD}/salaReserva`,
+      moduloReferenciales: {
+        root: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales`,
+        listaSalas: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/listaSalas`,
+        crearNuevaSala: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/crearNuevaSala`,
+        editarSala: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/editarSala/${id}`,
+        verSala: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/verSala/${id}`,
+      },
+      moduloAgendamiento: {
+        root: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento`,
+        listarAgendamiento: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/listarAgendamiento`,
+        crearAgendamiento: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/crearAgendamiento`,
+        editarAgendamiento: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/editarAgendamiento/${id}`,
+        verAgendamiento: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/verAgendamiento/${id}`,
+      },
+    },
+
+
+
+
 
     comercial: {
       root: `${ROOTS.DASHBOARD}/comercial/moduloSolicitudes`,
@@ -171,11 +213,25 @@ export const paths = {
       },
     },
     seguridad: {
-      root: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones`,
+      root: `${ROOTS.DASHBOARD}/seguridad`,
+      cambioPass: `${ROOTS.DASHBOARD}/seguridad/cambioPass`,
       moduloNotificaciones: {
-        root: `${ROOTS.DASHBOARD}/seguridad`,
+        root: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones`,
         ajusteEnvioNotificaciones: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones/ajusteEnvioNotificaciones`,
         ajusteAutorizacionesFirmas: `${ROOTS.DASHBOARD}/seguridad/parametrizaciones/autorizacionesFirmas`,
+      },
+      moduloUsuarios: {
+        root: `${ROOTS.DASHBOARD}/seguridad/usuarios`,
+        nuevoUsuario: `${ROOTS.DASHBOARD}/seguridad/usuarios/nuevo`,
+        listaUsuario: `${ROOTS.DASHBOARD}/seguridad/usuarios/lista`,
+        permisos: `${ROOTS.DASHBOARD}/seguridad/usuarios/permisos`,
+        edit: (id: string) => `${ROOTS.DASHBOARD}/seguridad/usuarios/${id}/editar`,
+      },
+      moduloRoles: {
+        root: `${ROOTS.DASHBOARD}/seguridad/roles`,
+        nuevoRol: `${ROOTS.DASHBOARD}/seguridad/roles/nuevo`,
+        listaRol: `${ROOTS.DASHBOARD}/seguridad/roles/lista`,
+        permisos: `${ROOTS.DASHBOARD}/seguridad/roles/permisos`,
       },
     },
     post: {
@@ -213,6 +269,16 @@ export const paths = {
       demo: {
         details: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}`,
         edit: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}/edit`,
+      },
+    },
+    tipoEquipo: {
+      root: `${ROOTS.DASHBOARD}/tipo-equipo`,
+      new: `${ROOTS.DASHBOARD}/tipo-equipo/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/tipo-equipo/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/tipo-equipo/${id}/edit`,
+      demo: {
+        details: `${ROOTS.DASHBOARD}/tipo-equipo/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/tipo-equipo/${MOCK_ID}/edit`,
       },
     },
   },

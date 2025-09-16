@@ -8,7 +8,8 @@ import packageJson from '../package.json';
 export type ConfigValue = {
   appName: string;
   appVersion: string;
-  serverUrl: string;
+  serverUrl: string;  // Para el backend Node.js
+  springServerUrl: string;  // Para el backend Spring Boot
   assetsDir: string;
   auth: {
     method: 'jwt' | 'amplify' | 'firebase' | 'supabase' | 'auth0' | 'keycloak';
@@ -37,9 +38,8 @@ export const CONFIG: ConfigValue = {
   appName: 'Linker Codisa',
   appVersion: packageJson.version,
 
-  serverUrl: `${import.meta.env.VITE_SERVER_URL ?? 'http://'}${
-    isProduction ? import.meta.env.VITE_IP_API_PROD : import.meta.env.VITE_IP_API
-  }`,
+  serverUrl: import.meta.env.VITE_SERVER_URL || 'https://linker.codisa.com.py', // URL base del servidor GraphQL
+  springServerUrl: import.meta.env.VITE_SPRING_SERVER_URL || 'http://localhost:9003', // URL base del servidor Spring Boot
 
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',
 

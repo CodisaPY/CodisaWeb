@@ -13,7 +13,6 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import DialogActions from '@mui/material/DialogActions';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -45,24 +44,10 @@ export function InvoiceToolbar({ invoice, currentStatus, statusOptions, onChange
   const renderDownload = (
     <NoSsr>
       <PDFDownloadLink
-        document={
-          invoice ? <InvoicePDF invoice={invoice} currentStatus={currentStatus} /> : <span />
-        }
+        document={invoice ? <InvoicePDF invoice={invoice} currentStatus={currentStatus} /> : <span />}
         fileName={invoice?.invoiceNumber}
         style={{ textDecoration: 'none' }}
-      >
-        {({ loading }) => (
-          <Tooltip title="Download">
-            <IconButton>
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                <Iconify icon="eva:cloud-download-fill" />
-              )}
-            </IconButton>
-          </Tooltip>
-        )}
-      </PDFDownloadLink>
+      />
     </NoSsr>
   );
 

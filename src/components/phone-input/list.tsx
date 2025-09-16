@@ -1,5 +1,7 @@
 import type { Country } from 'react-phone-number-input/input';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
@@ -30,6 +32,7 @@ export function CountryListPopover({
   onSearchCountry,
 }: CountryListProps) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const selectedCountry = getCountry(countryCode);
 
@@ -39,6 +42,7 @@ export function CountryListPopover({
 
   const renderButton = (
     <ButtonBase
+      ref={buttonRef}
       disableRipple
       onClick={popover.onOpen}
       sx={{
@@ -118,7 +122,7 @@ export function CountryListPopover({
       <Popover
         disableRestoreFocus
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={() => {
           popover.onClose();
           onSearchCountry('');

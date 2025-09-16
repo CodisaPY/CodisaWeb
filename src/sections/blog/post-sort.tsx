@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MenuList from '@mui/material/MenuList';
@@ -19,10 +21,12 @@ type Props = {
 
 export function PostSort({ sort, sortOptions, onSort }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
       <Button
+        ref={buttonRef}
         disableRipple
         color="inherit"
         onClick={popover.onOpen}
@@ -39,7 +43,7 @@ export function PostSort({ sort, sortOptions, onSort }: Props) {
         </Box>
       </Button>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={popover.onClose}>
         <MenuList>
           {sortOptions.map((option) => (
             <MenuItem

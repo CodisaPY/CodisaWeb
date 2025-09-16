@@ -2,13 +2,14 @@ import type { IProductTableFilters } from 'src/types/product';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import type { UseSetStateReturn } from 'src/hooks/use-set-state';
 
-import { useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 
 import Select from '@mui/material/Select';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import InputLabel from '@mui/material/InputLabel';
+import IconButton from '@mui/material/IconButton';
 import FormControl from '@mui/material/FormControl';
 import OutlinedInput from '@mui/material/OutlinedInput';
 
@@ -37,6 +38,7 @@ type Props = {
 
 export function ProductTableToolbar({ filters, options }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const local = useSetState<IProductTableFilters>({
     stock: filters.state.stock,
@@ -153,9 +155,17 @@ export function ProductTableToolbar({ filters, options }: Props) {
         </Select>
       </FormControl>
 
+      <IconButton
+        ref={buttonRef}
+        onClick={popover.onOpen}
+        sx={{ ml: 1 }}
+      >
+        <Iconify icon="eva:more-vertical-fill" />
+      </IconButton>
+
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ arrow: { placement: 'right-top' } }}
       >

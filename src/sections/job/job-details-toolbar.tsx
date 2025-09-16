@@ -1,5 +1,7 @@
 import type { StackProps } from '@mui/material/Stack';
 
+import { useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -39,6 +41,7 @@ export function JobDetailsToolbar({
   ...other
 }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
@@ -80,7 +83,7 @@ export function JobDetailsToolbar({
         </LoadingButton>
       </Stack>
 
-      <CustomPopover open={popover.open} anchorEl={popover.anchorEl} onClose={popover.onClose}>
+      <CustomPopover open={popover.open} anchorEl={buttonRef.current} onClose={popover.onClose}>
         <MenuList>
           {publishOptions.map((option) => (
             <MenuItem

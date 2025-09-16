@@ -2,7 +2,7 @@ import type { IFileFilters } from 'src/types/file';
 import type { IDatePickerControl } from 'src/types/common';
 import type { UseSetStateReturn } from 'src/hooks/use-set-state';
 
-import { useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -45,6 +45,7 @@ export function FileManagerFilters({
   onCloseDateRange,
 }: Props) {
   const popover = usePopover();
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const renderLabel = filters.state.type.length
     ? filters.state.type.slice(0, 2).join(',')
@@ -108,6 +109,7 @@ export function FileManagerFilters({
   const renderFilterType = (
     <>
       <Button
+        ref={buttonRef}
         color="inherit"
         onClick={popover.onOpen}
         endIcon={
@@ -127,7 +129,7 @@ export function FileManagerFilters({
 
       <CustomPopover
         open={popover.open}
-        anchorEl={popover.anchorEl}
+        anchorEl={buttonRef.current}
         onClose={popover.onClose}
         slotProps={{ paper: { sx: { p: 2.5 } } }}
       >
