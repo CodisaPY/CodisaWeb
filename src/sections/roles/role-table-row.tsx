@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { ROLES } from '@guard/roles.constants';
 import { useMemo, useState, useEffect } from 'react';
 import { getRolesFromToken } from '@guard/role-utils';
-import axios from 'axios';
 
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
@@ -13,13 +12,14 @@ import Button from '@mui/material/Button';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
-import { CONFIG } from 'src/config-global';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { MenuPopover } from 'src/components/menu-popover';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { toast } from 'src/components/snackbar';
+
+import { useDeleteRole } from 'src/hooks/use-graphql-roles';
 
 import type { Role } from './hooks/use-get-roles';
 
@@ -40,7 +40,7 @@ export function RoleTableRow({ row, onEditRow, onDeleteRow, dense = false }: Pro
   const [openPopover, setOpenPopover] = useState<HTMLElement | null>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [openConfirm, setOpenConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { deleteRole, loading: isDeleting } = useDeleteRole();
 
   const tienePermisoEditar = useMemo(
     () => userRoles.includes(ROLES.LISTA_ROLES_UPDATE),
@@ -86,21 +86,16 @@ export function RoleTableRow({ row, onEditRow, onDeleteRow, dense = false }: Pro
 
   const handleDeleteRole = async () => {
     try {
-      setIsDeleting(true);
-      const response = await axios.delete(`${CONFIG.serverUrl}/api/keycloak/roles/${name}`);
-      
-      if (response.data.success) {
-        toast.success(response.data.message);
-        onDeleteRow();
-      } else {
-        toast.error('Error al eliminar el rol');
-      }
-    } catch (error) {
-      console.error('Error al eliminar el rol:', error);
-      toast.error('Error al eliminar el rol');
-    } finally {
-      setIsDeleting(false);
+      await deleteRole({
+        variables: {
+          roleName: name,
+        },
+      });
+      onDeleteRow();
       handleCloseConfirm();
+    } catch (deleteError) {
+      console.error('Error al eliminar el rol:', deleteError);
+      // El error ya se maneja en el hook useDeleteRole
     }
   };
 

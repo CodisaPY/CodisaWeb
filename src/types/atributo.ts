@@ -14,4 +14,10 @@ export type AtributoItem = {
   esObligatorio: string;
   placeholder?: string;
   descripcionAtributo?: string;
+  opcionesLista?: string;
+  opcionesListaArray?: string[];
+  atributoDependienteId?: number;
+  valorDependiente?: string;
+  tipoDependencia?: string;
+  tieneDependencia?: boolean;
 }; 

@@ -175,6 +175,9 @@ export const paths = {
         crearNuevoAtributo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoAtributo`,
         editarAtributo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarAtributo/${id}`,
         listaAtributos: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaAtributos`,
+        crearNuevoTipoEquipo: `${ROOTS.DASHBOARD}/tic/moduloInventario/nuevoTipoEquipo`,
+        editarTipoEquipo: (id: string) => `${ROOTS.DASHBOARD}/tic/moduloInventario/editarTipoEquipo/${id}`,
+        listaTiposEquipo: `${ROOTS.DASHBOARD}/tic/moduloInventario/listaTiposEquipo`,
       },
     },
 
@@ -242,6 +245,16 @@ export const paths = {
       demo: {
         details: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}`,
         edit: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}/edit`,
+      },
+    },
+    tipoEquipo: {
+      root: `${ROOTS.DASHBOARD}/tipo-equipo`,
+      new: `${ROOTS.DASHBOARD}/tipo-equipo/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/tipo-equipo/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/tipo-equipo/${id}/edit`,
+      demo: {
+        details: `${ROOTS.DASHBOARD}/tipo-equipo/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/tipo-equipo/${MOCK_ID}/edit`,
       },
     },
   },

@@ -69,6 +69,15 @@ export const ROLES = {
       LISTA_ATRIBUTOS_INVENTARIO_TIC_DISABLE: 'pantalla__inventario_tic__lista_atributo_tipo_equipo__disable',
       LISTA_ATRIBUTOS_INVENTARIO_TIC_UPDATE: 'pantalla__inventario_tic__lista_atributo_tipo_equipo__update',
 
+      TIPO_EQUIPO_INVENTARIO_TIC_VIEW:    'pantalla__inventario_tic__crear_nuevo_tipo_equipo__view',
+      TIPO_EQUIPO_INVENTARIO_TIC_CREATE:  'pantalla__inventario_tic__crear_nuevo_tipo_equipo__create',
+
+      LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_VIEW: 'pantalla__inventario_tic__lista_tipos_equipo__view',
+      LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_CREATE: 'pantalla__inventario_tic__lista_tipos_equipo__create',
+      LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_ENABLE: 'pantalla__inventario_tic__lista_tipos_equipo__enable',
+      LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_DISABLE: 'pantalla__inventario_tic__lista_tipos_equipo__disable',
+      LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_UPDATE: 'pantalla__inventario_tic__lista_tipos_equipo__update',
+
 
   /*
   MODULO COMERCIAL

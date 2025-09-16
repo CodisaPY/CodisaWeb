@@ -1,6 +1,5 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
-
+import { useLazyQuery } from '@apollo/client';
 import {
   Box,
   List,
@@ -14,23 +13,17 @@ import {
   Typography,
   ListItemText,
   ListItemButton,
+  IconButton,
+  CircularProgress
 } from '@mui/material';
-
-import { CONFIG } from 'src/config-global';
 import { Iconify } from 'src/components/iconify';
-
-type Permission = {
-  name: string;
-  description: string;
-  tipo: 'grupo' | 'pantalla';
-  composite: boolean;
-  children?: Permission[];
-  attributes: {
-    nombre: string[];
-    pantalla_id?: string[];
-  };
-  acciones?: string[];
-};
+import { 
+  useAddRolesToGroup, 
+  useRemoveRolesFromGroup,
+  useGetScreenHierarchyLevel3
+} from 'src/hooks/use-graphql-roles';
+import { GET_GROUP_ROLES_QUERY } from 'src/graphql/queries/roles';
+import { Permission } from 'src/types/role';
 
 type SelectedActions = {
   [key: string]: {
@@ -251,9 +244,6 @@ type RoleResponse = {
 };
 
 export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: Props) {
- // console.log('RolePermissionsTree props:', { roleId, roleName, onPermissionsChange });
-
-  const [treeData, setTreeData] = useState<Permission | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [selectedActions, setSelectedActions] = useState<SelectedActions>({});
   const [toast, setToast] = useState<{
@@ -266,6 +256,24 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
     severity: 'success'
   });
 
+  const { addRolesToGroup, loading: addingRoles } = useAddRolesToGroup();
+  const { removeRolesFromGroup, loading: removingRoles } = useRemoveRolesFromGroup();
+  
+  // Query GraphQL para el árbol de permisos
+  const { data: treeData, loading: loadingTree, error: treeError } = useGetScreenHierarchyLevel3();
+
+  // Lazy query para obtener roles de un grupo específico
+  const [getGroupRoles, { loading: loadingGroupRoles, error: groupRolesError }] = useLazyQuery(GET_GROUP_ROLES_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (data) => {
+      console.log('✅ Query GET_GROUP_ROLES ejecutada exitosamente:', data);
+    },
+    onError: (error) => {
+      console.error('❌ Error en query GET_GROUP_ROLES:', error);
+    }
+  });
+
   const handleCloseToast = () => {
     setToast(prev => ({ ...prev, open: false }));
   };
@@ -276,7 +284,8 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
     
     const processNode = (currentNode: Permission) => {
       if (currentNode.tipo === 'pantalla' && currentNode.acciones) {
-        const pantallaId = currentNode.attributes.pantalla_id?.[0] || currentNode.name;
+        const attributes = currentNode.attributes || {};
+        const pantallaId = attributes.pantalla_id?.[0] || currentNode.name;
         actions[pantallaId] = {};
         currentNode.acciones.forEach(action => {
           actions[pantallaId][action] = false;
@@ -290,36 +299,30 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
   };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        // 1. Traer árbol de permisos
-        const treeRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/pantallas/acciones`);
-        console.log('Tree data received:', treeRes.data);
-        
-        if (!treeRes.data) {
-          throw new Error('No se recibieron datos del árbol de permisos');
-        }
+    if (treeData?.screenHierarchyLevel3 && roleName) {
+      // Inicializar todas las acciones como no seleccionadas
+      const unselectedActions = initializeAllActionsAsUnselected(treeData.screenHierarchyLevel3);
+      setSelectedActions(unselectedActions);
 
-        setTreeData(treeRes.data);
-
-        // 2. Inicializar todas las acciones como no seleccionadas
-        const unselectedActions = initializeAllActionsAsUnselected(treeRes.data);
-        setSelectedActions(unselectedActions);
-
-        // 3. Si hay roleName, traer los permisos del rol
-        if (roleName) {
+      // Si hay roleName, traer los permisos del rol usando GraphQL
+      if (roleName) {
+        const fetchRolePermissions = async () => {
           try {
             console.log('Fetching permissions for role:', roleName);
-            const rolePermissionsRes = await axios.get(`${CONFIG.serverUrl}/api/keycloak/groups/${roleName}/pantallas`);
-            console.log('Role permissions response:', rolePermissionsRes.data);
+            
+            const response = await getGroupRoles({
+              variables: { groupName: roleName }
+            });
 
-            if (!rolePermissionsRes.data.success) {
-              console.warn('La respuesta de permisos no fue exitosa:', rolePermissionsRes.data);
+            console.log('Role permissions response:', response.data);
+
+            if (!response.data?.groupRoles?.success) {
+              console.warn('La respuesta de permisos no fue exitosa:', response.data);
               return;
             }
 
             // Actualizar selectedActions con los permisos del rol
-            const rolePermissions = rolePermissionsRes.data.data || [];
+            const rolePermissions = response.data.groupRoles.data || [];
             console.log('Role permissions array:', rolePermissions);
 
             if (!Array.isArray(rolePermissions)) {
@@ -365,51 +368,44 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
             setSelectedActions(updatedActions);
           } catch (roleError) {
             console.error('Error al cargar permisos del rol:', roleError);
-            // No lanzamos el error, solo mostramos un toast y continuamos con las acciones no seleccionadas
             setToast({
               open: true,
               message: 'No se pudieron cargar los permisos del rol. Mostrando permisos sin asignar.',
               severity: 'warning'
             });
           }
-        }
+        };
 
-        // 4. Expandir todos los nodos de grupo por defecto
-        try {
-          const expandedSet = new Set<string>();
-          const collectExpandable = (node: Permission) => {
-            if (!node) {
-              console.warn('Nodo nulo encontrado al expandir');
-              return;
-            }
-            if (node.children && node.children.length > 0) {
-              expandedSet.add(node.name);
-              node.children.forEach(collectExpandable);
-            }
-          };
-          collectExpandable(treeRes.data);
-          console.log('Nodos expandibles encontrados:', Array.from(expandedSet));
-          setExpandedItems(expandedSet);
-        } catch (expandError) {
-          console.error('Error al expandir nodos:', expandError);
-          // No lanzamos el error, solo mostramos un toast
-          setToast({
-            open: true,
-            message: 'Error al expandir el árbol de permisos',
-            severity: 'warning'
-          });
-        }
-      } catch (err) {
-        console.error('Error al cargar datos:', err);
+        fetchRolePermissions();
+      }
+
+      // Expandir todos los nodos de grupo por defecto
+      try {
+        const expandedSet = new Set<string>();
+        const collectExpandable = (node: Permission) => {
+          if (!node) {
+            console.warn('Nodo nulo encontrado al expandir');
+            return;
+          }
+          if (node.children && node.children.length > 0) {
+            expandedSet.add(node.name);
+            node.children.forEach(collectExpandable);
+          }
+        };
+        
+        collectExpandable(treeData.screenHierarchyLevel3);
+        console.log('Nodos expandibles encontrados:', Array.from(expandedSet));
+        setExpandedItems(expandedSet);
+      } catch (expandError) {
+        console.error('Error al expandir nodos:', expandError);
         setToast({
           open: true,
-          message: 'Error al cargar los datos del árbol de permisos',
-          severity: 'error'
+          message: 'Error al expandir el árbol de permisos',
+          severity: 'warning'
         });
       }
     }
-    fetchData();
-  }, [roleName]);
+  }, [treeData, roleName, getGroupRoles]);
 
   const handleActionChange = async (pantallaId: string, action: string, checked: boolean) => {
     // Actualizar el estado local
@@ -423,7 +419,8 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
 
     try {
       const getPantallaName = (node: Permission): string | null => {
-        if (node.attributes.pantalla_id?.[0] === pantallaId) {
+        const attributes = node.attributes || {};
+        if (attributes.pantalla_id?.[0] === pantallaId) {
           return node.name;
         }
         if (node.children) {
@@ -435,7 +432,7 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
         return null;
       };
 
-      const pantallaName = treeData ? getPantallaName(treeData) : null;
+      const pantallaName = treeData ? getPantallaName(treeData.screenHierarchyLevel3) : null;
       const permissionName = pantallaName 
         ? `${pantallaName}__${action}`
         : `${pantallaId}__${action}`;
@@ -447,40 +444,39 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
       });
 
       if (roleName) {
-        const endpoint = `${CONFIG.serverUrl}/api/keycloak/groups/${roleName}/roles`;
-        const method = checked ? 'post' : 'delete';
-        
-        const response = await axios({
-          method,
-          url: endpoint,
-          data: {
-            rolesToAdd: checked ? [permissionName] : [],
-            rolesToRemove: !checked ? [permissionName] : []
-          }
-        });
-
-        if (response.data.success) {
-          setToast({
-            open: true,
-            message: `Permiso ${checked ? 'agregado' : 'removido'} correctamente`,
-            severity: 'success'
+        if (checked) {
+          // Agregar permiso usando GraphQL
+          const addVariables = {
+            groupName: roleName,
+            roles: [permissionName],
+          };
+          console.log('🔍 Enviando ADD_ROLES_TO_GROUP con variables:', addVariables);
+          
+          // @ts-ignore - Types will be updated after TypeScript cache refresh
+          await addRolesToGroup({
+            variables: addVariables,
           });
-
-          if (onPermissionsChange) {
-            onPermissionsChange([permissionName]);
-          }
         } else {
-          throw new Error(response.data.message || 'Error al actualizar el permiso');
+          // Remover permiso usando GraphQL
+          const removeVariables = {
+            groupName: roleName,
+            roles: [permissionName],
+          };
+          console.log('🔍 Enviando REMOVE_ROLES_FROM_GROUP con variables:', removeVariables);
+          
+          // @ts-ignore - Types will be updated after TypeScript cache refresh
+          await removeRolesFromGroup({
+            variables: removeVariables,
+          });
+        }
+
+        if (onPermissionsChange) {
+          onPermissionsChange([permissionName]);
         }
       }
 
     } catch (error) {
       console.error('Error al actualizar el permiso:', error);
-      setToast({
-        open: true,
-        message: error instanceof Error ? error.message : 'Error al actualizar el permiso',
-        severity: 'error'
-      });
       // Revertir el cambio en el estado si hay error
       setSelectedActions(prev => ({
         ...prev,
@@ -520,10 +516,13 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
     const isPantalla = node.tipo === 'pantalla';
     const isExpanded = expandedItems.has(node.name);
     const hasChildren = node.children?.length;
-    const nombre = Array.isArray(node.attributes.nombre) 
-      ? node.attributes.nombre[0] 
-      : node.attributes.nombre;
-    const pantallaId = node.attributes.pantalla_id?.[0] || node.name;
+    
+    // Validar que node.attributes existe antes de acceder a sus propiedades
+    const attributes = node.attributes || {};
+    const nombre = Array.isArray(attributes.nombre) 
+      ? attributes.nombre[0] 
+      : attributes.nombre || node.name || 'Sin nombre';
+    const pantallaId = attributes.pantalla_id?.[0] || node.name;
 
     return (
       <List
@@ -585,6 +584,30 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
     );
   };
 
+  if (loadingTree) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (treeError) {
+    return (
+      <Alert severity="error" sx={{ mb: 2 }}>
+        Error al cargar el árbol de permisos: {treeError.message}
+      </Alert>
+    );
+  }
+
+  if (!treeData?.screenHierarchyLevel3) {
+    return (
+      <Alert severity="info" sx={{ mb: 2 }}>
+        No se encontraron datos del árbol de permisos
+      </Alert>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -597,25 +620,16 @@ export function RolePermissionsTree({ roleId, roleName, onPermissionsChange }: P
       }}
     >
       <List dense sx={{ width: '100%' }}>
-        {treeData ? (
-          renderTree(treeData)
-        ) : (
-          <Typography>Cargando árbol de permisos...</Typography>
-        )}
+        {renderTree(treeData.screenHierarchyLevel3)}
       </List>
-
+      
       <Snackbar
         open={toast.open}
-        autoHideDuration={4000}
+        autoHideDuration={6000}
         onClose={handleCloseToast}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert 
-          onClose={handleCloseToast} 
-          severity={toast.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={handleCloseToast} severity={toast.severity} sx={{ width: '100%' }}>
           {toast.message}
         </Alert>
       </Snackbar>

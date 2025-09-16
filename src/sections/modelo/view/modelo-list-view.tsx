@@ -2,6 +2,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ROLES } from '@guard/roles.constants';
 import { getRolesFromToken } from '@guard/role-utils';
+import { useQuery } from '@apollo/client';
 
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -39,6 +40,7 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
+import { MODELOS_QUERY } from 'src/graphql/queries/modelos';
 import { ModeloTableRow, type ModeloItem } from '../modelo-table-row';
 import { ModeloTableToolbar } from '../modelo-table-toolbar';
 import { ModeloTableFiltersResult } from '../modelo-table-filters-result';
@@ -66,8 +68,6 @@ export function ModeloListView() {
   const router = useRouter();
   const confirm = useBoolean();
   
-  const [tableData, setTableData] = useState<ModeloItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<string[]>([]);
 
   const filters = useSetState({
@@ -75,6 +75,14 @@ export function ModeloListView() {
     marca: [],
     status: 'all',
   });
+
+  // Usar la query GraphQL para obtener modelos
+  const { data, loading, error, refetch } = useQuery(MODELOS_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const tableData = useMemo(() => data?.modelos || [], [data?.modelos]);
 
   const tienePermisoCrear = useMemo(
     () => userRoles.includes(ROLES.MODELO_INVENTARIO_TIC_CREATE),
@@ -86,38 +94,17 @@ export function ModeloListView() {
     setUserRoles(roles);
   }, []);
 
-  // Cargar modelos del API
-  const fetchModelos = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${CONFIG.springServerUrl}/backend-linker/api/modelos`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTableData(data);
-      } else {
-        toast.error('Error al cargar los modelos');
-      }
-    } catch (error) {
+  // Manejar errores de la query GraphQL
+  useEffect(() => {
+    if (error) {
       console.error('Error fetching modelos:', error);
       toast.error('Error al cargar los modelos');
-    } finally {
-      setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchModelos();
-  }, [fetchModelos]);
+  }, [error]);
 
   // Crear opciones de marcas para filtros
-  const marcaOptions = Array.from(new Set(tableData.map((modelo) => modelo.marcaNombre).filter(Boolean)))
-    .map((marca) => ({ value: marca, label: marca }));
+  const marcaOptions = Array.from(new Set(tableData.map((modelo: ModeloItem) => modelo.marcaNombre).filter(Boolean)))
+    .map((marca: unknown) => ({ value: marca as string, label: marca as string }));
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -136,22 +123,24 @@ export function ModeloListView() {
 
   const handleDeleteRow = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== parseInt(id, 10));
+      const deleteRow = tableData.filter((row: ModeloItem) => row.id !== parseInt(id, 10));
       toast.success('¡Modelo eliminado con éxito!');
-      setTableData(deleteRow);
+      // Refetch para actualizar los datos
+      refetch();
     },
-    [tableData]
+    [tableData, refetch]
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id.toString()));
+    const deleteRows = tableData.filter((row: ModeloItem) => !table.selected.includes(row.id.toString()));
     toast.success('¡Modelos eliminados con éxito!');
-    setTableData(deleteRows);
+    // Refetch para actualizar los datos
+    refetch();
     table.onUpdatePageDeleteRows({
       totalRowsInPage: dataFiltered.length,
       totalRowsFiltered: dataFiltered.length,
     });
-  }, [dataFiltered.length, table, tableData]);
+  }, [dataFiltered.length, table, tableData, refetch]);
 
   const handleEditRow = useCallback(
     (id: string) => {
@@ -372,12 +361,12 @@ function applyFilter({
 
   if (nombre) {
     filteredData = filteredData.filter(
-      (modelo) => modelo.nombre.toLowerCase().indexOf(nombre.toLowerCase()) !== -1
+      (modelo: ModeloItem) => modelo.nombre.toLowerCase().indexOf(nombre.toLowerCase()) !== -1
     );
   }
 
   if (marca.length) {
-    filteredData = filteredData.filter((modelo) => marca.includes(modelo.marcaNombre));
+    filteredData = filteredData.filter((modelo: ModeloItem) => marca.includes(modelo.marcaNombre));
   }
 
   if (status !== 'all') {

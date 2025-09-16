@@ -63,6 +63,11 @@ const NewAtributoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-atribut
 const AtributoListPage = lazy(() => import('src/pages/dashboard/tic/lista-atributos'));
 const AtributoEditPage = lazy(() => import('src/pages/dashboard/tic/editar-atributo'));
 
+// Tipo Equipo
+const NewTipoEquipoPage = lazy(() => import('src/pages/dashboard/tic/nuevo-tipo-equipo'));
+const TipoEquipoListPage = lazy(() => import('src/pages/dashboard/tic/lista-tipos-equipo'));
+const TipoEquipoEditPage = lazy(() => import('src/pages/dashboard/tic/editar-tipo-equipo'));
+
 const Notificaciones = lazy(() => import('src/pages/dashboard/notificaciones/edit'));
 const AutorizacionesFirmas = lazy(() => import('src/pages/dashboard/autorizacionesFirmas/edit'));
 
@@ -364,6 +369,43 @@ export const dashboardRoutes = [
                      ]}
                    >
                      <AtributoEditPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'nuevoTipoEquipo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.TIPO_EQUIPO_INVENTARIO_TIC_CREATE,
+                       ROLES.TIPO_EQUIPO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <NewTipoEquipoPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'listaTiposEquipo',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_VIEW,
+                     ]}
+                   >
+                     <TipoEquipoListPage />
+                   </RoleGuard>
+                 ),
+               },
+               {
+                 path: 'editarTipoEquipo/:id',
+                 element: (
+                   <RoleGuard
+                     requiredRoles={[
+                       ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_UPDATE,
+                     ]}
+                   >
+                     <TipoEquipoEditPage />
                    </RoleGuard>
                  ),
                },

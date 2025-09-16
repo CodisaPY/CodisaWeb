@@ -13,10 +13,10 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { CONFIG } from 'src/config-global';
-
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
+
+import { useCreateRole } from 'src/hooks/use-graphql-roles';
 
 // ----------------------------------------------------------------------
 
@@ -31,8 +31,8 @@ type NewRoleSchemaType = zod.infer<typeof NewRoleSchema>;
 
 export function NewRoleForm() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [userRoles, setUserRoles] = useState<string[]>([]);
+  const { createRole, loading } = useCreateRole();
 
   const tienePermisoCrear = useMemo(
     () => userRoles.includes(ROLES.GENERACION_NUEVO_ROL_CREATE),
@@ -60,37 +60,23 @@ export function NewRoleForm() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      setLoading(true);
-      
-      const response = await fetch(`${CONFIG.serverUrl}/api/keycloak/roles`, {
-        method: 'POST',
-        headers: {
-          'accept': '*/*',
-          'Content-Type': 'application/json',
+      await createRole({
+        variables: {
+          input: {
+            name: data.name,
+            description: data.description,
+            attributes: {
+              name: [data.description]
+            }
+          },
         },
-        body: JSON.stringify({
-          name: data.name,
-          description: data.description,
-          attributes: {
-            name: [data.description]
-          }
-        }),
       });
-
-      const result = await response.json();
-
-      if (result.success) {
-        toast.success('Rol creado exitosamente');
-        reset();
-        router.push(paths.dashboard.seguridad.moduloRoles.listaRol);
-      } else {
-        toast.error(result.message || 'Error al crear el rol');
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error('Error al crear el rol');
-    } finally {
-      setLoading(false);
+      
+      reset();
+      router.push(paths.dashboard.seguridad.moduloRoles.listaRol);
+    } catch (createError) {
+      console.error('Error creating role:', createError);
+      // El error ya se maneja en el hook useCreateRole
     }
   });
 

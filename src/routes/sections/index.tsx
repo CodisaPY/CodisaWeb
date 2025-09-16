@@ -19,17 +19,7 @@ export function Router() {
   return useRoutes([
     {
       path: '/',
-      /**
-       * Skip home page
-       * element: <Navigate to={CONFIG.auth.redirectPath} replace />,
-       */
-      element: (
-        <Suspense fallback={<SplashScreen />}>
-          <MainLayout>
-            <HomePage />
-          </MainLayout>
-        </Suspense>
-      ),
+      element: <Navigate to="/auth/jwt/sign-in" replace />,
     },
 
     // Auth

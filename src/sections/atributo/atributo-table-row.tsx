@@ -14,7 +14,6 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { toast } from 'src/components/snackbar';
-import { CONFIG } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 
@@ -27,6 +26,12 @@ export type AtributoItem = {
   esObligatorio: string;
   placeholder?: string;
   descripcionAtributo?: string;
+  opcionesLista?: string;
+  opcionesListaArray?: string[];
+  atributoDependienteId?: number;
+  valorDependiente?: string;
+  tipoDependencia?: string;
+  tieneDependencia?: boolean;
 };
 
 type Props = {
@@ -44,25 +49,15 @@ export function AtributoTableRow({ row, onEditRow, onDeleteRow, dense }: Props) 
   const handleDelete = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${CONFIG.springServerUrl}/backend-linker/api/atributos/${row.id}`, {
-        method: 'DELETE',
-        headers: { accept: '*/*' },
-      });
-      
-      if (response.ok) {
-        onDeleteRow();
-        toast.success('Atributo eliminado exitosamente');
-      } else {
-        console.error('Error en respuesta de eliminación:', response.status, response.statusText);
-        toast.error('Error al eliminar el atributo');
-      }
+      // Llamar directamente a la función del componente padre que maneja la mutación GraphQL
+      await onDeleteRow();
     } catch (error) {
       console.error('Error deleting atributo:', error);
       toast.error('Error al eliminar el atributo');
     } finally {
       setLoading(false);
     }
-  }, [onDeleteRow, row.id]);
+  }, [onDeleteRow]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -93,7 +88,10 @@ export function AtributoTableRow({ row, onEditRow, onDeleteRow, dense }: Props) 
 
         <TableCell size={dense ? 'small' : 'medium'}>
           <ListItemText
-            primary={row.tipoDato === 'numero' ? 'Número' : 'Texto'}
+            primary={
+              row.tipoDato === 'numero' ? 'Número' : 
+              row.tipoDato === 'lista' ? 'Lista' : 'Texto'
+            }
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>
@@ -108,6 +106,34 @@ export function AtributoTableRow({ row, onEditRow, onDeleteRow, dense }: Props) 
         <TableCell size={dense ? 'small' : 'medium'}>
           <ListItemText
             primary={row.placeholder || '-'}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
+        </TableCell>
+
+        <TableCell size={dense ? 'small' : 'medium'}>
+          <ListItemText
+            primary={
+              (() => {
+                if (row.tipoDato === 'lista') {
+                  // Usar array si está disponible y no está vacío
+                  if (row.opcionesListaArray && Array.isArray(row.opcionesListaArray) && row.opcionesListaArray.length > 0) {
+                    return row.opcionesListaArray.join(', ');
+                  }
+                  
+                  // Fallback: usar string
+                  if (row.opcionesLista && typeof row.opcionesLista === 'string') {
+                    const opciones = row.opcionesLista
+                      .split('\n')
+                      .map(opcion => opcion.trim())
+                      .filter(opcion => opcion !== '');
+                    return opciones.length > 0 ? opciones.join(', ') : 'Sin opciones definidas';
+                  }
+                  
+                  return 'Sin opciones definidas';
+                }
+                return '-';
+              })()
+            }
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>

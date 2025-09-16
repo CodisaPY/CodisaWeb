@@ -39,20 +39,12 @@ export const checkKeycloakSession = async (): Promise<boolean> => {
   }
 
   try {
-    const response = await axios.post(
-      `${CONFIG.serverUrl}/api/keycloak/check-session`,
-      { token: accessToken },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    console.log('Respuesta del backend:', response.data);
-    return response.data.active === true;
+    // Usar GraphQL para check session
+    const { checkSessionWithGraphQL } = await import('./graphql-auth');
+    const isValid = await checkSessionWithGraphQL();
+    return isValid;
   } catch (error) {
-    console.error('Error al verificar la sesión:', error);
+    console.error('Error al verificar la sesión con GraphQL:', error);
     return false; // Si hay error, consideramos que la sesión ha expirado
   }
 };
@@ -67,19 +59,12 @@ export const logoutFromKeycloak = async () => {
   }
 
   try {
-    const response = await axios.post(
-      `${CONFIG.serverUrl}/api/keycloak/logout`,
-      { refresh_token: refreshToken },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    console.log('Sesión cerrada en Keycloak correctamente:', response.data);
+    // Usar GraphQL para el logout
+    const { logoutWithGraphQL } = await import('./graphql-auth');
+    await logoutWithGraphQL(refreshToken);
+    console.log('Sesión cerrada con GraphQL correctamente');
   } catch (error) {
-    console.error('❌ Error al cerrar sesión en Keycloak:', error.response?.data || error.message);
+    console.error('❌ Error al cerrar sesión con GraphQL:', error);
   } finally {
     handleLocalLogout();
   }
@@ -196,29 +181,22 @@ export const checkSessionWithRefreshToken = async () => {
   }
 
   try {
-    const response = await axios.post(
-      `${CONFIG.serverUrl}/api/keycloak/refresh-token`,
-      { refresh_token: refreshToken },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const data = response.data.data;
-    localStorage.setItem('accessToken', data.access_token);
-    localStorage.setItem('refreshToken', data.refresh_token);
-    // También guardar en sessionStorage para compatibilidad
-    sessionStorage.setItem('jwt_access_token', data.access_token);
-
-    // Mostrar información de duración del token refrescado
-    console.log('🔄 Token refrescado:');
-    logTokenDuration(data.access_token);
-
+    // Usar GraphQL para refresh token
+    const { refreshTokenWithGraphQL } = await import('./graphql-auth');
+    await refreshTokenWithGraphQL(refreshToken);
+    console.log('🔄 Token refrescado con GraphQL correctamente');
     return true;
-  } catch (error) {
-    console.error('Error al refrescar token:', error);
+  } catch (error: any) {
+    console.error('Error al refrescar token con GraphQL:', error);
+    
+    // Si el refresh token es inválido, limpiar sesión
+    if (error.requiresReauth) {
+      console.log('🔄 Refresh token inválido, limpiando sesión');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('jwt_access_token');
+    }
+    
     return false;
   }
 };

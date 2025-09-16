@@ -20,7 +20,7 @@ import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
-import { changePasswordFromKeycloak } from 'src/auth/context/jwt/keycloak';
+import { changePasswordWithGraphQL } from 'src/auth/context/jwt/graphql-auth';
 import { ROLES } from '@guard/roles.constants';
 import { getRolesFromToken } from '@guard/role-utils';
 
@@ -118,10 +118,9 @@ useEffect(() => {
         }
       }
       
-      const response = await changePasswordFromKeycloak(
-        data.newPassword,
+      const response = await changePasswordWithGraphQL(
         targetUserId,
-        token,
+        data.newPassword,
         data.requirePasswordChange
       );
 

@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-
-import { CONFIG } from 'src/config-global';
+import { useQuery } from '@apollo/client';
+import { useMemo } from 'react';
+import { ROLES_QUERY } from 'src/graphql/queries/roles';
+import { RolesQueryResponse } from 'src/types/role';
 
 export interface Role {
   id: string;
@@ -12,34 +13,17 @@ export interface Role {
 }
 
 export function useGetRoles() {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, error, refetch } = useQuery<RolesQueryResponse>(ROLES_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+  });
 
-  const fetchRoles = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${CONFIG.serverUrl}/api/keycloak/groups/roles`, {
-        headers: {
-          'accept': 'application/json',
-        },
-      });
-      const result = await response.json();
-      
-      if (result.success) {
-        setRoles(result.data);
-      } else {
-        console.error('Error fetching roles:', result.message);
-      }
-    } catch (error) {
-      console.error('Error fetching roles:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const roles = useMemo(() => data?.roles || [], [data?.roles]);
 
-  useEffect(() => {
-    fetchRoles();
-  }, [fetchRoles]);
-
-  return { roles, loading, refetch: fetchRoles };
+  return { 
+    roles, 
+    loading, 
+    error,
+    refetch 
+  };
 } 

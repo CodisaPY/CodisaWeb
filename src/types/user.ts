@@ -111,3 +111,134 @@ export type IUserAccountBillingHistory = {
   invoiceNumber: string;
   createdAt: IDateValue;
 };
+
+// Tipos para usuarios GraphQL
+
+export interface UserAccess {
+  manageGroupMembership: boolean;
+  view: boolean;
+  mapRoles: boolean;
+  impersonate: boolean;
+  manage: boolean;
+}
+
+export interface UserAttributes {
+  sucursal: string[];
+  cargo: string[];
+  departamento: string[];
+  is_temporary_admin: string[];
+  [key: string]: string[];
+}
+
+export interface User {
+  access: UserAccess;
+  attributes: UserAttributes;
+  createdTimestamp: string;
+  disableableCredentialTypes: string[];
+  email: string;
+  emailVerified: boolean;
+  enabled: boolean;
+  firstName: string;
+  groupRole: string;
+  groupRoleDescription: string;
+  id: string;
+  lastName: string;
+  notBefore: string;
+  requiredActions: string[];
+  totp: boolean;
+  username: string;
+}
+
+export interface UsersResponse {
+  users: User[];
+}
+
+export interface UsersQueryResponse {
+  users: User[];
+}
+
+// Tipos para crear usuario
+export interface CreateUserAttributes {
+  sucursal?: string | null;
+  cargo?: string | null;
+  modulo?: string | null;
+  [key: string]: string | null | undefined;
+}
+
+export interface CreateUserInput {
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  sucursal: string;
+  enabled: boolean;
+  emailVerified: boolean;
+  attributes: CreateUserAttributes;
+}
+
+export interface CreateUserResponse {
+  success: boolean;
+  message: string;
+  userId: string;
+}
+
+export interface CreateUserMutationResponse {
+  createUser: CreateUserResponse;
+}
+
+export interface CreateUserMutationVariables {
+  input: CreateUserInput;
+}
+
+// Tipos para actualizar usuario
+export interface UpdateUserAttributes {
+  sucursal?: string | null;
+  cargo?: string | null;
+  modulo?: string | null;
+  [key: string]: string | null | undefined;
+}
+
+export interface UpdateUserInput {
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  sucursal: string;
+  enabled: boolean;
+  emailVerified: boolean;
+  attributes: UpdateUserAttributes;
+}
+
+export interface UpdateUserResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface UpdateUserMutationResponse {
+  updateUser: UpdateUserResponse;
+}
+
+export interface UpdateUserMutationVariables {
+  updateUserId: string;
+  input: UpdateUserInput;
+}
+
+export interface ToggleUserStatusData {
+  userId: string;
+  active: boolean;
+}
+
+export interface ToggleUserStatusResponse {
+  success: boolean;
+  data: ToggleUserStatusData;
+  message: string;
+}
+
+export interface ToggleUserStatusMutationResponse {
+  toggleUserStatus: ToggleUserStatusResponse;
+}
+
+export interface ToggleUserStatusMutationVariables {
+  userId: string;
+}

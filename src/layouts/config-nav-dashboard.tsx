@@ -157,6 +157,21 @@ export const navData = [
                       ROLES.LISTA_ATRIBUTOS_INVENTARIO_TIC_VIEW,
                     ],
                   },
+                  {
+                    title: 'Nuevo tipo de equipo',
+                    path: paths.dashboard.tic.moduloInventario.crearNuevoTipoEquipo,
+                    roles: [
+                      ROLES.TIPO_EQUIPO_INVENTARIO_TIC_VIEW,
+                      ROLES.TIPO_EQUIPO_INVENTARIO_TIC_CREATE,
+                    ],
+                  },
+                  {
+                    title: 'Lista de tipos de equipo',
+                    path: paths.dashboard.tic.moduloInventario.listaTiposEquipo,
+                    roles: [
+                      ROLES.LISTA_TIPOS_EQUIPO_INVENTARIO_TIC_VIEW,
+                    ],
+                  },
                 ]
               },
                   

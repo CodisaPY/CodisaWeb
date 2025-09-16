@@ -1,4 +1,5 @@
 import { useRef, useMemo, useState, useEffect } from 'react';
+import { useMutation } from '@apollo/client';
 import { ROLES } from '@guard/roles.constants';
 import { getRolesFromToken } from '@guard/role-utils';
 
@@ -16,6 +17,8 @@ import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+import { DELETE_MODELO_MUTATION } from 'src/graphql/mutations/equipo';
+import { toast } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
 
@@ -40,6 +43,19 @@ export function ModeloTableRow({ row, onEditRow, onDeleteRow, dense }: Props) {
   
   const [userRoles, setUserRoles] = useState<string[]>([]);
 
+  // Mutación GraphQL para eliminar modelo
+  const [deleteModelo, { loading: deleteLoading }] = useMutation(DELETE_MODELO_MUTATION, {
+    onCompleted: (data) => {
+      console.log('✅ Modelo eliminado exitosamente:', data);
+      toast.success('Modelo eliminado exitosamente');
+      onDeleteRow(); // Llamar a la función del componente padre para actualizar la lista
+    },
+    onError: (error) => {
+      console.error('Error al eliminar modelo:', error);
+      toast.error('Error al eliminar el modelo');
+    },
+  });
+
   const tienePermisoUpdate = useMemo(
     () => userRoles.includes(ROLES.LISTA_MODELOS_INVENTARIO_TIC_UPDATE),
     [userRoles]
@@ -55,9 +71,14 @@ export function ModeloTableRow({ row, onEditRow, onDeleteRow, dense }: Props) {
     setUserRoles(roles);
   }, []);
 
-  const handleDelete = () => {
-    onDeleteRow();
-    confirmDelete.onFalse();
+  const handleDelete = async () => {
+    try {
+      await deleteModelo({ variables: { deleteModeloId: row.id } });
+      confirmDelete.onFalse();
+    } catch (error) {
+      // El error ya se maneja en onError de la mutación
+      console.error('Error en handleDelete:', error);
+    }
   };
 
   return (
@@ -138,8 +159,13 @@ export function ModeloTableRow({ row, onEditRow, onDeleteRow, dense }: Props) {
         title="Eliminar modelo"
         content={`¿Estás seguro que deseas eliminar el modelo "${row.nombre}"?`}
         action={
-          <Button variant="contained" color="error" onClick={handleDelete}>
-            Eliminar
+          <Button 
+            variant="contained" 
+            color="error" 
+            onClick={handleDelete}
+            disabled={deleteLoading}
+          >
+            {deleteLoading ? 'Eliminando...' : 'Eliminar'}
           </Button>
         }
       />

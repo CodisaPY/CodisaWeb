@@ -4,6 +4,7 @@ import { ROLES } from '@guard/roles.constants';
 import { useMemo, useState, useEffect } from 'react';
 import { getRolesFromToken } from '@guard/role-utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery, useMutation } from '@apollo/client';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -16,6 +17,9 @@ import { CONFIG } from 'src/config-global';
 
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
+
+import { MARCAS_QUERY } from 'src/graphql/queries/marcas';
+import { CREAR_MODELO_MUTATION, UPDATE_MODELO_MUTATION } from 'src/graphql/mutations/modelos';
 
 // ----------------------------------------------------------------------
 
@@ -57,7 +61,46 @@ export function NewModeloForm({ currentModelo }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [userRoles, setUserRoles] = useState<string[]>([]);
-  const [marcas, setMarcas] = useState<MarcaOption[]>([]);
+
+  // Query GraphQL para obtener marcas
+  const { data: marcasData, loading: marcasLoading, error: marcasError } = useQuery(MARCAS_QUERY, {
+    errorPolicy: 'all',
+    fetchPolicy: 'cache-and-network',
+    onCompleted: (data) => {
+      console.log('✅ Query MARCAS ejecutada exitosamente:', data);
+    },
+    onError: (error) => {
+      console.error('❌ Error en query MARCAS:', error);
+    }
+  });
+
+  // Mutation GraphQL para crear modelos
+  const [crearModelo, { loading: mutationLoading, error: mutationError }] = useMutation(CREAR_MODELO_MUTATION, {
+    onCompleted: (data) => {
+      console.log('✅ Mutation CREATE_MODELO ejecutada exitosamente:', data);
+      toast.success('Modelo creado exitosamente');
+      router.push(paths.dashboard.tic.moduloInventario.listaModelos);
+    },
+    onError: (error) => {
+      console.error('❌ Error en mutation CREATE_MODELO:', error);
+      toast.error(error.message || 'Error al crear el modelo');
+    },
+    refetchQueries: ['Modelos'],
+  });
+
+  // Mutation GraphQL para actualizar modelos
+  const [updateModelo, { loading: updateMutationLoading, error: updateMutationError }] = useMutation(UPDATE_MODELO_MUTATION, {
+    onCompleted: (data) => {
+      console.log('✅ Mutation UPDATE_MODELO ejecutada exitosamente:', data);
+      toast.success('Modelo actualizado exitosamente');
+      router.push(paths.dashboard.tic.moduloInventario.listaModelos);
+    },
+    onError: (error) => {
+      console.error('❌ Error en mutation UPDATE_MODELO:', error);
+      toast.error(error.message || 'Error al actualizar el modelo');
+    },
+    refetchQueries: ['Modelos'],
+  });
 
   const tienePermisoCrear = useMemo(
     () =>
@@ -73,31 +116,16 @@ export function NewModeloForm({ currentModelo }: Props) {
     setUserRoles(roles);
   }, []);
 
-  // Cargar marcas para el select
+  // Procesar datos de marcas desde GraphQL
+  const marcas = useMemo(() => marcasData?.marcas || [], [marcasData?.marcas]);
+
+  // Manejar errores de GraphQL
   useEffect(() => {
-    const fetchMarcas = async () => {
-      try {
-        const response = await fetch(`${CONFIG.springServerUrl}/backend-linker/api/marcas`, {
-          method: 'GET',
-          headers: {
-            'accept': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setMarcas(data);
-        } else {
-          toast.error('Error al cargar las marcas');
-        }
-      } catch (error) {
-        console.error('Error fetching marcas:', error);
-        toast.error('Error al cargar las marcas');
-      }
-    };
-
-    fetchMarcas();
-  }, []);
+    if (marcasError) {
+      console.error('Error fetching marcas:', marcasError);
+      toast.error('Error al cargar las marcas');
+    }
+  }, [marcasError]);
 
   const defaultValues: Partial<NewModeloSchemaType> = {
     nombre: currentModelo?.nombre || '',
@@ -125,58 +153,33 @@ export function NewModeloForm({ currentModelo }: Props) {
       const isEdit = !!currentModelo;
       
       if (isEdit) {
-        // Modo edición - PUT
-        const modeloData = {
-          id: currentModelo.id,
-          nombre: data.nombre,
-          marcaId: data.marca!.id,
-        };
-
-        const url = `${CONFIG.springServerUrl}/backend-linker/api/modelos/${currentModelo.id}`;
-        console.log('PUT URL:', url);
-        console.log('PUT Data:', modeloData);
-
-        const response = await fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'accept': 'application/json',
-          },
-          body: JSON.stringify(modeloData),
+        // Modo edición - GraphQL
+        console.log('Actualizando modelo con GraphQL:', data);
+        
+        await updateModelo({
+          variables: {
+            updateModeloId: currentModelo.id,
+            input: {
+              nombre: data.nombre,
+              marcaId: data.marca!.id,
+            }
+          }
         });
-
-        if (response.ok) {
-          toast.success('Modelo actualizado exitosamente');
-          router.push(paths.dashboard.tic.moduloInventario.listaModelos);
-        } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || 'Error al actualizar el modelo');
-        }
       } else {
-        // Modo creación - POST
-        const modeloData = {
-          id: 1, // El endpoint puede requerir un id
-          nombre: data.nombre,
-          marcaId: data.marca!.id,
-        };
-
-        const response = await fetch(`${CONFIG.springServerUrl}/backend-linker/api/modelos`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'accept': 'application/json',
-          },
-          body: JSON.stringify(modeloData),
+        // Modo creación - GraphQL
+        console.log('Creando modelo con GraphQL:', data);
+        
+        await crearModelo({
+          variables: {
+            input: {
+              nombre: data.nombre,
+              marcaId: data.marca!.id,
+            }
+          }
         });
-
-        if (response.ok) {
-          toast.success('Modelo creado exitosamente');
-          reset();
-          router.push(paths.dashboard.tic.moduloInventario.listaModelos);
-        } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || 'Error al crear el modelo');
-        }
+        
+        // Reset del formulario después de crear exitosamente
+        reset();
       }
     } catch (error) {
       console.error(error);
@@ -226,7 +229,7 @@ export function NewModeloForm({ currentModelo }: Props) {
           <LoadingButton
             type="submit"
             variant="contained"
-            loading={isSubmitting || loading}
+            loading={isSubmitting || loading || marcasLoading || mutationLoading || updateMutationLoading}
             disabled={!methods.formState.isValid}
             sx={{ ml: 'auto' }}
           >

@@ -42,7 +42,7 @@ export default defineConfig({
     allowedHosts: ["linkercodisa.codisa.com.py"], // Agrega el host permitido aquí
     proxy: {
       '/api': {
-        target: 'http://192.168.0.198:9003/backend-linker',
+        target: 'http://181.40.93.42:9003/backend-linker',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
