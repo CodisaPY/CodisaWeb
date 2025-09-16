@@ -123,7 +123,22 @@ export const ROLES = {
   LISTA_ROLES_PERMISSION: 'pantalla__roles__lista_roles__permission',
   LISTA_ROLES_ENABLE: 'pantalla__roles__lista_roles__enable',
   LISTA_ROLES_DISABLE: 'pantalla__roles__lista_roles__disable',
+/*
+modulos TIC
+*/
+ 
+  /* MODULOS RESERVA DE SALIDA */
+  MODULO_SALA_RESERVA:'modulo_sala_reserva',
+  MODULO_REFERENCIALES_SALA:'modulo_referenciales_sala',
 
-
-  };
+   GENERACION_SOLICITUD_RESERVA_DE_SALIDA_NUEVA_SALA_VIEW: 'pantalla__sala_reserva__crear_nueva_sala__view',
+  GENERACION_SOLICITUD_RESERVA_DE_SALIDA_NUEVA_SALA_CREATE: 'pantalla__sala_reserva__crear_nueva_sala__create',
+  LISTA_SALA_RESERVA_VIEW: 'pantalla__sala_reserva__lista_sala__view',  
+  LISTA_SALA_RESERVA_CREATE: 'pantalla__sala_reserva__lista_sala__create',  
+  LISTA_SALA_RESERVA_UPDATE: 'pantalla__sala_reserva__lista_sala__update',  
+  MODULO_AGENDAMIENTO_SALA: 'modulo_agendamiento_sala',  
+  GENERACION_AGENDAMIENTO_SALA_CREATE: 'pantalla__sala_reserva__crear_agendamiento__create',  
+  GENERACION_AGENDAMIENTO_SALA_VIEW: 'pantalla__sala_reserva__crear_agendamiento__view',  
   
+   
+};

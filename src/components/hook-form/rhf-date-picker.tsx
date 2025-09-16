@@ -10,6 +10,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { MobileDateTimePicker } from '@mui/x-date-pickers/MobileDateTimePicker';
 
 import { formatStr } from 'src/utils/format-time';
+import { PickerClockIcon } from 'src/theme/core/components/mui-x-date-picker';
 
 // ----------------------------------------------------------------------
 
@@ -74,6 +75,9 @@ export function RHFMobileDateTimePicker({
               fullWidth: true,
               error: !!error,
               helperText: error?.message ?? (slotProps?.textField as TextFieldProps)?.helperText,
+              InputProps: {
+                endAdornment: null,
+              },
               ...slotProps?.textField,
             },
             ...slotProps,

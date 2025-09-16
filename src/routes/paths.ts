@@ -181,6 +181,30 @@ export const paths = {
       },
     },
 
+
+
+    salaReserva: {
+      root: `${ROOTS.DASHBOARD}/salaReserva`,
+      moduloReferenciales: {
+        root: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales`,
+        listaSalas: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/listaSalas`,
+        crearNuevaSala: `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/crearNuevaSala`,
+        editarSala: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/editarSala/${id}`,
+        verSala: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloReferenciales/verSala/${id}`,
+      },
+      moduloAgendamiento: {
+        root: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento`,
+        listarAgendamiento: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/listarAgendamiento`,
+        crearAgendamiento: `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/crearAgendamiento`,
+        editarAgendamiento: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/editarAgendamiento/${id}`,
+        verAgendamiento: (id: string) => `${ROOTS.DASHBOARD}/salaReserva/moduloAgendamiento/verAgendamiento/${id}`,
+      },
+    },
+
+
+
+
+
     comercial: {
       root: `${ROOTS.DASHBOARD}/comercial/moduloSolicitudes`,
       moduloSolicitudes: {

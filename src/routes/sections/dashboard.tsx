@@ -419,6 +419,71 @@ export const dashboardRoutes = [
       },
 
       {
+        path: 'salaReserva',
+        children: [
+          {
+            path: 'moduloReferenciales',
+            children: [
+              {
+                path: 'listaSalas',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <SalaListPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'crearNuevaSala',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <NuevaSalaPage />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'editarSala/:id',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.LISTA_SALA_RESERVA_VIEW,
+                    ]}
+                  >
+                    <EditarSalaPage />
+                  </RoleGuard>
+                ),
+              },
+            ],
+          },
+          {
+            path: 'moduloAgendamiento',
+            children: [
+              {
+                path: 'listarAgendamiento',
+                element: (
+                  <RoleGuard
+                    requiredRoles={[
+                      ROLES.GENERACION_AGENDAMIENTO_SALA_CREATE,
+                      ROLES.GENERACION_AGENDAMIENTO_SALA_VIEW,
+                    ]}
+                  >
+                    <AgendamientoPage />
+                  </RoleGuard>
+                ),
+              },
+            ],
+          },
+        ],
+      },
+
+      {
         path: 'comercial',
         children: [
           {

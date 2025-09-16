@@ -103,6 +103,24 @@ export const StyledCalendar = styled('div')(({ theme }) => ({
     '& .fc-daygrid-day-number': { color: theme.vars.palette.text.disabled },
   },
   '& .fc .fc-daygrid-day-number': { ...theme.typography.body2, padding: theme.spacing(1, 1, 0) },
+  
+  // Today styling - número del día actual con color del sistema MUI
+  '& .fc .fc-day-today .fc-daygrid-day-number': {
+    backgroundColor: theme.vars.palette.primary.main,
+    color: theme.vars.palette.primary.contrastText,
+    borderRadius: '50%',
+    width: 24,
+    height: 24,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: theme.typography.fontWeightRegular,
+    fontSize: '0.875rem',
+    lineHeight: 1,
+    padding: 0,
+    margin: 'auto',
+    textAlign: 'center',
+  },
   '& .fc .fc-daygrid-event': { marginTop: 4 },
   '& .fc .fc-daygrid-event.fc-event-start, & .fc .fc-daygrid-event.fc-event-end': {
     marginLeft: 4,
